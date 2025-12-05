@@ -1,0 +1,11 @@
+{
+  "name": "versaas-ai",
+  "version": "1.0.0",
+  "description": "A virtual software company simulator with AI agents",
+  "scripts": {
+    "analytics": "node -e \"require('@vercel/analytics').inject();\""
+  },
+  "dependencies": {
+    "@vercel/analytics": "^1.3.0"
+  }
+}
