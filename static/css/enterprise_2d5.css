@@ -1,0 +1,389 @@
+/* Zero-to-One Virtual Software Inc. - Enhanced 2.5D Graphics */
+
+/* 32-bit Color Depth Enhanced Graphics */
+:root {
+    /* 32-bit Color Palette */
+    --color-primary: #ff6b6b;
+    --color-secondary: #4ecdc4;
+    --color-accent: #45b7d1;
+    --color-success: #96ceb4;
+    --color-warning: #feca57;
+    --color-purple: #ff9ff3;
+    --color-blue: #54a0ff;
+    --color-indigo: #5f27cd;
+    --color-cyan: #00d2d3;
+    --color-orange: #ff6348;
+    
+    /* Enhanced Office Colors */
+    --wall-color: #8b7355;
+    --floor-color: #6b5b47;
+    --ceiling-color: #9a8478;
+    --desk-color: #8b6914;
+    --chair-color: #654321;
+    
+    /* Lighting Effects */
+    --ambient-light: rgba(255, 248, 220, 0.3);
+    --ceiling-light: rgba(255, 255, 200, 0.8);
+    --window-light: rgba(135, 206, 235, 0.4);
+}
+
+/* Enhanced 2.5D Office Environment */
+.simulation-viewport {
+    width: 100%;
+    height: 600px;
+    border: 2px solid #4a5568;
+    border-radius: 12px;
+    background: linear-gradient(45deg, #2d3748 0%, #4a5568 50%, #2d3748 100%);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 
+        inset 0 0 20px rgba(0,0,0,0.5),
+        0 10px 30px rgba(0,0,0,0.3);
+    perspective: 1000px;
+    transform-style: preserve-3d;
+}
+
+/* Office Background with 3D Depth */
+.office-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        linear-gradient(135deg, var(--wall-color) 0%, #7a6b4f 100%),
+        radial-gradient(circle at 30% 20%, var(--window-light) 0%, transparent 50%);
+    transform: rotateX(5deg);
+    transform-origin: bottom;
+}
+
+/* Enhanced Walls with 3D Effect */
+.wall-horizontal {
+    background: linear-gradient(90deg, var(--wall-color) 0%, #9a8478 50%, var(--wall-color) 100%);
+    box-shadow: 
+        inset 0 2px 4px rgba(0,0,0,0.3),
+        0 2px 8px rgba(0,0,0,0.2);
+    border-radius: 2px;
+}
+
+.wall-vertical {
+    background: linear-gradient(180deg, var(--wall-color) 0%, #9a8478 50%, var(--wall-color) 100%);
+    box-shadow: 
+        inset 2px 0 4px rgba(0,0,0,0.3),
+        2px 0 8px rgba(0,0,0,0.2);
+    border-radius: 2px;
+}
+
+/* Enhanced Room Structures */
+.room {
+    background: rgba(255, 215, 0, 0.15);
+    border: 2px solid #ffd700;
+    border-radius: 8px;
+    box-shadow: 
+        inset 0 0 20px rgba(255, 215, 0, 0.1),
+        0 4px 12px rgba(0,0,0,0.3);
+    transform: translateZ(10px);
+}
+
+.room-label {
+    position: absolute;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.8);
+    color: #ffd700;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: bold;
+    text-shadow: 0 0 4px rgba(255, 215, 0, 0.5);
+}
+
+/* Enhanced Agent Sprites with 32-bit Graphics */
+.agent-sprite {
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    z-index: 10;
+    box-shadow: 
+        0 4px 8px rgba(0,0,0,0.3),
+        inset 0 2px 4px rgba(255,255,255,0.2);
+    border: 2px solid rgba(255,255,255,0.3);
+    animation: agentFloat 3s ease-in-out infinite;
+}
+
+.agent-sprite:hover {
+    transform: scale(1.2) translateZ(20px);
+    box-shadow: 
+        0 8px 16px rgba(0,0,0,0.4),
+        0 0 20px rgba(255,255,255,0.3);
+}
+
+/* Agent Status Indicators */
+.agent-status-indicator {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    border: 2px solid white;
+    animation: statusPulse 2s ease-in-out infinite;
+}
+
+/* Thought Bubbles with Enhanced Styling */
+.thought-bubble {
+    position: absolute;
+    background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 100%);
+    color: #2d3748;
+    padding: 8px 12px;
+    border-radius: 12px;
+    font-size: 11px;
+    max-width: 150px;
+    z-index: 100;
+    box-shadow: 
+        0 8px 16px rgba(0,0,0,0.2),
+        inset 0 1px 2px rgba(255,255,255,0.8);
+    border: 1px solid rgba(255,255,255,0.3);
+    animation: thoughtBubbleFloat 4s ease-in-out;
+    transform: translateZ(30px);
+}
+
+.thought-bubble::before {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 20px;
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid rgba(255,255,255,0.95);
+}
+
+/* Enhanced Server Infrastructure */
+.server-rack {
+    position: absolute;
+    width: 80px;
+    height: 160px;
+    background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+    border: 2px solid #4a5568;
+    border-radius: 8px;
+    box-shadow: 
+        inset 0 0 10px rgba(0,0,0,0.5),
+        0 4px 8px rgba(0,0,0,0.3);
+    transform: translateZ(5px);
+}
+
+.server-unit {
+    width: 60px;
+    height: 12px;
+    margin: 3px auto;
+    background: linear-gradient(90deg, #38a169 0%, #48bb78 100%);
+    border-radius: 3px;
+    transition: all 0.3s ease;
+    box-shadow: 
+        inset 0 1px 2px rgba(255,255,255,0.3),
+        0 1px 2px rgba(0,0,0,0.2);
+    position: relative;
+}
+
+.server-unit::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 4px;
+    width: 2px;
+    height: 2px;
+    background: rgba(255,255,255,0.8);
+    border-radius: 50%;
+    animation: serverLedBlink 1s ease-in-out infinite;
+}
+
+/* Enhanced LED Ticker with Matrix Effect */
+.led-ticker {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 35px;
+    background: linear-gradient(180deg, #000000 0%, #1a1a1a 100%);
+    color: #00ff00;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 35px;
+    overflow: hidden;
+    white-space: nowrap;
+    border-top: 2px solid #333;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.ticker-content {
+    display: inline-block;
+    animation: tickerScroll 30s linear infinite;
+    text-shadow: 0 0 8px rgba(0,255,0,0.5);
+}
+
+/* Workstation Areas */
+.workstation {
+    position: absolute;
+    width: 60px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--desk-color) 0%, #a0522d 100%);
+    border-radius: 4px;
+    box-shadow: 
+        0 4px 8px rgba(0,0,0,0.3),
+        inset 0 2px 4px rgba(255,255,255,0.1);
+    transform: translateZ(8px);
+}
+
+.workstation::before {
+    content: '';
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 30px;
+    height: 20px;
+    background: linear-gradient(135deg, #87ceeb 0%, #4682b4 100%);
+    border-radius: 2px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Meeting Rooms */
+.meeting-room {
+    position: absolute;
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(218, 165, 32, 0.2) 100%);
+    border: 3px solid #ffd700;
+    border-radius: 12px;
+    box-shadow: 
+        inset 0 0 30px rgba(255, 215, 0, 0.1),
+        0 8px 16px rgba(0,0,0,0.3);
+    transform: translateZ(15px);
+}
+
+.meeting-room::before {
+    content: 'MEETING ROOM';
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(90deg, #ffd700 0%, #ffed4e 100%);
+    color: #000;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: bold;
+    text-shadow: 0 1px 2px rgba(255,255,255,0.5);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+/* Animations */
+@keyframes agentFloat {
+    0%, 100% { transform: translateY(0px) rotateZ(0deg); }
+    50% { transform: translateY(-3px) rotateZ(1deg); }
+}
+
+@keyframes statusPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.1); }
+}
+
+@keyframes thoughtBubbleFloat {
+    0% { opacity: 0; transform: translateY(10px) scale(0.8); }
+    20% { opacity: 1; transform: translateY(0px) scale(1); }
+    80% { opacity: 1; transform: translateY(0px) scale(1); }
+    100% { opacity: 0; transform: translateY(-10px) scale(0.8); }
+}
+
+@keyframes serverLedBlink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0.3; }
+}
+
+@keyframes tickerScroll {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
+}
+
+/* Agent Tooltip Enhancements */
+.agent-tooltip {
+    position: absolute;
+    background: linear-gradient(135deg, rgba(0,0,0,0.95) 0%, rgba(45,55,72,0.95) 100%);
+    color: white;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 12px;
+    max-width: 200px;
+    z-index: 200;
+    box-shadow: 
+        0 12px 24px rgba(0,0,0,0.4),
+        0 0 0 1px rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    transform: translateZ(50px);
+    animation: tooltipFadeIn 0.3s ease-out;
+}
+
+.agent-tooltip::before {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 8px solid rgba(0,0,0,0.95);
+}
+
+@keyframes tooltipFadeIn {
+    from { opacity: 0; transform: translateY(10px) translateZ(50px); }
+    to { opacity: 1; transform: translateY(0px) translateZ(50px); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .simulation-viewport {
+        height: 400px;
+        transform: scale(0.8);
+        transform-origin: top left;
+    }
+    
+    .agent-sprite {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .server-rack {
+        width: 60px;
+        height: 120px;
+    }
+}
+
+/* Performance Optimizations */
+.agent-sprite,
+.server-unit,
+.thought-bubble {
+    will-change: transform;
+    backface-visibility: hidden;
+}
+
+/* Smooth Transitions */
+* {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* High DPI Display Support */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .agent-sprite {
+        border-width: 1px;
+    }
+    
+    .thought-bubble {
+        border-width: 0.5px;
+    }
+}

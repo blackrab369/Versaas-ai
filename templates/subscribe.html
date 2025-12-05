@@ -1,0 +1,317 @@
+{% extends "base.html" %}
+
+{% block title %}Subscription - Zero-to-One Virtual Software Inc.{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="text-center mb-12">
+        <h1 class="text-4xl font-bold mb-4">Choose Your Plan</h1>
+        <p class="text-xl opacity-75">Unlock the full potential of your virtual development team</p>
+    </div>
+
+    <!-- Current Plan Status -->
+    <div class="glass-effect p-6 rounded-lg mb-8">
+        <div class="flex justify-between items-center">
+            <div>
+                <h2 class="text-2xl font-bold">Current Plan</h2>
+                <p class="text-lg">
+                    {% if current_user.subscription_type == 'free' %}
+                        <span class="text-yellow-400">Free Trial</span> - Expires in 
+                        <span id="trialTimeRemaining">--</span>
+                    {% else %}
+                        <span class="text-green-400">Premium</span> - Active Subscription
+                    {% endif %}
+                </p>
+            </div>
+            {% if current_user.subscription_type == 'premium' %}
+                <div class="text-right">
+                    <div class="text-sm opacity-75">Next Billing</div>
+                    <div class="font-bold">{{ current_user.created_at|format_date }}</div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Pricing Plans -->
+    <div class="grid md:grid-cols-3 gap-8 mb-12">
+        <!-- Free Plan -->
+        <div class="glass-effect p-8 rounded-lg {% if current_user.subscription_type == 'free' %}border-2 border-yellow-400{% endif %}">
+            <div class="text-center mb-6">
+                <h3 class="text-2xl font-bold mb-2">Free Trial</h3>
+                <div class="text-4xl font-bold text-yellow-400 mb-2">1 Hour</div>
+                <div class="text-sm opacity-75">Limited access</div>
+            </div>
+
+            <ul class="space-y-3 mb-8">
+                <li class="flex items-center">
+                    <i class="fas fa-check text-green-400 mr-3"></i>
+                    <span>1 project maximum</span>
+                </li>
+                <li class="flex items-center">
+                    <i class="fas fa-check text-green-400 mr-3"></i>
+                    <span>25 AI employees</span>
+                </li>
+                <li class="flex items-center">
+                    <i class="fas fa-check text-green-400 mr-3"></i>
+                    <span>2.5D virtual office</span>
+                </li>
+                <li class="flex items-center">
+                    <i class="fas fa-check text-green-400 mr-3"></i>
+                    <span>Basic documents</span>
+                </li>
+                <li class="flex items-center">
+                    <i class="fas fa-check text-green-400 mr-3"></i>
+                    <span>Real-time simulation</span>
+                </li>
+                <li class="flex items-center">
+                    <i class="fas fa-check text-green-400 mr-3"></i>
+                    <span>CEO chat interface</span>
+                </li>
+                <li class="flex items-center">
+                    <i class="fas fa-times text-red-400 mr-3"></i>
+                    <span class="opacity-50">Project export</span>
+                </li>
+                <li class="flex items-center">
+                    <i class="fas fa-times text-red-400 mr-3"></i>
+                    <span class="opacity-50">Priority support</span>
+                </li>
+            </ul>
+
+            {% if current_user.subscription_type == 'free' %}
+                <button disabled class="w-full bg-yellow-600 py-3 rounded-lg font-bold cursor-not-allowed">
+                    Current Plan
+                </button>
+            {% else %}
+                <button onclick="showNotification('You already have a premium subscription!', 'info')" 
+                        class="w-full bg-gray-600 hover:bg-gray-700 py-3 rounded-lg font-bold transition-colors">
+                    Downgrade
+                </button>
+            {% endif %}
+        </div>
+
+        <!-- Premium Plan -->
+        <div class="glass-effect p-8 rounded-lg border-2 border-green-400 relative {% if current_user.subscription_type == 'premium' %}border-2 border-green-400{% endif %}">
+            <div class="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                <span class="bg-green-400 text-gray-900 px-4 py-1 rounded-full text-sm font-bold">POPULAR</span>
+            </div>
+
+            <div class="text-center mb-6">
+                <h3 class="text-2xl font-bold mb-2">Premium</h3>
+                <div class="text-4xl font-bold text-green-400 mb-2">$49<span class="text-lg">/month</span></div>
+                <div class="text-sm opacity-75">Unlimited access</div>
+            </div>
+
+            <ul class="space-y-3 mb-8">
+                <li class="flex items-center">
+                    <i class="fas fa-check text-green-400 mr-3"></i>
+                    <span>Unlimited projects</span>
+                </li>
+                <li class="flex items-center">
+                    <i class="fas fa-check text-green-400 mr-3"></i>
+                    <span>25 AI employees per project</span>
+                </li>
+                <li class="flex items-center">
+                    <i class="fas fa-check text-green-400 mr-3"></i>
+                    <span>2.5D virtual office</span>
+                </li>
+                <li class="flex items-center">
+                    <i class="fas fa-check text-green-400 mr-3"></i>
+                    <span>Advanced documents</span>
+                </li>
+                <li class="flex items-center">
+                    <i class="fas fa-check text-green-400 mr-3"></i>
+                    <span>Real-time simulation</span>
+                </li>
+                <li class="flex items-center">
+                    <i class="fas fa-check text-green-400 mr-3"></i>
+                    <span>CEO chat interface</span>
+                </li>
+                <li class="flex items-center">
+                    <i class="fas fa-check text-green-400 mr-3"></i>
+                    <span>Project export (ZIP)</span>
+                </li>
+                <li class="flex items-center">
+                    <i class="fas fa-check text-green-400 mr-3"></i>
+                    <span>Priority support</span>
+                </li>
+                <li class="flex items-center">
+                    <i class="fas fa-check text-green-400 mr-3"></i>
+                    <span>Business plan generator</span>
+                </li>
+                <li class="flex items-center">
+                    <i class="fas fa-check text-green-400 mr-3"></i>
+                    <span>Legal document templates</span>
+                </li>
+            </ul>
+
+            {% if current_user.subscription_type == 'premium' %}
+                <button disabled class="w-full bg-green-600 py-3 rounded-lg font-bold cursor-not-allowed">
+                    Current Plan
+                </button>
+            {% else %}
+                <button onclick="createCheckoutSession()" 
+                        class="w-full bg-green-600 hover:bg-green-700 py-3 rounded-lg font-bold transition-colors">
+                    <i class="fas fa-credit-card mr-2"></i>Subscribe Now
+                </button>
+            {% endif %}
+        </div>
+
+        <!-- Enterprise Plan -->
+        <div class="glass-effect p-8 rounded-lg">
+            <div class="text-center mb-6">
+                <h3 class="text-2xl font-bold mb-2">Enterprise</h3>
+                <div class="text-4xl font-bold text-purple-400 mb-2">Custom</div>
+                <div class="text-sm opacity-75">White-label solution</div>
+            </div>
+
+            <ul class="space-y-3 mb-8">
+                <li class="flex items-center">
+                    <i class="fas fa-check text-green-400 mr-3"></i>
+                    <span>Custom branding</span>
+                </li>
+                <li class="flex items-center">
+                    <i class="fas fa-check text-green-400 mr-3"></i>
+                    <span>Private deployment</span>
+                </li>
+                <li class="flex items-center">
+                    <i class="fas fa-check text-green-400 mr-3"></i>
+                    <span>Custom AI agents</span>
+                </li>
+                <li class="flex items-center">
+                    <i class="fas fa-check text-green-400 mr-3"></i>
+                    <span>API access</span>
+                </li>
+                <li class="flex items-center">
+                    <i class="fas fa-check text-green-400 mr-3"></i>
+                    <span>Priority support</span>
+                </li>
+                <li class="flex items-center">
+                    <i class="fas fa-check text-green-400 mr-3"></i>
+                    <span>Training & onboarding</span>
+                </li>
+                <li class="flex items-center">
+                    <i class="fas fa-check text-green-400 mr-3"></i>
+                    <span>Custom integrations</span>
+                </li>
+                <li class="flex items-center">
+                    <i class="fas fa-check text-green-400 mr-3"></i>
+                    <span>Dedicated account manager</span>
+                </li>
+            </ul>
+
+            <button onclick="showNotification('Enterprise plans available upon request. Please contact sales.', 'info')" 
+                    class="w-full bg-purple-600 hover:bg-purple-700 py-3 rounded-lg font-bold transition-colors">
+                <i class="fas fa-phone mr-2"></i>Contact Sales
+            </button>
+        </div>
+    </div>
+
+    <!-- FAQ Section -->
+    <div class="glass-effect p-8 rounded-lg mb-12">
+        <h2 class="text-2xl font-bold mb-6 text-center">Frequently Asked Questions</h2>
+        <div class="grid md:grid-cols-2 gap-6">
+            <div>
+                <h3 class="font-bold mb-2">What happens after my free trial?</h3>
+                <p class="text-sm opacity-75 mb-4">
+                    After your 1-hour free trial expires, you'll need to subscribe to the Premium plan to continue using the platform. 
+                    Your existing projects will be saved and accessible once you upgrade.
+                </p>
+
+                <h3 class="font-bold mb-2">Can I have multiple projects?</h3>
+                <p class="text-sm opacity-75 mb-4">
+                    The free trial is limited to 1 project. Premium subscribers can create unlimited projects, 
+                    each with its own 25 AI employees and independent simulation.
+                </p>
+
+                <h3 class="font-bold mb-2">How realistic are the AI employees?</h3>
+                <p class="text-sm opacity-75 mb-4">
+                    Each AI employee has a unique personality, expertise, and communication style. 
+                    They work autonomously 24/7, make decisions, and collaborate just like a real development team.
+                </p>
+            </div>
+            <div>
+                <h3 class="font-bold mb-2">What documents are generated?</h3>
+                <p class="text-sm opacity-75 mb-4">
+                    The system generates comprehensive business plans, financial projections, legal documents (Terms of Service, 
+                    Privacy Policy), and complete technical documentation for your software project.
+                </p>
+
+                <h3 class="font-bold mb-2">Can I download my projects?</h3>
+                    <p class="text-sm opacity-75 mb-4">
+                    Yes! Premium subscribers can download complete projects as ZIP files, including source code, 
+                    documentation, business plans, and all generated assets.
+                </p>
+
+                <h3 class="font-bold mb-2">Is my data secure?</h3>
+                <p class="text-sm opacity-75 mb-4">
+                    Absolutely. All data is encrypted, every action is logged with SHA-256 hashing, 
+                    and complete audit trails are maintained for transparency and compliance.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="text-center">
+        <h2 class="text-2xl font-bold mb-4">Ready to Build Your Virtual Company?</h2>
+        <p class="text-lg opacity-90 mb-8">
+            Join thousands of entrepreneurs turning their ideas into profitable businesses with AI-powered development teams.
+        </p>
+        <div class="space-x-4">
+            {% if current_user.subscription_type == 'free' %}
+                <button onclick="createCheckoutSession()" class="bg-green-600 hover:bg-green-700 px-8 py-4 rounded-lg font-bold text-lg transition-colors inline-block">
+                    <i class="fas fa-rocket mr-2"></i>Upgrade to Premium
+                </button>
+            {% endif %}
+            <a href="{{ url_for('dashboard') }}" class="bg-gray-600 hover:bg-gray-700 px-8 py-4 rounded-lg font-bold text-lg transition-colors inline-block">
+                <i class="fas fa-tachometer-alt mr-2"></i>Go to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Trial countdown timer
+{% if current_user.subscription_type == 'free' and current_user.trial_end_date %}
+function updateTrialCountdown() {
+    const trialEnd = new Date('{{ current_user.trial_end_date.isoformat() }}');
+    const now = new Date();
+    const timeDiff = trialEnd - now;
+    
+    if (timeDiff > 0) {
+        const hours = Math.floor(timeDiff / (1000 * 60 * 60));
+        const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+        
+        document.getElementById('trialTimeRemaining').textContent = 
+            `${hours}h ${minutes}m ${seconds}s`;
+    } else {
+        document.getElementById('trialTimeRemaining').textContent = 'Trial expired';
+    }
+}
+
+setInterval(updateTrialCountdown, 1000);
+updateTrialCountdown();
+{% endif %}
+
+function createCheckoutSession() {
+    showNotification('Redirecting to secure checkout...', 'info');
+    
+    // Simulate checkout process
+    setTimeout(() => {
+        showNotification('In a real implementation, this would redirect to Stripe checkout', 'info');
+        
+        // For demo purposes, simulate successful subscription
+        if (confirm('Simulate successful subscription?')) {
+            // This would be handled by the backend in production
+            showNotification('Subscription successful! Welcome to Premium.', 'success');
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+        }
+    }, 2000);
+}
+</script>
+{% endblock %}

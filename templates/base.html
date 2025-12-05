@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Zero-to-One Virtual Software Inc.{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.26.0/plotly.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .hover-lift {
+            transition: all 0.3s ease;
+        }
+        .hover-lift:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        .simulation-viewport {
+            width: 800px;
+            height: 600px;
+            border: 2px solid #4a5568;
+            border-radius: 8px;
+            background: #2d3748;
+            position: relative;
+            overflow: hidden;
+        }
+        .agent-sprite {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            transition: all 0.5s ease;
+        }
+        .speech-bubble {
+            position: absolute;
+            background: white;
+            color: black;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            max-width: 120px;
+            z-index: 100;
+        }
+        .server-rack {
+            position: absolute;
+            width: 60px;
+            height: 120px;
+            background: #2d3748;
+            border: 1px solid #4a5568;
+            border-radius: 4px;
+        }
+        .server-unit {
+            width: 50px;
+            height: 10px;
+            margin: 2px auto;
+            background: #38a169;
+            border-radius: 2px;
+            transition: background-color 0.3s ease;
+        }
+        .led-ticker {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 30px;
+            background: #000;
+            color: #00ff00;
+            font-family: monospace;
+            font-size: 12px;
+            line-height: 30px;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen text-white">
+    <!-- Navigation -->
+    <nav class="glass-effect p-4 mb-8">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <i class="fas fa-rocket text-2xl text-yellow-400"></i>
+                <h1 class="text-xl font-bold">Zero-to-One Virtual Software Inc.</h1>
+            </div>
+            
+            <div class="flex items-center space-x-6">
+                {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('dashboard') }}" class="hover:text-yellow-400 transition-colors">
+                        <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                    </a>
+                    <a href="{{ url_for('subscribe') }}" class="hover:text-yellow-400 transition-colors">
+                        <i class="fas fa-credit-card mr-2"></i>Subscription
+                    </a>
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-user text-yellow-400"></i>
+                        <span>{{ current_user.username }}</span>
+                        <span class="text-sm opacity-75">({{ current_user.subscription_type }})</span>
+                    </div>
+                    <a href="{{ url_for('logout') }}" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded transition-colors">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="hover:text-yellow-400 transition-colors">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Login
+                    </a>
+                    <a href="{{ url_for('register') }}" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded transition-colors">
+                        <i class="fas fa-user-plus mr-2"></i>Register
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="container mx-auto mb-4">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} glass-effect p-4 rounded mb-2">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="glass-effect mt-12 py-6">
+        <div class="container mx-auto text-center">
+            <p class="text-sm opacity-75">
+                © 2025 Zero-to-One Virtual Software Inc. - Building the future, one virtual employee at a time.
+            </p>
+            <p class="text-xs opacity-50 mt-2">
+                All AI agents are autonomous. Every token is logged with SHA-256 hashing for complete auditability.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Global JavaScript functions
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 p-4 rounded-lg z-50 ${
+                type === 'success' ? 'bg-green-600' : 
+                type === 'error' ? 'bg-red-600' : 
+                'bg-blue-600'
+            } text-white`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 5000);
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD'
+            }).format(amount);
+        }
+
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+    </script>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

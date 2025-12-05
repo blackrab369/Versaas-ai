@@ -1,0 +1,30 @@
+# Zero-to-One Virtual Software Inc. Requirements
+# Core dependencies for the virtual company simulation
+
+# GUI and Visualization
+pygame-ce>=2.3.0
+pygame_gui>=0.6.0
+plotly>=5.15.0
+matplotlib>=3.7.0
+
+# Data Processing
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Web Interface
+flask>=2.3.0
+tkinter-tooltip>=2.0.0
+
+# System and Utilities
+psutil>=5.9.0
+requests>=2.31.0
+python-dateutil>=2.8.0
+
+# Optional dependencies for enhanced features
+# winshell>=0.6.2  # Windows-specific
+# pywin32>=306     # Windows-specific
+
+# Development tools
+pytest>=7.4.0
+black>=23.0.0
+flake8>=6.0.0
