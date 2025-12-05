@@ -1,3 +1,4 @@
+import { Analytics } from "@vercel/analytics/next"
 import { streamText } from "ai";
 
 const result = streamText({
