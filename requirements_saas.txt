@@ -37,3 +37,14 @@ flake8>=6.0.0
 # Optional for enhanced features
 # pywin32>=306  # Windows-specific
 # winshell>=0.6.2  # Windows-specific
+
+# Updated package requirements:
+Flask==2.3.3
+Flask-SQLAlchemy==3.0.5
+Flask-Login==0.6.3
+SQLAlchemy==2.0.23
+psycopg2-binary==2.9.9
+gunicorn==21.2.0
+gevent==23.9.1
+python-dotenv==1.0.0
+# (any other deps you import)
