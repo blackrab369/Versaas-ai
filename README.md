@@ -1,4 +1,4 @@
-# Versaas-ai
+# Virsaas-ai
 A virual software company simulator with ai agents
 🚀 Zero-to-One Virtual Software Inc. - Enterprise Platform Complete
 
