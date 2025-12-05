@@ -1,0 +1,67 @@
+{% extends "base_landing.html" %} {% block title %}About Virsaas Inc. – 25 AI
+Employees{% endblock %} {% block content %}
+<section class="hero">
+  <div class="container hero-inner">
+    <div class="hero-text">
+      <h1 class="hero-title">
+        Meet the <span class="accent">2.5D Virtual Office</span>
+      </h1>
+      <p class="hero-sub">
+        25 autonomous AI employees with unique personalities, skills and roles.
+        Watch them architect, code, design, test and ship your SaaS in real
+        time.
+      </p>
+      <div class="hero-cta">
+        <a class="btn-primary btn-large" href="{{ url_for('register') }}"
+          >Create Project</a
+        >
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="feature-grid">
+  <div class="container">
+    <h2>Your Entire Company, Simulated</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>Development</h3>
+        <ul>
+          <li>Principal Full-Stack Architect</li>
+          <li>3× Senior Back-End Engineers</li>
+          <li>2× Senior Front-End Engineers</li>
+          <li>Senior Mobile / Cloud / DevOps / Security</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Design & UX</h3>
+        <ul>
+          <li>Lead UX Researcher</li>
+          <li>Senior UI Designer</li>
+          <li>Technical Writer</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Management & Board</h3>
+        <ul>
+          <li>AI CEO (Alex)</li>
+          <li>COO / CFO / People & Compliance</li>
+          <li>Scrum & Waterfall PMs</li>
+          <li>3× Board Members (VC, CTO, Legal)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="tech-note">
+  <div class="container">
+    <h2>Powered by Zero-to-One Kernel</h2>
+    <p>
+      The same orchestration engine that drives the original landing simulation
+      now powers <strong>Virsaas</strong>. Every message you send to Alex is
+      routed through 25 specialised agents who collaborate asynchronously.
+    </p>
+  </div>
+</section>
+{% endblock %}
