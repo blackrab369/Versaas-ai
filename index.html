@@ -1,235 +1,277 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zero-to-One Virtual Software Inc.</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Virsaas Virtual Software Inc.</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            min-height: 100vh;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
-            text-align: center;
-        }
-        .header {
-            margin-bottom: 3rem;
-        }
-        .logo {
-            font-size: 3rem;
-            font-weight: bold;
-            margin-bottom: 1rem;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-        .subtitle {
-            font-size: 1.2rem;
-            opacity: 0.9;
-            margin-bottom: 2rem;
-        }
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin: 3rem 0;
-        }
-        .feature {
-            background: rgba(255,255,255,0.1);
-            padding: 2rem;
-            border-radius: 10px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-        .feature h3 {
-            color: #ffd700;
-            margin-bottom: 1rem;
-        }
-        .cta {
-            margin: 3rem 0;
-        }
-        .btn {
-            display: inline-block;
-            background: #ffd700;
-            color: #333;
-            padding: 1rem 2rem;
-            text-decoration: none;
-            border-radius: 5px;
-            font-weight: bold;
-            margin: 0.5rem;
-            transition: all 0.3s ease;
-        }
-        .btn:hover {
-            background: #ffed4a;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-        }
-        .stats {
-            display: flex;
-            justify-content: center;
-            gap: 3rem;
-            margin: 2rem 0;
-            flex-wrap: wrap;
-        }
-        .stat {
-            text-align: center;
-        }
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: #ffd700;
-        }
-        .stat-label {
-            font-size: 0.9rem;
-            opacity: 0.8;
-        }
-        .download {
-            margin: 2rem 0;
-            padding: 2rem;
-            background: rgba(255,255,255,0.1);
-            border-radius: 10px;
-            backdrop-filter: blur(10px);
-        }
-        .download h3 {
-            color: #ffd700;
-            margin-bottom: 1rem;
-        }
-        .file-list {
-            text-align: left;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        .file-item {
-            padding: 0.5rem;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-        .file-item:last-child {
-            border-bottom: none;
-        }
-        .file-path {
-            font-family: monospace;
-            color: #ffd700;
-        }
-        .file-desc {
-            font-size: 0.9rem;
-            opacity: 0.8;
-        }
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        min-height: 100vh;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+        text-align: center;
+      }
+      .header {
+        margin-bottom: 3rem;
+      }
+      .logo {
+        font-size: 3rem;
+        font-weight: bold;
+        margin-bottom: 1rem;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+      }
+      .subtitle {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        margin-bottom: 2rem;
+      }
+      .features {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin: 3rem 0;
+      }
+      .feature {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 2rem;
+        border-radius: 10px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+      .feature h3 {
+        color: #ffd700;
+        margin-bottom: 1rem;
+      }
+      .cta {
+        margin: 3rem 0;
+      }
+      .btn {
+        display: inline-block;
+        background: #ffd700;
+        color: #333;
+        padding: 1rem 2rem;
+        text-decoration: none;
+        border-radius: 5px;
+        font-weight: bold;
+        margin: 0.5rem;
+        transition: all 0.3s ease;
+      }
+      .btn:hover {
+        background: #ffed4a;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      }
+      .stats {
+        display: flex;
+        justify-content: center;
+        gap: 3rem;
+        margin: 2rem 0;
+        flex-wrap: wrap;
+      }
+      .stat {
+        text-align: center;
+      }
+      .stat-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #ffd700;
+      }
+      .stat-label {
+        font-size: 0.9rem;
+        opacity: 0.8;
+      }
+      .download {
+        margin: 2rem 0;
+        padding: 2rem;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        backdrop-filter: blur(10px);
+      }
+      .download h3 {
+        color: #ffd700;
+        margin-bottom: 1rem;
+      }
+      .file-list {
+        text-align: left;
+        max-width: 600px;
+        margin: 0 auto;
+      }
+      .file-item {
+        padding: 0.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .file-item:last-child {
+        border-bottom: none;
+      }
+      .file-path {
+        font-family: monospace;
+        color: #ffd700;
+      }
+      .file-desc {
+        font-size: 0.9rem;
+        opacity: 0.8;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <div class="header">
-            <div class="logo">🚀 Zero-to-One Virtual Software Inc.</div>
-            <div class="subtitle">A fully autonomous virtual software company with 25 AI employees</div>
-            <div class="subtitle">Mission: Ship a profitable, million-dollar software product in under 180 days with $0 outside capital</div>
+      <div class="header">
+        <div class="logo">🚀 Zero-to-One Virtual Software Inc.</div>
+        <div class="subtitle">
+          A fully autonomous virtual software company with 25 AI employees
         </div>
+        <div class="subtitle">
+          Mission: Ship a profitable, million-dollar software product in under
+          180 days with $0 outside capital
+        </div>
+      </div>
 
-        <div class="stats">
-            <div class="stat">
-                <div class="stat-number">25</div>
-                <div class="stat-label">AI Employees</div>
-            </div>
-            <div class="stat">
-                <div class="stat-number">180</div>
-                <div class="stat-label">Days to $1M</div>
-            </div>
-            <div class="stat">
-                <div class="stat-number">7</div>
-                <div class="stat-label">Development Phases</div>
-            </div>
-            <div class="stat">
-                <div class="stat-number">2.5D</div>
-                <div class="stat-label">Virtual Office</div>
-            </div>
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-number">25</div>
+          <div class="stat-label">AI Employees</div>
         </div>
+        <div class="stat">
+          <div class="stat-number">180</div>
+          <div class="stat-label">Days to $1M</div>
+        </div>
+        <div class="stat">
+          <div class="stat-number">7</div>
+          <div class="stat-label">Development Phases</div>
+        </div>
+        <div class="stat">
+          <div class="stat-number">2.5D</div>
+          <div class="stat-label">Virtual Office</div>
+        </div>
+      </div>
 
-        <div class="features">
-            <div class="feature">
-                <h3>🏢 Virtual Office</h3>
-                <p>2.5D isometric simulation with real-time agent movement, server status monitoring, and LED ticker displaying company metrics.</p>
-            </div>
-            <div class="feature">
-                <h3>💬 CEO Chat Interface</h3>
-                <p>Natural language communication with the AI CEO to provide product ideas, check status, and guide company strategy.</p>
-            </div>
-            <div class="feature">
-                <h3>📊 Financial Dashboard</h3>
-                <p>Real-time financial analytics with interactive charts, executive summaries, and progress tracking toward the $1M revenue goal.</p>
-            </div>
-            <div class="feature">
-                <h3>🔒 Complete Audit Trail</h3>
-                <p>Every token generated is logged with timestamps, thread IDs, and SHA-256 hashes for full transparency and compliance.</p>
-            </div>
-            <div class="feature">
-                <h3>🎯 Autonomous Workflow</h3>
-                <p>7-phase development process from idea intake through public launch, with automated quality gates and milestone tracking.</p>
-            </div>
-            <div class="feature">
-                <h3>👥 Unique Personalities</h3>
-                <p>Each AI agent has distinct personality traits, communication styles, and specialized expertise for realistic team dynamics.</p>
-            </div>
+      <div class="features">
+        <div class="feature">
+          <h3>🏢 Virtual Office</h3>
+          <p>
+            2.5D isometric simulation with real-time agent movement, server
+            status monitoring, and LED ticker displaying company metrics.
+          </p>
         </div>
+        <div class="feature">
+          <h3>💬 CEO Chat Interface</h3>
+          <p>
+            Natural language communication with the AI CEO to provide product
+            ideas, check status, and guide company strategy.
+          </p>
+        </div>
+        <div class="feature">
+          <h3>📊 Financial Dashboard</h3>
+          <p>
+            Real-time financial analytics with interactive charts, executive
+            summaries, and progress tracking toward the $1M revenue goal.
+          </p>
+        </div>
+        <div class="feature">
+          <h3>🔒 Complete Audit Trail</h3>
+          <p>
+            Every token generated is logged with timestamps, thread IDs, and
+            SHA-256 hashes for full transparency and compliance.
+          </p>
+        </div>
+        <div class="feature">
+          <h3>🎯 Autonomous Workflow</h3>
+          <p>
+            7-phase development process from idea intake through public launch,
+            with automated quality gates and milestone tracking.
+          </p>
+        </div>
+        <div class="feature">
+          <h3>👥 Unique Personalities</h3>
+          <p>
+            Each AI agent has distinct personality traits, communication styles,
+            and specialized expertise for realistic team dynamics.
+          </p>
+        </div>
+      </div>
 
-        <div class="cta">
-            <h2>Ready to Launch Your Virtual Company?</h2>
-            <p>Choose how you want to experience Zero-to-One Virtual Software Inc.</p>
-            <a href="ZTO_Projects/ZTO_Demo/start_zto.bat" class="btn" download>📥 Download Windows Launcher</a>
-            <a href="ZTO_Projects/ZTO_Demo/launch_zto.py" class="btn" download>🐍 Download Python Launcher</a>
-        </div>
+      <div class="cta">
+        <h2>Ready to Launch Your Virtual Company?</h2>
+        <p>
+          Choose how you want to experience Zero-to-One Virtual Software Inc.
+        </p>
+        <a href="ZTO_Projects/ZTO_Demo/start_zto.bat" class="btn" download
+          >📥 Download Windows Launcher</a
+        >
+        <a href="ZTO_Projects/ZTO_Demo/launch_zto.py" class="btn" download
+          >🐍 Download Python Launcher</a
+        >
+      </div>
 
-        <div class="download">
-            <h3>📁 Complete System Package</h3>
-            <p>All files needed to run your virtual software company:</p>
-            <div class="file-list">
-                <div class="file-item">
-                    <div class="file-path">zto_kernel.py</div>
-                    <div class="file-desc">Core orchestrator with 25 AI agents</div>
-                </div>
-                <div class="file-item">
-                    <div class="file-path">_Auditorium/zto_auditorium.py</div>
-                    <div class="file-desc">2.5D virtual office simulation</div>
-                </div>
-                <div class="file-item">
-                    <div class="file-path">ceo_chat.py</div>
-                    <div class="file-desc">CEO communication interface</div>
-                </div>
-                <div class="file-item">
-                    <div class="file-path">launch_zto.py</div>
-                    <div class="file-desc">Main application launcher</div>
-                </div>
-                <div class="file-item">
-                    <div class="file-path">.finance/dashboard_generator.py</div>
-                    <div class="file-desc">Real-time financial analytics</div>
-                </div>
-                <div class="file-item">
-                    <div class="file-path">demo_zto.py</div>
-                    <div class="file-desc">Quick demonstration script</div>
-                </div>
-                <div class="file-item">
-                    <div class="file-path">README.md</div>
-                    <div class="file-desc">Complete documentation</div>
-                </div>
-            </div>
+      <div class="download">
+        <h3>📁 Complete System Package</h3>
+        <p>All files needed to run your virtual software company:</p>
+        <div class="file-list">
+          <div class="file-item">
+            <div class="file-path">zto_kernel.py</div>
+            <div class="file-desc">Core orchestrator with 25 AI agents</div>
+          </div>
+          <div class="file-item">
+            <div class="file-path">_Auditorium/zto_auditorium.py</div>
+            <div class="file-desc">2.5D virtual office simulation</div>
+          </div>
+          <div class="file-item">
+            <div class="file-path">ceo_chat.py</div>
+            <div class="file-desc">CEO communication interface</div>
+          </div>
+          <div class="file-item">
+            <div class="file-path">launch_zto.py</div>
+            <div class="file-desc">Main application launcher</div>
+          </div>
+          <div class="file-item">
+            <div class="file-path">.finance/dashboard_generator.py</div>
+            <div class="file-desc">Real-time financial analytics</div>
+          </div>
+          <div class="file-item">
+            <div class="file-path">demo_zto.py</div>
+            <div class="file-desc">Quick demonstration script</div>
+          </div>
+          <div class="file-item">
+            <div class="file-path">README.md</div>
+            <div class="file-desc">Complete documentation</div>
+          </div>
         </div>
+      </div>
 
-        <div class="cta">
-            <h3>🎯 Mission: Help ZTO Inc. reach $1M revenue in 180 days!</h3>
-            <p>Your virtual team of 25 AI employees is ready to build the next big thing.</p>
-            <a href="ZTO_Projects/ZTO_Demo/demo_zto.py" class="btn">🎮 Try Quick Demo</a>
-            <a href="ZTO_Projects/ZTO_Demo/ZTO_EXPORT_SUMMARY.md" class="btn">📋 View Full Summary</a>
-        </div>
+      <div class="cta">
+        <h3>🎯 Mission: Help ZTO Inc. reach $1M revenue in 180 days!</h3>
+        <p>
+          Your virtual team of 25 AI employees is ready to build the next big
+          thing.
+        </p>
+        <a href="ZTO_Projects/ZTO_Demo/demo_zto.py" class="btn"
+          >🎮 Try Quick Demo</a
+        >
+        <a href="ZTO_Projects/ZTO_Demo/ZTO_EXPORT_SUMMARY.md" class="btn"
+          >📋 View Full Summary</a
+        >
+      </div>
 
-        <div style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.2);">
-            <p style="font-size: 0.9rem; opacity: 0.8;">
-                Built with Pygame-ce, Plotly, and 25 autonomous AI agents.<br>
-                Every token is logged with SHA-256 hashing for complete auditability.
-            </p>
-        </div>
+      <div
+        style="
+          margin-top: 3rem;
+          padding-top: 2rem;
+          border-top: 1px solid rgba(255, 255, 255, 0.2);
+        "
+      >
+        <p style="font-size: 0.9rem; opacity: 0.8">
+          Built with Pygame-ce, Plotly, and 25 autonomous AI agents.<br />
+          Every token is logged with SHA-256 hashing for complete auditability.
+        </p>
+      </div>
     </div>
-</body>
+  </body>
 </html>

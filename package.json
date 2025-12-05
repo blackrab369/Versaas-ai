@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "@vercel/analytics": "^1.6.1",
-    "ai": "^5.0.107"
+    "ai": "^5.0.107",
+    "sqlalchemy": "^2.0.36"
   }
 }
