@@ -62,3 +62,29 @@ function speak(text) {
 document.getElementById("fullscreen").onclick = () => {
   document.documentElement.requestFullscreen?.();
 };
+
+document.getElementById("figma-import").onclick = async () => {
+  const url = document.getElementById("figma-url").value;
+  if (!url) return;
+  const res = await fetch("/api/figma/import", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ url, project_id: "{{ project.project_id }}" }),
+  });
+  const data = await res.json();
+  if (data.success) {
+    addThought(
+      "FIGMA",
+      "Assets downloaded – converting to React components..."
+    );
+  }
+};
+
+socket.on("agent_event", (data) => {
+  if (data.type === "selfie") {
+    const img = document.createElement("img");
+    img.src = "data:image/png;base64," + data.payload.b64;
+    img.className = "selfie";
+    thoughtsPanel.appendChild(img);
+  }
+});

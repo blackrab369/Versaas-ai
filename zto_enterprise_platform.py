@@ -8,6 +8,7 @@ import re
 import os
 import sys
 import json
+import base64
 import hashlib
 import secrets
 import time
@@ -20,6 +21,7 @@ import logging
 import asyncio
 from typing import Dict, List, Optional, Any
 # ---------- new imports ----------
+import whisper, tempfile
 from cryptography.fernet import Fernet          # pip install cryptography
 import jwt                                      # pip install pyjwt
 import redis
@@ -65,6 +67,35 @@ export const POST = async () => {
   return new NextResponse(JSON.stringify({ result }), { status: 200 });
 };
 
+# ---------- PUSH NOTIFICATIONS ----------
+from pywebpush import webpush
+
+VAPID_PRIVATE = os.getenv("VAPID_PRIVATE")
+VAPID_PUBLIC  = os.getenv("VAPID_PUBLIC")
+VAPID_CLAIMS  = {"sub": "mailto:alex@virsaas.app"}
+
+@app.route('/api/push/subscribe', methods=['POST'])
+@login_required
+def push_subscribe():
+    sub = request.json
+    # store sub in DB (simple JSON string)
+    current_user.push_sub = json.dumps(sub)
+    db.session.commit()
+    return jsonify({"success": True})
+
+def send_push_notification(user: User, title: str, body: str):
+    if not user.push_sub:
+        return
+    try:
+        webpush(
+            subscription_data=json.loads(user.push_sub),
+            data=json.dumps({"title": title, "body": body}),
+            vapid_private_key=VAPID_PRIVATE,
+            vapid_claims=VAPID_CLAIMS
+        )
+    except Exception as e:
+        logger.exception("Push failed")
+        
 # ---------- WEBSOCKET REAL-TIME WAR-ROOM ----------
 from flask_socketio import SocketIO, emit, join_room, leave_room
 import eventlet
@@ -115,6 +146,17 @@ else:
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['MAX_CONTENT_LENGTH'] = 32 * 1024 * 1024  # 32MB max file upload
+
+# ---------- WHISPER CEO VOICE RECOGNITION ----------
+@app.route('/api/ceo/voice', methods=['POST'])
+def ceo_voice():
+    audio_bytes = request.get_data()
+    with tempfile.NamedTemporaryFile(suffix='.webm') as tmp:
+        tmp.write(audio_bytes)
+        tmp.flush()
+        model = whisper.load_model("base")
+        result = model.transcribe(tmp.name)
+    return jsonify({"text": result["text"].strip()})
 
 # ---------- KIMI DEV TEAM ----------
 KIMI_DEV_MODEL = "kimi-latest"
@@ -451,7 +493,7 @@ class EnterpriseSimulationManager:
                 'project_id': str(project_id),
                 'initial_idea': initial_idea
             })
-            
+            send_push_notification(project.user, "🚀 SaaS Ready!", f"{project.name} is live at {project.live_url}")
             return orchestrator
     
     def run_simulation_step(self, project_id: str):
@@ -476,6 +518,11 @@ class EnterpriseSimulationManager:
             if agent.role == "DEV-001" and self.should_deploy(project_id):
                 url = self.deploy_project(project_id)
                 agent_event(agent.agent_id, project_id, "deploy", {"url": url})
+                
+            if int(time.time()) % 30 == 0:  # every 30 s
+                mood = "debugging" if agent.status == "busy" else "idle"
+                selfie = generate_agent_selfie(agent.agent_id, mood)
+                agent_event(agent.agent_id, project_id, "selfie", {"b64": selfie, "mood": mood})
         
     def generate_code_patch(self, agent, project_id: str) -> Optional[dict]:
         """Ask Kimi to write / change a file."""
@@ -1446,6 +1493,39 @@ def agency_create():
     db.session.add(agency)
     db.session.flush()
 
+@app.route('/api/figma/import', methods=['POST'])
+@login_required
+def figma_import():
+    data   = request.get_json()
+    url    = data.get("url")
+    project_id = data.get("project_id")
+
+    # parse file key from URL
+    # https://www.figma.com/file/ABC123/MyFile?node-id=0%3A1 → ABC123
+    file_key = url.split('/file/')[1].split('/')[0]
+    token = os.getenv("FIGMA_TOKEN")  # personal access token
+
+    # download components
+    res = httpx.get(
+        f"https://api.figma.com/v1/files/{file_key}/components",
+        headers={"X-Figma-Token": token}
+    )
+    res.raise_for_status()
+    components = res.json()["meta"]["components"]
+
+    # ask Kimi to convert each to React
+    user = current_user
+    for comp in components[:5]:  # limit to 5 for speed
+        name = comp["name"]
+        svg_url = f"https://api.figma.com/v1/images/{file_key}?ids={comp['node_id']}&format=svg"
+        svg_res = httpx.get(svg_url, headers={"X-Figma-Token": token})
+        svg_b64 = base64.b64encode(svg_res.content).decode()
+        prompt = f"Convert this SVG to a React functional component with Tailwind CSS. SVG base64: {svg_b64}"
+        react_code = kimi_generate_code(prompt, decrypt_api_key(user.kimi_key_enc))
+        save_file(Project.query.filter_by(project_id=project_id).first(), f"frontend/src/components/{name}.tsx", react_code)
+        agent_event("FIGMA-001", project_id, "thought", {"text": f"Built {name}.tsx"})
+    return jsonify({"success": True, "count": len(components)})
+    
     AgencyUser(agency_id=agency.id, user_id=current_user.id, role='owner')
     db.session.commit()
 
@@ -1458,6 +1538,25 @@ def agency_create():
     )
     return jsonify({"success": True, "onboard_url": onboard.url})
 
+@app.route('/api/lang', methods=['POST'])
+@login_required
+def set_lang():
+    session["lang"] = request.json.get("lang", "en")
+    return jsonify({"success": True})
+    
+def generate_agent_selfie(agent_id: str, mood: str) -> str:
+    """
+    Returns base64 PNG of agent avatar.
+    mood: 'happy' | 'thinking' | 'debugging' | 'idle' | 'focused' | 'excited' | 'concerned'
+    """
+    openai.api_key = os.getenv("OPENAI_API_KEY")
+    prompt = f"Cyber-punk style avatar, full-body, lego, neon background, {mood}, friendly, futuristic, 4k"
+    response = openai.Image.create(prompt=prompt, n=1, size="256x256")
+    image_url = response['data'][0]['url']
+    # download & base64
+    img_bytes = httpx.get(image_url).content
+    return base64.b64encode(img_bytes).decode()
+    
 # ---------- white-label context ----------
 SUBDOMAIN_RE = re.compile(r"^(?P<sub>[a-z0-9-]{3,60})\.virsaas\.app$", re.I)
 
@@ -1494,6 +1593,47 @@ def format_datetime_filter(date):
     if date:
         return date.strftime('%Y-%m-%d %H:%M:%S')
     return 'N/A'
+
+# ---------- i18n ----------
+LANGUAGES = {
+    "en": {"name": "English", "voice": "Google en-US-Standard-A"},
+    "es": {"name": "Español", "voice": "Google es-ES-Standard-A"},
+    "hi": {"name": "हिन्दी", "voice": "Google hi-IN-Standard-A"},
+    "fr": {"name": "Français", "voice": "Google fr-FR-Standard-A"},
+    "zh": {"name": "中文", "voice": "Google zh-CN-Standard-A"}
+}
+
+def t(key: str, lang: str = None) -> str:
+    """Super-simple in-memory translator."""
+    lang = lang or session.get("lang", "en")
+    table = {
+        "en": {
+            "ceo_greeting": "Hi, I'm Alex – AI CEO of Virsaas.",
+            "thought_building": "Building your SaaS...",
+            "deploy_complete": "Deployment complete!"
+        },
+        "es": {
+            "ceo_greeting": "Hola, soy Alex – CEO de Virsaas.",
+            "thought_building": "Construyendo tu SaaS...",
+            "deploy_complete": "¡Despliegue completo!"
+        },
+        "hi": {
+            "ceo_greeting": "नमस्ते, मैं एलेक्स हूँ – Virsaas का AI CEO.",
+            "thought_building": "आपका SaaS बनाया जा रहा है...",
+            "deploy_complete": "डिप्लॉयमेंट पूरा!"
+        },
+        "fr": {
+            "ceo_greeting": "Bonjour, je suis Alex – PDG IA de Virsaas.",
+            "thought_building": "Construction de votre SaaS...",
+            "deploy_complete": "Déploiement terminé!"
+        },
+        "zh": {
+            "ceo_greeting": "你好，我是 Alex – Virsaas 的 AI CEO。",
+            "thought_building": "正在构建您的 SaaS...",
+            "deploy_complete": "部署完成！"
+        }
+    }
+    return table.get(lang, table["en"]).get(key, key)
 
 # Utility Functions
 def generate_business_plan(project):
