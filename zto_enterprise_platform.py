@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Zero-to-One Virtual Software Inc. - Enterprise Platform
+Virsaas Virtual Software Inc. - Enterprise Platform
 Professional SaaS platform with PostgreSQL, enhanced 2.5D graphics, and deep simulation insights
 """
 
@@ -18,6 +18,13 @@ from functools import wraps
 import logging
 import asyncio
 from typing import Dict, List, Optional, Any
+# ---------- new imports ----------
+from cryptography.fernet import Fernet          # pip install cryptography
+import jwt                                      # pip install pyjwt
+import redis
+import openai                                   # user-supplied keys
+import httpx                                    # for Kimi API
+
 from sqlalchemy.orm import synonym
 
 # Flask imports
@@ -563,6 +570,73 @@ def dashboard():
     
     return render_template('dashboard.html', projects=projects)
 
+#Original: @app.route('/settings/keys', methods=['GET', 'POST'])
+@app.route('/dashboard/keys', methods=['GET', 'POST'])
+@login_required
+def settings_keys():
+    if request.method == 'POST':
+        # encrypt & store
+        current_user.openai_key_enc = encrypt_api_key(request.json.get("openai_key", ""))
+        current_user.kimi_key_enc     = encrypt_api_key(request.json.get("kimi_key", ""))
+        db.session.commit()
+        return jsonify({"success": True})
+
+    # decrypt for display (never log raw keys)
+    return jsonify({
+        "openai_key": "••••••••" if current_user.openai_key_enc else "",
+        "kimi_key":   "••••••••" if current_user.kimi_key_enc else ""
+    })
+
+KIMI_API_BASE = "https://api.kimi-ai.com/v1"   # public endpoint (replace if different)
+
+@app.route('/api/debugger/chat', methods=['POST'])
+@login_required
+def debugger_chat():
+    """
+    User’s own API key → Kimi AI  (or OpenAI fallback)
+    """
+    msg   = (request.json.get("message") or "").strip()[:1000]
+    model = request.json.get("model", "kimi")   # "kimi" | "openai"
+
+    if model == "kimi":
+        key = decrypt_api_key(current_user.kimi_key_enc or "")
+        if not key:
+            return jsonify({"error": "No Kimi API key saved – add one in Settings."}), 400
+        try:
+            resp = httpx.post(
+                f"{KIMI_API_BASE}/chat/completions",
+                headers={"Authorization": f"Bearer {key}"},
+                json={
+                    "model": "kimi-latest",
+                    "messages": [{"role": "user", "content": msg}]
+                },
+                timeout=15
+            )
+            resp.raise_for_status()
+            answer = resp.json()["choices"][0]["message"]["content"]
+        except Exception as e:
+            logger.exception("Kimi API error")
+            return jsonify({"error": "Kimi API error – check key."}), 502
+
+    else:  # openai fallback
+        key = decrypt_api_key(current_user.openai_key_enc or "")
+        if not key:
+            return jsonify({"error": "No OpenAI API key saved – add one in Settings."}), 400
+        try:
+            openai.api_key = key
+            r = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=[{"role": "user", "content": msg}]
+            )
+            answer = r.choices[0].message.content
+        except Exception as e:
+            logger.exception("OpenAI error")
+            return jsonify({"error": "OpenAI API error – check key."}), 502
+
+    report_usage(current_user,1) # log usage for analytics
+    
+    return jsonify({"reply": answer})
+
 @app.route('/create_project', methods=['POST'])
 @login_required
 def create_project():
@@ -857,6 +931,90 @@ def create_checkout_session():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+import stripe
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+
+@app.route('/stripe/create-customer', methods=['POST'])
+@login_required
+def create_stripe_customer():
+    """Called after user clicks 'Subscribe' – returns client-secret for Checkout."""
+    if current_user.stripe_customer:
+        return jsonify({"error": "Customer already exists"}), 400
+
+    customer = stripe.Customer.create(
+        email=current_user.email,
+        name=current_user.username,
+        metadata={"user_id": current_user.id}
+    )
+    stripe_customer = StripeCustomer(
+        user_id=current_user.id,
+        customer_id=customer.id
+    )
+    db.session.add(stripe_customer)
+    db.session.commit()
+
+    checkout = stripe.checkout.Session.create(
+        customer=customer.id,
+        payment_method_types=['card'],
+        mode='subscription',
+        line_items=[{"price": os.getenv("STRIPE_PRICE_METERED"), "quantity": 1}],
+        success_url=url_for('dashboard', _external=True) + "?success=1",
+        cancel_url=url_for('dashboard', _external=True) + "?canceled=1",
+        metadata={"user_id": current_user.id}
+    )
+    return jsonify({"checkout_url": checkout.url})
+
+@app.route('/stripe/webhook', methods=['POST'])
+def stripe_webhook():
+    payload = request.get_data(as_text=True)
+    sig_header = request.headers.get('Stripe-Signature')
+    endpoint_secret = os.getenv("STRIPE_WEBHOOK_SECRET")
+
+    try:
+        event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
+    except stripe.error.SignatureVerificationError:
+        return jsonify({"error": "Bad signature"}), 400
+
+    if event['type'] == 'customer.subscription.created':
+        sub = event['data']['object']
+        user_id = int(sub['metadata']['user_id'])
+        customer = StripeCustomer.query.filter_by(user_id=user_id).first()
+        if customer:
+            customer.subscription_id = sub['id']
+            customer.status = sub['status']
+            db.session.commit()
+
+    if event['type'] == 'customer.subscription.deleted':
+        sub = event['data']['object']
+        customer = StripeCustomer.query.filter_by(subscription_id=sub['id']).first()
+        if customer:
+            customer.status = 'canceled'
+            db.session.commit()
+
+    return jsonify({"received": True})
+
+@app.route('/stripe/portal', methods=['POST'])
+@login_required
+def stripe_portal():
+    if not current_user.stripe_customer or not current_user.stripe_customer.subscription_id:
+        return jsonify({"error": "No active subscription"}), 400
+    session = stripe.billing_portal.Session.create(
+        customer=current_user.stripe_customer.customer_id,
+        return_url=url_for('dashboard', _external=True)
+    )
+    return jsonify({"portal_url": session.url})
+
+@app.route('/cron/usage-sync')
+def cron_usage_sync():
+    # idempotent – only records NOT yet reported
+    unreported = UsageRecord.query.filter_by(stripe_record_id=None).all()
+    for rec in unreported:
+        try:
+            report_usage(rec.user, rec.quantity)   # will fill stripe_record_id
+        except Exception as e:
+            logger.exception("cron usage failed for record %s", rec.id)
+    return jsonify({"synced": len(unreported)})
+
 # Template filters
 @app.template_filter('format_currency')
 def format_currency_filter(amount):
@@ -889,7 +1047,7 @@ def generate_business_plan(project):
 {project.description}
 
 ### Company Overview
-Zero-to-One Virtual Software Inc. is leveraging cutting-edge AI technology to develop {{project.name}}, 
+Virsaas Virtual Software Inc. is leveraging cutting-edge AI technology to develop {{project.name}}, 
 a {project.business_model} solution targeting the {project.industry} sector. Our virtual development 
 team of 25 specialized AI agents is working around the clock to deliver a market-ready product.
 
@@ -1108,7 +1266,7 @@ Our team consists of 25 specialized AI agents with expertise across:
 Our financial projections demonstrate a clear path to profitability and sustainable growth, while our risk mitigation strategies ensure resilience against market challenges. The future of software development is here, and {{project.name}} is leading the charge.
 
 ---
-*This business plan was generated by Zero-to-One Virtual Software Inc.'s AI team*  
+*This business plan was generated by Virsaas Virtual Software Inc.'s AI team*  
 *Generated on: {datetime.now().strftime('%Y-%m-%d at %H:%M:%S')}*  
 *AI Agents Involved: CEO-001, ADMIN-002, DEV-001, UX-001, DOC-001*
 """
@@ -1572,6 +1730,8 @@ def ceo_chat():
     else:
         reply = fallback_reply(msg)
 
+    report_usage(current_user,1) # log usage for analytics
+    
     return jsonify({
         "reply": reply,
         "session_id": sid,
@@ -1589,5 +1749,135 @@ def fallback_reply(msg: str) -> str:
         return "Most MVPs ship in 3-7 simulated days (hours in real life). The team works 24/7."
     return "Interesting. Can you tell me a bit more about the users and the main pain-point you want to solve?"
 
+class User(UserMixin, db.Model):
+    ...
+    # --- email-login ---
+    email_magic_token   = db.Column(db.String(64), unique=True)   # JWT magic link
+    email_token_expiry  = db.Column(db.DateTime)
+    # --- bring-your-own-keys ---
+    openai_key_enc      = db.Column(db.Text)      # encrypted
+    kimi_key_enc        = db.Column(db.Text)      # encrypted
+
+# ---------- crypto helpers ----------
+def _get_fernet() -> Fernet:
+    return Fernet(os.getenv("FERNET_KEY").encode())
+
+def encrypt_api_key(key: str) -> str:
+    if not key: return ""
+    return _get_fernet().encrypt(key.encode()).decode()
+
+def decrypt_api_key(enc: str) -> str:
+    if not enc: return ""
+    return _get_fernet().decrypt(enc.encode()).decode()
+    
+# ---------- email magic-link login ----------
+MAGIC_LINK_JWT_SECRET = os.getenv("MAGIC_LINK_JWT_SECRET") or os.urandom(32).hex()
+MAGIC_EXPIRE_MINUTES  = 15
+
+def generate_magic_token(email: str) -> str:
+    return jwt.encode(
+        {"email": email, "exp": datetime.utcnow() + timedelta(minutes=MAGIC_EXPIRE_MINUTES)},
+        MAGIC_LINK_JWT_SECRET,
+        algorithm="HS256"
+    )
+
+def send_magic_link_email(to_email: str, link: str):
+    """
+    In production swap for SendGrid / AWS SES / Resend.
+    Here we simply log the link so you can copy-paste during dev.
+    """
+    logger.info("MAGIC LINK for %s: %s", to_email, link)
+    # TODO: plug real email sender here
+
+@app.route('/login/email', methods=['POST'])
+def login_email():
+    """Step 1: user submits email → we send magic link"""
+    email = request.json.get("email", "").strip().lower()
+    if not email or "@" not in email:
+        return jsonify({"error": "Invalid email"}), 400
+
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        # create user on-the-fly (passwordless)
+        user = User(
+            username=email.split("@")[0],
+            email=email,
+            password_hash="magic_link",   # not used
+            trial_end_date=datetime.utcnow() + timedelta(days=7)
+        )
+        db.session.add(user)
+        db.session.commit()
+
+    token   = generate_magic_token(email)
+    user.email_magic_token   = token
+    user.email_token_expiry  = datetime.utcnow() + timedelta(minutes=MAGIC_EXPIRE_MINUTES)
+    db.session.commit()
+
+    magic_url = url_for('login_magic', token=token, _external=True)
+    send_magic_link_email(email, magic_url)
+
+    return jsonify({"success": True, "message": "Check your inbox (logs)."})
+
+@app.route('/login/magic/<token>')
+def login_magic(token):
+    """Step 2: user clicks link → we log them in"""
+    try:
+        payload = jwt.decode(token, MAGIC_LINK_JWT_SECRET, algorithms=["HS256"])
+        email = payload["email"]
+    except jwt.InvalidTokenError:
+        flash("Invalid or expired magic link.", "warning")
+        return redirect(url_for('login'))
+
+    user = User.query.filter_by(email=email, email_magic_token=token).first()
+    if not user or (user.email_token_expiry and datetime.utcnow() > user.email_token_expiry):
+        flash("Link expired – please request a new one.", "warning")
+        return redirect(url_for('login'))
+
+    # consume token
+    user.email_magic_token = None
+    user.email_token_expiry = None
+    db.session.commit()
+
+    login_user(user)
+    return redirect(url_for('dashboard'))
+
+# ---------- stripe customer ----------
+class StripeCustomer(db.Model):
+    __tablename__ = 'stripe_customers'
+    id            = db.Column(db.Integer, primary_key=True)
+    user_id       = db.Column(db.Integer, db.ForeignKey('users.id'), unique=True)
+    customer_id   = db.Column(db.String(120), unique=True)   # cus_...
+    subscription_id = db.Column(db.String(120))               # sub_...
+    status          = db.Column(db.String(20), default='active')
+    created_at      = db.Column(db.DateTime, default=datetime.utcnow)
+
+# ---------- usage meter ----------
+class UsageRecord(db.Model):
+    __tablename__ = 'usage_records'
+    id         = db.Column(db.Integer, primary_key=True)
+    user_id    = db.Column(db.Integer, db.ForeignKey('users.id'), index=True)
+    quantity   = db.Column(db.Integer, nullable=False)  # positive int
+    stripe_record_id = db.Column(db.String(120))        # stripe usage_record id
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+# helper: increment user usage + report to Stripe
+def report_usage(user: User, quantity: int):
+    from dateutil.relativedelta import relativedelta
+    if not user.stripe_customer:
+        return                                      # free tier – ignore
+    stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+    try:
+        record = stripe.UsageRecord.create(
+            subscription_item=user.stripe_customer.subscription_item_id,  # we store this below
+            quantity=quantity,
+            timestamp=int(datetime.utcnow().timestamp()),
+            idempotency_key=f"{user.id}-{int(datetime.utcnow().timestamp())}"
+        )
+        db.session.add(UsageRecord(user_id=user.id, quantity=quantity, stripe_record_id=record.id))
+        db.session.commit()
+    except Exception as e:
+        logger.exception("Stripe usage report failed")
+        
+# ---------- run app ----------
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
