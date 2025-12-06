@@ -520,7 +520,7 @@ class EnterpriseSimulationManager:
                 url = self.deploy_project(project_id)
                 agent_event(agent.agent_id, project_id, "deploy", {"url": url})
                 
-            if int(time.time()) % 30 == 0:  # every 30 s
+            if int(time.time()) % 60 == 0:  # every 60 seconds instead of 30
                 mood = "debugging" if agent.status == "busy" else "idle"
                 selfie = generate_agent_selfie(agent.agent_id, agent.rolse , mood)
                 agent_event(agent.agent_id, project_id, "selfie", {"b64": selfie, "mood": mood})
@@ -560,7 +560,7 @@ class EnterpriseSimulationManager:
     
     def should_deploy(self, project_id: str) -> bool:
         # deploy every 30 min simulated (≈ every 30 s real)
-        return int(self.company_state['days_elapsed'] * 48) % 30 == 0
+        return int(self.company_state['days_elapsed'] * 48) % 60 == 0
     
     def deploy_project(self, project_id: str) -> str:
         # reuse existing deploy helper
