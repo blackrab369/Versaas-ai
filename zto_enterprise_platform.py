@@ -2679,11 +2679,23 @@ def puter_pixel_selfie(agent_id: str, role: str, mood: str, primary_color: str) 
     # fallback → static sprite (already in repo)
     return url_for('static', filename=f'/static/img/agents/{agent_id}_{mood}.png')
 
+# ---------- PUTER 32-BIT SPRITE FACTORY ----------
 def puter_sprite_strip(agent_id: str, action: str, primary_color: str) -> str:
     """
     Returns **single PNG URL** containing 30 frames (256×256 each) laid out horizontally.
     action: 'walk' | 'work' | 'idle' | 'debug'
     """
+    
+    cache_key = f"sprite:{agent_id}:{action}:{primary_color}"
+    if redis_client:
+        cached = redis_client.get(cache_key)
+        if cached:
+            return cached
+    url = _fetch_from_puter(agent_id, action, primary_color)
+    if redis_client and url:
+        redis_client.setex(cache_key, 3600, url)  # 1 h
+    return url
+    
     width  = 256 * 30   # 30 frames side-by-side
     height = 256
     prompt = (

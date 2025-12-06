@@ -88,4 +88,34 @@ socket.on("agent_event", (data) => {
     img.alt = data.agent_id + " selfie";
     thoughtsPanel.appendChild(img);
   }
+  if (data.type === "sprite") {
+    renderAgentSprite(data.agent_id, data.payload);
+  }
 });
+
+function renderAgentSprite(agentId, payload) {
+  const url = payload.url;
+  const frames = payload.frames;
+  const strip = new Image();
+  strip.src = url;
+  strip.onload = () => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 256;
+    canvas.height = 256;
+    canvas.className = "sprite-canvas";
+    canvas.id = `sprite-${agentId}`;
+    // replace old canvas if exists
+    const old = document.getElementById(`sprite-${agentId}`);
+    if (old) old.replaceWith(canvas);
+
+    const ctx = canvas.getContext("2d");
+    let frame = 0;
+    const step = () => {
+      ctx.clearRect(0, 0, 256, 256);
+      ctx.drawImage(strip, frame * 256, 0, 256, 256, 0, 0, 256, 256);
+      frame = (frame + 1) % frames;
+      requestAnimationFrame(step);
+    };
+    step();
+  };
+}
