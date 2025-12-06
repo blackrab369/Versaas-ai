@@ -68,6 +68,8 @@ export const POST = async () => {
   return new NextResponse(JSON.stringify({ result }), { status: 200 });
 };
 
+redis_client = None
+
 # ---------- PUSH NOTIFICATIONS ----------
 from pywebpush import webpush
 
@@ -289,6 +291,7 @@ class User(UserMixin, db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
     last_login = db.Column(db.DateTime, index=True)
     profile_data = db.Column(JSONB, default=dict)  # PostgreSQL JSONB for user preferences
+    push_sub = db.Column(db.Text)   # store push subscription JSON
     
     # Relationships
     projects = db.relationship('Project', backref='user', lazy='dynamic', cascade='all, delete-orphan')
@@ -499,6 +502,7 @@ class EnterpriseSimulationManager:
     
     def run_simulation_step(self, project_id: str):
         ...
+        seconds = 60 #timeout between generations
         for agent in self.agents.values():
             # 1. THOUGHT
             thought = agent.current_task or "Idle"
@@ -520,11 +524,17 @@ class EnterpriseSimulationManager:
                 url = self.deploy_project(project_id)
                 agent_event(agent.agent_id, project_id, "deploy", {"url": url})
                 
-            if int(time.time()) % 60 == 0:  # every 60 seconds instead of 30
+            if int(time.time()) % seconds == 0:  # every 60 seconds instead of 30
                 mood = "debugging" if agent.status == "busy" else "idle"
                 selfie = generate_agent_selfie(agent.agent_id, agent.rolse , mood)
                 agent_event(agent.agent_id, project_id, "selfie", {"b64": selfie, "mood": mood})
-        
+                
+            # inside run_simulation_step() – every 30 s
+            if int(time.time()) % seconds == 0:
+                action = "work" if agent.status == "busy" else "idle"
+                strip_url = puter_sprite_strip(agent.agent_id, action, g.agency.primary_color if g.agency else "#00f5d4")
+                agent_event(agent.agent_id, project_id, "sprite", {"url": strip_url, "action": action, "frames": seconds})
+            
     def generate_code_patch(self, agent, project_id: str) -> Optional[dict]:
         """Ask Kimi to write / change a file."""
         user = User.query.join(Project).filter(Project.project_id == project_id).first()
@@ -2263,7 +2273,7 @@ import uuid
 # Upstash Redis (Vercel injects these env vars)
 REDIS_URL   = os.getenv("UPSTASH_REDIS_REST_URL")   # https://.../
 REDIS_TOKEN = os.getenv("UPSTASH_REDIS_REST_TOKEN") # optional if url contains token
-redis_client = None
+
 if REDIS_URL:
     try:
         redis_client = redis.from_url(REDIS_URL, decode_responses=True)
@@ -2628,9 +2638,6 @@ if ref_code:
 # ---------- PUTER 32-BIT PIXEL FACTORY ----------
 PUTER_API = "https://api.puter.com/image/generate"
 
-# ---------- PUTER 32-BIT PIXEL FACTORY ----------
-PUTER_API = "https://api.puter.com/image/generate"
-
 def puter_pixel_selfie(agent_id: str, role: str, mood: str, primary_color: str) -> str:
     """
     Returns **Puter image URL** (32-bit Lego pixel style).
@@ -2671,6 +2678,99 @@ def puter_pixel_selfie(agent_id: str, role: str, mood: str, primary_color: str) 
 
     # fallback → static sprite (already in repo)
     return url_for('static', filename=f'/static/img/agents/{agent_id}_{mood}.png')
+
+def puter_sprite_strip(agent_id: str, action: str, primary_color: str) -> str:
+    """
+    Returns **single PNG URL** containing 30 frames (256×256 each) laid out horizontally.
+    action: 'walk' | 'work' | 'idle' | 'debug'
+    """
+    width  = 256 * 30   # 30 frames side-by-side
+    height = 256
+    prompt = (
+        f"32-bit Lego pixel art sprite sheet, horizontal strip, "
+        f"{action} animation, 30 frames, mini-figure, neon {primary_color} background, "
+        f"no text, {width}x{height}, high contrast, seamless loop"
+    )
+
+    try:
+        resp = httpx.post(
+            PUTER_API,
+            json={"prompt": prompt, "width": width, "height": height},
+            timeout=30
+        )
+        resp.raise_for_status()
+        url = resp.json().get("url")
+        if url:
+            return url  # free Puter CDN URL
+    except Exception as e:
+        logger.warning("Puter sprite strip failed: %s", e)
+
+    # fallback → static strip (already in repo)
+    return url_for('static', filename=f'img/strips/{agent_id}_{action}.png')
+
+# ---------- MISSING HELPERS (ADDED HERE) ----------
+def save_doc(project: Project, filename: str, content: str, binary=False):
+    path = Path(f"user_projects/{project.project_id}/docs") / filename
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if binary:
+        path.write_bytes(content)
+    else:
+        path.write_text(content, encoding='utf-8')
+
+def kimi_generate_code(prompt: str, user_key: str) -> str:
+    """Call Kimi AI for code generation."""
+    try:
+        resp = httpx.post(
+            "https://api.kimi-ai.com/v1/chat/completions",
+            headers={"Authorization": f"Bearer {user_key}"},
+            json={
+                "model": "kimi-latest",
+                "messages": [
+                    {"role": "system", "content": "You are a senior full-stack developer. Return only code. Add comments for clarity."},
+                    {"role": "user", "content": prompt}
+                ],
+                "temperature": 0.2
+            },
+            timeout=30
+        )
+        resp.raise_for_status()
+        return resp.json()["choices"][0]["message"]["content"]
+    except Exception as e:
+        logger.exception("Kimi code gen failed")
+        return f"# Error generating code\n# {e}"
+
+def kimi_test_code(code: str, user_key: str) -> str:
+    prompt = f"Write Jest unit tests for this code:\n\n{code}"
+    return kimi_generate_code(prompt, user_key)
+
+def kimi_debug_code(code: str, error: str, user_key: str) -> str:
+    prompt = f"Fix this error:\n\n{error}\n\nCode:\n\n{code}"
+    return kimi_generate_code(prompt, user_key)
+
+def openai_generate_docs(prompt: str) -> str:
+    openai.api_key = os.getenv("OPENAI_API_KEY")
+    resp = openai.ChatCompletion.create(
+        model="gpt-4",
+        messages=[
+            {"role": "system", "content": "You are a senior product manager / legal advisor. Return professional markdown."},
+            {"role": "user", "content": prompt}
+        ],
+        temperature=0.3
+    )
+    return resp.choices[0].message.content
+
+def openai_generate_contract(project_name: str, client_name: str) -> str:
+    prompt = f"Generate a SaaS development contract between Virsaas AI (developer) and {client_name} (client) for project '{project_name}'. Include scope, payment, IP, confidentiality, termination."
+    return openai_generate_docs(prompt)
+
+def openai_generate_budget(days: int, team_size: int) -> dict:
+    prompt = f"Estimate budget for {days}-day SaaS project with {team_size} AI developers. Return JSON: {{'dev_cost': int, 'infra_cost': int, 'total_usd': int}}"
+    text = openai_generate_docs(prompt)
+    return json.loads(text)
+
+@app.route('/office')
+def office_view():
+    return render_template('office_view.html')
 
 # ---------- run app ----------
 if __name__ == '__main__':
