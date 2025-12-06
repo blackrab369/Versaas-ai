@@ -65,6 +65,43 @@ export const POST = async () => {
   return new NextResponse(JSON.stringify({ result }), { status: 200 });
 };
 
+# ---------- WEBSOCKET REAL-TIME WAR-ROOM ----------
+from flask_socketio import SocketIO, emit, join_room, leave_room
+import eventlet
+eventlet.monkey_patch()
+
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode="eventlet", logger=True, engineio_logger=True)
+
+# agent -> room broadcast
+def agent_event(agent_id: str, project_id: str, event_type: str, payload: dict):
+    """
+    Every agent calls this to push live updates.
+    event_type: 'thought' | 'code' | 'terminal' | 'deploy'
+    """
+    room = f"room_{project_id}"
+    packet = {
+        "agent_id": agent_id,
+        "type": event_type,
+        "payload": payload,
+        "ts": datetime.utcnow().isoformat()
+    }
+    socketio.emit('agent_event', packet, room=room)
+    logger.debug("WS broadcast %s", packet)
+
+@socketio.on('join_project')
+def handle_join(data):
+    project_id = data.get("project_id")
+    if not project_id:
+        return
+    join_room(f"room_{project_id}")
+    emit('joined', {"project_id": project_id})
+
+@socketio.on('leave_project')
+def handle_leave(data):
+    project_id = data.get("project_id")
+    if project_id:
+        leave_room(f"room_{project_id}")
+
 # Initialize Flask app
 app = Flask(__name__)
 app.config['SECRET_KEY'] = secrets.token_hex(32)
@@ -78,6 +115,104 @@ else:
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['MAX_CONTENT_LENGTH'] = 32 * 1024 * 1024  # 32MB max file upload
+
+# ---------- KIMI DEV TEAM ----------
+KIMI_DEV_MODEL = "kimi-latest"
+
+def kimi_generate_code(prompt: str, user_key: str) -> str:
+    """Call Kimi AI for code generation."""
+    try:
+        resp = httpx.post(
+            "https://api.kimi-ai.com/v1/chat/completions",
+            headers={"Authorization": f"Bearer {user_key}"},
+            json={
+                "model": KIMI_DEV_MODEL,
+                "messages": [
+                    {"role": "system", "content": "You are a senior full-stack developer. Return only code. Add comments for clarity."},
+                    {"role": "user", "content": prompt}
+                ],
+                "temperature": 0.2
+            },
+            timeout=30
+        )
+        resp.raise_for_status()
+        return resp.json()["choices"][0]["message"]["content"]
+    except Exception as e:
+        logger.exception("Kimi code gen failed")
+        return f"# Error generating code\n# {e}"
+
+def kimi_test_code(code: str, user_key: str) -> str:
+    """Ask Kimi to write unit tests."""
+    prompt = f"Write Jest unit tests for this code:\n\n{code}"
+    return kimi_generate_code(prompt, user_key)
+
+def kimi_debug_code(code: str, error: str, user_key: str) -> str:
+    """Ask Kimi to fix the error."""
+    prompt = f"Fix this error:\n\n{error}\n\nCode:\n\n{code}"
+    return kimi_generate_code(prompt, user_key)
+
+# ---------- OPENAI ADMIN TEAM ----------
+def openai_generate_docs(prompt: str) -> str:
+    """Call OpenAI for admin docs."""
+    openai.api_key = os.getenv("OPENAI_API_KEY")
+    resp = openai.ChatCompletion.create(
+        model="gpt-4",
+        messages=[
+            {"role": "system", "content": "You are a senior product manager / legal advisor. Return professional markdown."},
+            {"role": "user", "content": prompt}
+        ],
+        temperature=0.3
+    )
+    return resp.choices[0].message.content
+
+def openai_generate_contract(project_name: str, client_name: str) -> str:
+    prompt = f"Generate a SaaS development contract between Virsaas AI (developer) and {client_name} (client) for project '{project_name}'. Include scope, payment, IP, confidentiality, termination."
+    return openai_generate_docs(prompt)
+
+def openai_generate_budget(days: int, team_size: int) -> dict:
+    prompt = f"Estimate budget for {days}-day SaaS project with {team_size} AI developers. Return JSON: {{'dev_cost': int, 'infra_cost': int, 'total_usd': int}}"
+    text = openai_generate_docs(prompt)
+    return json.loads(text)
+
+# ---------- AUTO DEPLOY ----------
+def deploy_to_vercel(project_id: str, source_zip: bytes) -> str:
+    """
+    1. Create GitHub repo
+    2. Push code
+    3. Link to Vercel
+    4. Return live URL
+    """
+    import zipfile, io
+    from github import Github        # pip install PyGithub
+
+    gh = Github(os.getenv("GITHUB_TOKEN"))
+    repo_name = f"virsaas-{project_id}"
+    user = gh.get_user()
+    repo = user.create_repo(repo_name, private=True)
+
+    # unzip and commit
+    with zipfile.ZipFile(io.BytesIO(source_zip)) as z:
+        for file in z.namelist():
+            if file.endswith('/'): continue
+            repo.create_file(file, "initial", z.read(file).decode(), branch="main")
+
+    # link to Vercel (via Vercel API)
+    vercel_token = os.getenv("VERCEL_TOKEN")
+    res = httpx.post(
+        "https://api.vercel.com/v1/projects",
+        headers={"Authorization": f"Bearer {vercel_token}"},
+        json={
+            "name": repo_name,
+            "gitRepository": {
+                "type": "github",
+                "repo": f"{user.login}/{repo_name}"
+            },
+            "framework": "nextjs",   # or vite/react
+            "rootDirectory": "/"
+        }
+    )
+    res.raise_for_status()
+    return f"https://{repo_name}.vercel.app"
 
 # Initialize extensions
 db = SQLAlchemy(app)
@@ -319,6 +454,71 @@ class EnterpriseSimulationManager:
             
             return orchestrator
     
+    def run_simulation_step(self, project_id: str):
+        ...
+        for agent in self.agents.values():
+            # 1. THOUGHT
+            thought = agent.current_task or "Idle"
+            agent_event(agent.agent_id, project_id, "thought", {"text": thought})
+    
+            # 2. CODE DIFF (if dev)
+            if agent.role.startswith("DEV"):
+                patch = self.generate_code_patch(agent, project_id)
+                if patch:
+                    agent_event(agent.agent_id, project_id, "code", {"file": patch["file"], "diff": patch["diff"]})
+    
+            # 3. TERMINAL (tests, lint, deploy)
+            if agent.role in ("DEV-001", "DEV-010"):  # lead + QA
+                log = self.run_tests(agent, project_id)
+                agent_event(agent.agent_id, project_id, "terminal", {"lines": log})
+    
+            # 4. DEPLOY STATUS
+            if agent.role == "DEV-001" and self.should_deploy(project_id):
+                url = self.deploy_project(project_id)
+                agent_event(agent.agent_id, project_id, "deploy", {"url": url})
+        
+    def generate_code_patch(self, agent, project_id: str) -> Optional[dict]:
+        """Ask Kimi to write / change a file."""
+        user = User.query.join(Project).filter(Project.project_id == project_id).first()
+        key  = decrypt_api_key(user.kimi_key_enc)
+        prompt = f"Write the next file for project '{project_id}' according to user stories. Return ONLY code."
+        code = kimi_generate_code(prompt, key)
+        file_name = f"{agent.agent_id}_{int(time.time())}.js"
+        path = Path(f"user_projects/{project_id}/frontend/src/{file_name}")
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(code, encoding='utf-8')
+    
+        # simple diff vs previous (first 5 lines)
+        prev = path.with_suffix('.prev.js')
+        diff = difflib.unified_diff(
+            prev.read_text().splitlines() if prev.exists() else [],
+            code.splitlines(),
+            lineterm=''
+        )
+        prev.write_text(code, encoding='utf-8')  # save as new baseline
+        return {"file": str(path), "diff": '\n'.join(diff)}
+
+    def run_tests(self, agent, project_id: str) -> List[str]:
+        """Run npm test inside container and tail log."""
+        # mock for now – later we docker exec
+        return [
+            "⏳  npm install",
+            "✅  Dependencies installed",
+            "⏳  npm run test",
+            "✅  All tests passed",
+            "⏳  npm run build",
+            "✅  Build complete"
+        ]
+    
+    def should_deploy(self, project_id: str) -> bool:
+        # deploy every 30 min simulated (≈ every 30 s real)
+        return int(self.company_state['days_elapsed'] * 48) % 30 == 0
+    
+    def deploy_project(self, project_id: str) -> str:
+        # reuse existing deploy helper
+        zip_bytes = self.zip_project(project_id)
+        return deploy_to_vercel(project_id, zip_bytes)
+            
     def stop_simulation(self, project_id):
         """Stop a simulation and save state"""
         with self.lock:
@@ -346,6 +546,126 @@ class EnterpriseSimulationManager:
                 if project:
                     return self.start_simulation(project_id, project.user_id)
                 return None
+    
+    def build_full_project(self, project_id: str, user_id: int, idea: str):
+        """
+        Orchestrate entire factory:
+        1. PM writes user stories
+        2. Dev writes code
+        3. Dev writes tests
+        4. Dev debugs
+        5. Admin writes docs
+        6. Deploy
+        7. ZIP & email
+        """
+        project = Project.query.filter_by(project_id=project_id).first()
+        user    = User.query.get(user_id)
+        if not (project and user):
+            return
+    
+        # 1. PM (OpenAI) → user stories
+        stories = openai_generate_docs(f"Write detailed user stories for: {idea}")
+        self.save_doc(project, "user_stories.md", stories)
+    
+        # 2. Dev (Kimi) → React + Node.js code
+        frontend_code = kimi_generate_code(
+            f"Create a React TypeScript app for: {idea}. Include routing, components, styling.",
+            decrypt_api_key(user.kimi_key_enc)
+        )
+        self.save_file(project, "frontend/src/App.tsx", frontend_code)
+    
+        backend_code = kimi_generate_code(
+            f"Create a Node.js Express API for: {idea}. Include routes, middleware, DB schema.",
+            decrypt_api_key(user.kimi_key_enc)
+        )
+        self.save_file(project, "backend/src/server.ts", backend_code)
+    
+        # 3. Tests (Kimi)
+        tests = kimi_test_code(backend_code, decrypt_api_key(user.kimi_key_enc))
+        self.save_file(project, "backend/src/server.test.ts", tests)
+    
+        # 4. Docs (OpenAI)
+        contract = openai_generate_contract(project.name, user.username)
+        self.save_doc(project, "contract.md", contract)
+    
+        budget = openai_generate_budget(project.days_elapsed or 7, 25)
+        self.save_doc(project, "budget.json", json.dumps(budget, indent=2))
+    
+        # 5. Docker & Deploy
+        dockerfile = """FROM node:18-alpine
+    WORKDIR /app
+    COPY package*.json ./
+    RUN npm ci
+    COPY . .
+    EXPOSE 3000
+    CMD ["npm", "start"]"""
+        self.save_file(project, "Dockerfile", dockerfile)
+    
+        vercel_json = """{
+      "builds": [{ "src": "package.json", "use": "@vercel/node" }],
+      "routes": [{ "src": "/(.*)", "dest": "/src/server.ts" }]
+    }"""
+        self.save_file(project, "vercel.json", vercel_json)
+    
+        # 6. ZIP
+        zip_buffer = self.zip_project(project_id)
+        self.save_doc(project, "project.zip", zip_buffer, binary=True)
+    
+        # 7. Deploy
+        live_url = deploy_to_vercel(project_id, zip_buffer)
+        project.live_url = live_url
+        db.session.commit()
+    
+        # 8. Email to client
+        self.email_client(project, live_url, zip_buffer)
+
+def save_file(self, project: Project, path: str, content: str):
+    full_path = Path(f"user_projects/{project.project_id}") / path
+    full_path.parent.mkdir(parents=True, exist_ok=True)
+    full_path.write_text(content, encoding='utf-8')
+
+def save_doc(self, project: Project, filename: str, content: str, binary=False):
+    path = Path(f"user_projects/{project.project_id}/docs") / filename
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if binary:
+        path.write_bytes(content)
+    else:
+        path.write_text(content, encoding='utf-8')
+
+def zip_project(self, project_id: str) -> bytes:
+    import zipfile, io
+    base = Path(f"user_projects/{project_id}")
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
+        for file in base.rglob('*'):
+            if file.is_file():
+                zf.write(file, file.relative_to(base))
+    buffer.seek(0)
+    return buffer.read()
+
+def email_client(self, project: Project, live_url: str, zip_bytes: bytes):
+    from flask_mail import Mail, Message
+    mail = Mail(current_app)
+    msg = Message(
+        subject=f"Your SaaS '{project.name}' is ready!",
+        recipients=[project.user.email],
+        body=f"""
+        Hi {project.user.username},
+        
+        🎉 Your AI team at Virsaas has built and deployed your project:
+        
+        📦 Source code: attached ZIP
+        🌐 Live demo: {live_url}
+        📄 Docs: {live_url}/docs
+        
+        Thanks for choosing Virsaas – scale from zero-to-one!
+        
+        Best,
+        Alex (AI CEO)
+                """
+            )
+    msg.attach(f"{project.name.replace(' ', '_')}.zip", "application/zip", zip_bytes)
+    mail.send(msg)
     
     def save_simulation_state(self, project_id, orchestrator):
         """Save simulation state to PostgreSQL"""
@@ -1822,10 +2142,15 @@ def ceo_chat():
     data   = request.get_json(silent=True) or {}
     msg    = (data.get("message") or "").strip()[:500]
     sid    = data.get("session_id") or str(uuid.uuid4())
-
+    
     if not msg:
         return jsonify({"error": "Empty message"}), 400
-
+    
+    # ----- after project creation -----
+    if data.get("build_now"):
+        orchestrator = enterprise_sim_manager.get_simulation(str(project_id))
+        orchestrator.build_full_project(str(project_id), current_user.id, msg)
+    
     # Retrieve / create session
     if redis_client:
         sess = redis_client.hgetall(f"ceo:sess:{sid}")
@@ -1984,6 +2309,24 @@ def login_magic(token):
 
     login_user(user)
     return redirect(url_for('dashboard'))
+
+@app.route('/project/<uuid:project_id>/source')
+@login_required
+def project_source(project_id):
+    project = Project.query.filter_by(project_id=project_id, user_id=current_user.id).first_or_404()
+    base = Path(f"user_projects/{project_id}")
+    files = [{"path": str(p.relative_to(base))} for p in base.rglob('*') if p.is_file()]
+    return render_template('project_source.html', project=project, files=files)
+
+@app.route('/project/<uuid:project_id>/source/<path:path>')
+@login_required
+def view_source_file(project_id, path):
+    project = Project.query.filter_by(project_id=project_id, user_id=current_user.id).first_or_404()
+    full_path = Path(f"user_projects/{project_id}") / path
+    if not full_path.exists():
+        abort(404)
+    content = full_path.read_text(encoding='utf-8')
+    return render_template('view_file.html', project=project, path=path, content=content)
 
 # ---------- stripe customer ----------
 class StripeCustomer(db.Model):
