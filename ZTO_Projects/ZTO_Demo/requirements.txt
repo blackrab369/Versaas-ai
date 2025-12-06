@@ -1,4 +1,4 @@
-# Zero-to-One Virtual Software Inc. Requirements
+# Virsaas Virtual Software Inc. Requirements
 # Core dependencies for the virtual company simulation
 
 # GUI and Visualization

@@ -1,8 +1,8 @@
-# Zero-to-One Virtual Software Inc. - Enterprise Architecture Documentation
+# Virsaas Virtual Software Inc. - Enterprise Architecture Documentation
 
 ## Executive Summary
 
-Zero-to-One Virtual Software Inc. is a revolutionary SaaS platform that simulates a complete virtual software company with 25 AI employees working to build profitable software products. This enterprise-grade platform leverages advanced technologies including PostgreSQL, Flask, and enhanced 2.5D graphics to deliver a professional business simulation experience.
+Virsaas Virtual Software Inc. is a revolutionary SaaS platform that simulates a complete virtual software company with 25 AI employees working to build profitable software products. This enterprise-grade platform leverages advanced technologies including PostgreSQL, Flask, and enhanced 2.5D graphics to deliver a professional business simulation experience.
 
 ## System Architecture Overview
 
@@ -67,6 +67,7 @@ Zero-to-One Virtual Software Inc. is a revolutionary SaaS platform that simulate
 ## Technology Stack
 
 ### Backend Technologies
+
 - **Flask**: Python web framework for API development
 - **SQLAlchemy**: ORM for database interactions
 - **PostgreSQL**: Primary database with JSONB support
@@ -75,6 +76,7 @@ Zero-to-One Virtual Software Inc. is a revolutionary SaaS platform that simulate
 - **Redis**: Optional caching layer for performance
 
 ### Frontend Technologies
+
 - **HTML5/CSS3**: Modern web standards
 - **Tailwind CSS**: Utility-first CSS framework
 - **JavaScript ES6+**: Modern JavaScript features
@@ -82,6 +84,7 @@ Zero-to-One Virtual Software Inc. is a revolutionary SaaS platform that simulate
 - **Font Awesome**: Professional icon library
 
 ### Infrastructure
+
 - **Docker**: Containerization for deployment
 - **Nginx**: Reverse proxy and static file serving
 - **PostgreSQL**: Enterprise-grade database
@@ -92,6 +95,7 @@ Zero-to-One Virtual Software Inc. is a revolutionary SaaS platform that simulate
 ### Core Tables
 
 #### Users Table
+
 ```sql
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
@@ -105,6 +109,7 @@ CREATE TABLE users (
 ```
 
 #### Projects Table
+
 ```sql
 CREATE TABLE projects (
     id SERIAL PRIMARY KEY,
@@ -126,6 +131,7 @@ CREATE TABLE projects (
 ```
 
 #### Agents Table
+
 ```sql
 CREATE TABLE agents (
     id SERIAL PRIMARY KEY,
@@ -152,6 +158,7 @@ CREATE TABLE agents (
 ## 2.5D Graphics Engine
 
 ### Architecture
+
 The enhanced 2.5D graphics engine provides a professional virtual office environment with:
 
 - **32-bit Color Depth**: Rich, vibrant visual experience
@@ -163,61 +170,65 @@ The enhanced 2.5D graphics engine provides a professional virtual office environ
 ### Core Components
 
 #### Simulation Viewport
+
 ```javascript
 class SimulationViewport {
-    constructor() {
-        this.width = 800;
-        this.height = 600;
-        this.agents = [];
-        this.officeLayout = new OfficeLayout();
-        this.animationEngine = new AnimationEngine();
-    }
-    
-    render() {
-        // Render office background
-        this.renderOfficeBackground();
-        
-        // Render agents
-        this.agents.forEach(agent => this.renderAgent(agent));
-        
-        // Render UI elements
-        this.renderUI();
-        
-        // Update animations
-        this.animationEngine.update();
-    }
+  constructor() {
+    this.width = 800;
+    this.height = 600;
+    this.agents = [];
+    this.officeLayout = new OfficeLayout();
+    this.animationEngine = new AnimationEngine();
+  }
+
+  render() {
+    // Render office background
+    this.renderOfficeBackground();
+
+    // Render agents
+    this.agents.forEach((agent) => this.renderAgent(agent));
+
+    // Render UI elements
+    this.renderUI();
+
+    // Update animations
+    this.animationEngine.update();
+  }
 }
 ```
 
 #### Agent Sprite System
+
 ```javascript
 class AgentSprite {
-    constructor(agentData) {
-        this.id = agentData.agent_id;
-        this.x = agentData.location_x;
-        this.y = agentData.location_y;
-        this.color = this.getRoleColor(agentData.role);
-        this.status = agentData.status;
-        this.thoughtBubble = null;
-    }
-    
-    update() {
-        // Smooth position interpolation
-        this.interpolatePosition();
-        
-        // Update status indicators
-        this.updateStatusIndicator();
-        
-        // Show thought bubbles occasionally
-        this.maybeShowThoughtBubble();
-    }
+  constructor(agentData) {
+    this.id = agentData.agent_id;
+    this.x = agentData.location_x;
+    this.y = agentData.location_y;
+    this.color = this.getRoleColor(agentData.role);
+    this.status = agentData.status;
+    this.thoughtBubble = null;
+  }
+
+  update() {
+    // Smooth position interpolation
+    this.interpolatePosition();
+
+    // Update status indicators
+    this.updateStatusIndicator();
+
+    // Show thought bubbles occasionally
+    this.maybeShowThoughtBubble();
+  }
 }
 ```
 
 ## AI Agent System
 
 ### Agent Architecture
+
 Each of the 25 AI agents has:
+
 - **Unique Personality**: Distinct characteristics and behaviors
 - **Specialized Skills**: Role-specific capabilities and expertise
 - **Decision Making**: Autonomous task selection and execution
@@ -225,6 +236,7 @@ Each of the 25 AI agents has:
 - **Learning**: Performance improvement over time
 
 ### Agent Types
+
 1. **Chief Executive Officer (CEO-001)**: Strategic planning and oversight
 2. **Principal Full-Stack Architect (DEV-001)**: Technical architecture and design
 3. **Lead UX Researcher (UX-001)**: User experience and research
@@ -237,6 +249,7 @@ Each of the 25 AI agents has:
 10. **Senior Security Engineer (SEC-001)**: Security and compliance
 
 ### Decision Making Engine
+
 ```python
 class AgentDecisionEngine:
     def __init__(self, agent):
@@ -248,43 +261,46 @@ class AgentDecisionEngine:
             'medium': 0.5,
             'low': 0.2
         }
-    
+
     def select_next_task(self, available_tasks):
         """Select the next task based on priority and agent capabilities"""
         scored_tasks = []
-        
+
         for task in available_tasks:
             score = self.calculate_task_score(task)
             scored_tasks.append((task, score))
-        
+
         # Sort by score and return highest
         scored_tasks.sort(key=lambda x: x[1], reverse=True)
         return scored_tasks[0][0] if scored_tasks else None
-    
+
     def calculate_task_score(self, task):
         """Calculate task suitability score"""
         priority_score = self.priority_weights.get(task.priority, 0.5)
         skill_match = self.calculate_skill_match(task.required_skills)
         energy_factor = self.agent.energy / 100.0
-        
+
         return priority_score * skill_match * energy_factor
 ```
 
 ## Security Architecture
 
 ### Authentication & Authorization
+
 - **Flask-Login**: Secure session management
 - **Password Hashing**: Werkzeug security utilities
 - **Session Security**: Encrypted session cookies
 - **Role-Based Access**: Subscription tier permissions
 
 ### Data Security
+
 - **PostgreSQL Security**: Encrypted data at rest
 - **Input Validation**: SQL injection prevention
 - **XSS Protection**: Content Security Policy headers
 - **CSRF Protection**: Token-based form validation
 
 ### API Security
+
 - **Rate Limiting**: Request throttling per user
 - **API Authentication**: Token-based access
 - **Input Sanitization**: Data validation and cleaning
@@ -293,18 +309,21 @@ class AgentDecisionEngine:
 ## Performance Optimization
 
 ### Database Optimization
+
 - **Connection Pooling**: Efficient database connections
 - **Query Optimization**: Indexed queries and caching
 - **JSONB Indexes**: Optimized JSON data access
 - **Read Replicas**: Scalable read operations
 
 ### Application Optimization
+
 - **Flask Caching**: Response caching mechanisms
 - **Static File Serving**: Nginx for asset delivery
 - **Compression**: Gzip compression for responses
 - **CDN Integration**: Global content delivery
 
 ### Frontend Optimization
+
 - **Lazy Loading**: Progressive content loading
 - **Image Optimization**: WebP format and compression
 - **Code Splitting**: Modular JavaScript loading
@@ -313,12 +332,14 @@ class AgentDecisionEngine:
 ## Scalability Architecture
 
 ### Horizontal Scaling
+
 - **Load Balancing**: Distribute traffic across instances
 - **Database Sharding**: Partition large datasets
 - **Microservices**: Modular service architecture
 - **Container Orchestration**: Kubernetes deployment
 
 ### Vertical Scaling
+
 - **Resource Monitoring**: CPU, memory, and disk usage
 - **Auto-scaling**: Dynamic resource allocation
 - **Performance Metrics**: Real-time system monitoring
@@ -327,12 +348,14 @@ class AgentDecisionEngine:
 ## Monitoring & Observability
 
 ### Application Monitoring
+
 - **Performance Metrics**: Response times and throughput
 - **Error Tracking**: Exception monitoring and alerting
 - **User Analytics**: Usage patterns and behavior
 - **Business Metrics**: Revenue and conversion tracking
 
 ### Infrastructure Monitoring
+
 - **System Metrics**: CPU, memory, and disk utilization
 - **Database Performance**: Query performance and locks
 - **Network Monitoring**: Latency and packet loss
@@ -341,9 +364,10 @@ class AgentDecisionEngine:
 ## Deployment Architecture
 
 ### Production Environment
+
 ```yaml
 # docker-compose.yml
-version: '3.8'
+version: "3.8"
 services:
   web:
     build: .
@@ -355,7 +379,7 @@ services:
     depends_on:
       - db
       - redis
-    
+
   db:
     image: postgres:13
     environment:
@@ -364,10 +388,10 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    
+
   redis:
     image: redis:6-alpine
-    
+
   nginx:
     image: nginx:alpine
     ports:
@@ -384,6 +408,7 @@ volumes:
 ```
 
 ### Development Environment
+
 - **Local Development**: Flask development server
 - **Database**: Local PostgreSQL instance
 - **Hot Reloading**: Automatic code reloading
@@ -392,12 +417,14 @@ volumes:
 ## Business Model Integration
 
 ### Subscription Tiers
+
 1. **Free Tier**: 1-hour trial with basic features
 2. **Professional**: $29/month - Full simulation access
 3. **Enterprise**: $99/month - Multi-project support
 4. **Custom**: Contact sales for pricing
 
 ### Revenue Streams
+
 - **Subscription Revenue**: Monthly recurring revenue
 - **Professional Services**: Custom implementation
 - **Training & Consulting**: Enterprise training programs
@@ -406,12 +433,14 @@ volumes:
 ## Compliance & Legal
 
 ### Data Protection
+
 - **GDPR Compliance**: European data protection regulations
 - **CCPA Compliance**: California consumer privacy act
 - **Data Retention**: Configurable data retention policies
 - **Privacy by Design**: Built-in privacy protections
 
 ### Legal Documents
+
 - **Terms of Service**: Platform usage terms
 - **Privacy Policy**: Data collection and usage
 - **Customer Agreement**: Service level agreements
@@ -420,6 +449,7 @@ volumes:
 ## Future Enhancements
 
 ### Phase 1: Foundation (Completed)
+
 - ✅ PostgreSQL database integration
 - ✅ Enhanced 2.5D graphics
 - ✅ Character interaction system
@@ -427,6 +457,7 @@ volumes:
 - ✅ Professional UI/UX
 
 ### Phase 2: Advanced Features (Planned)
+
 - 🔄 Real-time collaboration tools
 - 🔄 Advanced analytics dashboard
 - 🔄 Mobile application
@@ -434,6 +465,7 @@ volumes:
 - 🔄 Integration ecosystem
 
 ### Phase 3: Enterprise Scale (Future)
+
 - 🔮 Machine learning optimization
 - 🔮 Blockchain integration
 - 🔮 IoT device support
@@ -442,7 +474,7 @@ volumes:
 
 ## Conclusion
 
-Zero-to-One Virtual Software Inc. represents a paradigm shift in business simulation technology. By combining advanced AI, professional-grade infrastructure, and intuitive user experience, the platform delivers unprecedented value to entrepreneurs, educators, and enterprises.
+Virsaas Virtual Software Inc. represents a paradigm shift in business simulation technology. By combining advanced AI, professional-grade infrastructure, and intuitive user experience, the platform delivers unprecedented value to entrepreneurs, educators, and enterprises.
 
 The enterprise architecture ensures scalability, security, and performance while maintaining the flexibility to adapt to evolving business needs. With comprehensive documentation, robust testing, and continuous improvement processes, the platform is positioned for long-term success and growth.
 
@@ -450,5 +482,5 @@ The enterprise architecture ensures scalability, security, and performance while
 
 **Document Version**: 1.0  
 **Last Updated**: December 2024  
-**Author**: Zero-to-One Virtual Software Inc. Architecture Team  
+**Author**: Virsaas Virtual Software Inc. Architecture Team  
 **Classification**: Enterprise Architecture Documentation

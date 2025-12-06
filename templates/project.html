@@ -1,529 +1,622 @@
-{% extends "base.html" %}
-
-{% block title %}{{ project.name }} - Zero-to-One Virtual Software Inc.{% endblock %}
-
-{% block content %}
+{% extends "base.html" %} {% block title %}{{ project.name }} - Virsaas Virtual
+Software Inc.{% endblock %} {% block content %}
 <!-- Project Header -->
 <div class="mb-8">
-    <div class="flex justify-between items-start mb-6">
-        <div>
-            <h1 class="text-3xl font-bold mb-2">{{ project.name }}</h1>
-            <p class="text-lg opacity-75">{{ project.description }}</p>
-        </div>
-        <div class="flex space-x-2">
-            <span class="px-3 py-1 rounded text-sm font-bold 
-                   {% if project.status == 'active' %}bg-green-600{% else %}bg-gray-600{% endif %}">
-                {{ project.status.title() }}
-            </span>
-            <a href="{{ url_for('dashboard') }}" class="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded text-sm font-bold transition-colors">
-                <i class="fas fa-arrow-left mr-1"></i>Back to Dashboard
-            </a>
-        </div>
+  <div class="flex justify-between items-start mb-6">
+    <div>
+      <h1 class="text-3xl font-bold mb-2">{{ project.name }}</h1>
+      <p class="text-lg opacity-75">{{ project.description }}</p>
     </div>
+    <div class="flex space-x-2">
+      <span
+        class="px-3 py-1 rounded text-sm font-bold {% if project.status == 'active' %}bg-green-600{% else %}bg-gray-600{% endif %}"
+      >
+        {{ project.status.title() }}
+      </span>
+      <a
+        href="{{ url_for('dashboard') }}"
+        class="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded text-sm font-bold transition-colors"
+      >
+        <i class="fas fa-arrow-left mr-1"></i>Back to Dashboard
+      </a>
+    </div>
+  </div>
 
-    <!-- Project Stats -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div class="glass-effect p-4 rounded-lg text-center">
-            <div class="text-2xl font-bold text-green-400 mb-1">{{ project.revenue|format_currency }}</div>
-            <div class="text-sm opacity-75">Revenue</div>
-        </div>
-        <div class="glass-effect p-4 rounded-lg text-center">
-            <div class="text-2xl font-bold text-yellow-400 mb-1">{{ project.days_elapsed }}</div>
-            <div class="text-sm opacity-75">Days Elapsed</div>
-        </div>
-        <div class="glass-effect p-4 rounded-lg text-center">
-            <div class="text-2xl font-bold text-blue-400 mb-1">{{ project.current_phase }}</div>
-            <div class="text-sm opacity-75">Current Phase</div>
-        </div>
-        <div class="glass-effect p-4 rounded-lg text-center">
-            <div class="text-2xl font-bold text-purple-400 mb-1">{{ (project.days_elapsed / 180 * 100)|round(1) }}%</div>
-            <div class="text-sm opacity-75">Progress</div>
-        </div>
+  <!-- Project Stats -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+    <div class="glass-effect p-4 rounded-lg text-center">
+      <div class="text-2xl font-bold text-green-400 mb-1">
+        {{ project.revenue|format_currency }}
+      </div>
+      <div class="text-sm opacity-75">Revenue</div>
     </div>
+    <div class="glass-effect p-4 rounded-lg text-center">
+      <div class="text-2xl font-bold text-yellow-400 mb-1">
+        {{ project.days_elapsed }}
+      </div>
+      <div class="text-sm opacity-75">Days Elapsed</div>
+    </div>
+    <div class="glass-effect p-4 rounded-lg text-center">
+      <div class="text-2xl font-bold text-blue-400 mb-1">
+        {{ project.current_phase }}
+      </div>
+      <div class="text-sm opacity-75">Current Phase</div>
+    </div>
+    <div class="glass-effect p-4 rounded-lg text-center">
+      <div class="text-2xl font-bold text-purple-400 mb-1">
+        {{ (project.days_elapsed / 180 * 100)|round(1) }}%
+      </div>
+      <div class="text-sm opacity-75">Progress</div>
+    </div>
+  </div>
 </div>
 
 <!-- Main Content Grid -->
 <div class="grid lg:grid-cols-3 gap-8">
-    <!-- Virtual Office (2.5D Simulation) -->
-    <div class="lg:col-span-2">
-        <div class="glass-effect p-6 rounded-lg mb-6">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold">
-                    <i class="fas fa-building mr-2 text-yellow-400"></i>Virtual Office
-                </h2>
-                <div class="flex space-x-2">
-                    <button onclick="toggleSimulation()" id="simToggleBtn" class="bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm font-bold transition-colors">
-                        <i class="fas fa-play mr-1"></i>Running
-                    </button>
-                    <button onclick="resetSimulation()" class="bg-yellow-600 hover:bg-yellow-700 px-3 py-1 rounded text-sm font-bold transition-colors">
-                        <i class="fas fa-redo mr-1"></i>Reset
-                    </button>
-                </div>
-            </div>
-            
-            <!-- 2.5D Simulation Viewport -->
-            <div class="simulation-viewport" id="simulationViewport">
-                <!-- Server Racks -->
-                <div class="server-rack" style="top: 50px; right: 20px;">
-                    <div class="server-unit" id="server1"></div>
-                    <div class="server-unit" id="server2"></div>
-                    <div class="server-unit" id="server3"></div>
-                    <div class="server-unit" id="server4"></div>
-                    <div class="server-unit" id="server5"></div>
-                    <div class="server-unit" id="server6"></div>
-                    <div class="server-unit" id="server7"></div>
-                    <div class="server-unit" id="server8"></div>
-                </div>
+  <!-- Virtual Office (2.5D Simulation) -->
+  <div class="lg:col-span-2">
+    <div class="glass-effect p-6 rounded-lg mb-6">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold">
+          <i class="fas fa-building mr-2 text-yellow-400"></i>Virtual Office
+        </h2>
+        <div class="flex space-x-2">
+          <button
+            onclick="toggleSimulation()"
+            id="simToggleBtn"
+            class="bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm font-bold transition-colors"
+          >
+            <i class="fas fa-play mr-1"></i>Running
+          </button>
+          <button
+            onclick="resetSimulation()"
+            class="bg-yellow-600 hover:bg-yellow-700 px-3 py-1 rounded text-sm font-bold transition-colors"
+          >
+            <i class="fas fa-redo mr-1"></i>Reset
+          </button>
+        </div>
+      </div>
 
-                <!-- Agent Sprites -->
-                <div id="agentContainer"></div>
-
-                <!-- LED Ticker -->
-                <div class="led-ticker" id="ledTicker">
-                    <span id="tickerText">ZTO Inc. - Revenue: $0 - Runway: 180 days - Phase: Discovery</span>
-                </div>
-            </div>
-
-            <!-- Simulation Controls -->
-            <div class="mt-4 flex justify-between items-center text-sm">
-                <div class="flex space-x-4">
-                    <span>Speed: <span id="simSpeed">1x</span></span>
-                    <span>Agents: <span id="agentCount">25</span></span>
-                </div>
-                <div class="flex space-x-2">
-                    <button onclick="changeSpeed(0.5)" class="bg-gray-600 hover:bg-gray-700 px-2 py-1 rounded text-xs">0.5x</button>
-                    <button onclick="changeSpeed(1)" class="bg-gray-600 hover:bg-gray-700 px-2 py-1 rounded text-xs">1x</button>
-                    <button onclick="changeSpeed(2)" class="bg-gray-600 hover:bg-gray-700 px-2 py-1 rounded text-xs">2x</button>
-                </div>
-            </div>
+      <!-- 2.5D Simulation Viewport -->
+      <div class="simulation-viewport" id="simulationViewport">
+        <!-- Server Racks -->
+        <div class="server-rack" style="top: 50px; right: 20px">
+          <div class="server-unit" id="server1"></div>
+          <div class="server-unit" id="server2"></div>
+          <div class="server-unit" id="server3"></div>
+          <div class="server-unit" id="server4"></div>
+          <div class="server-unit" id="server5"></div>
+          <div class="server-unit" id="server6"></div>
+          <div class="server-unit" id="server7"></div>
+          <div class="server-unit" id="server8"></div>
         </div>
 
-        <!-- Financial Dashboard -->
-        <div class="glass-effect p-6 rounded-lg">
-            <h2 class="text-xl font-bold mb-4">
-                <i class="fas fa-chart-line mr-2 text-green-400"></i>Financial Dashboard
-            </h2>
-            <div id="financialChart" style="height: 300px;"></div>
+        <!-- Agent Sprites -->
+        <div id="agentContainer"></div>
+
+        <!-- LED Ticker -->
+        <div class="led-ticker" id="ledTicker">
+          <span id="tickerText"
+            >ZTO Inc. - Revenue: $0 - Runway: 180 days - Phase: Discovery</span
+          >
         </div>
+      </div>
+
+      <!-- Simulation Controls -->
+      <div class="mt-4 flex justify-between items-center text-sm">
+        <div class="flex space-x-4">
+          <span>Speed: <span id="simSpeed">1x</span></span>
+          <span>Agents: <span id="agentCount">25</span></span>
+        </div>
+        <div class="flex space-x-2">
+          <button
+            onclick="changeSpeed(0.5)"
+            class="bg-gray-600 hover:bg-gray-700 px-2 py-1 rounded text-xs"
+          >
+            0.5x
+          </button>
+          <button
+            onclick="changeSpeed(1)"
+            class="bg-gray-600 hover:bg-gray-700 px-2 py-1 rounded text-xs"
+          >
+            1x
+          </button>
+          <button
+            onclick="changeSpeed(2)"
+            class="bg-gray-600 hover:bg-gray-700 px-2 py-1 rounded text-xs"
+          >
+            2x
+          </button>
+        </div>
+      </div>
     </div>
 
-    <!-- Sidebar -->
-    <div class="space-y-6">
-        <!-- CEO Chat -->
-        <div class="glass-effect p-6 rounded-lg">
-            <h2 class="text-xl font-bold mb-4">
-                <i class="fas fa-comments mr-2 text-blue-400"></i>CEO Chat
-            </h2>
-            
-            <div class="bg-gray-800 rounded-lg p-4 mb-4 h-64 overflow-y-auto" id="chatMessages">
-                <div class="text-sm text-gray-400 mb-2">Welcome to your virtual company! I'm your AI CEO.</div>
-            </div>
-
-            <div class="flex space-x-2">
-                <input type="text" id="chatInput" placeholder="Message your CEO..." 
-                       class="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:border-yellow-400 focus:outline-none text-sm">
-                <button onclick="sendMessage()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition-colors">
-                    <i class="fas fa-paper-plane"></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- Team Status -->
-        <div class="glass-effect p-6 rounded-lg">
-            <h2 class="text-xl font-bold mb-4">
-                <i class="fas fa-users mr-2 text-purple-400"></i>Team Status
-            </h2>
-            <div id="teamStatus" class="space-y-2 text-sm">
-                <!-- Team status will be populated by JavaScript -->
-            </div>
-        </div>
-
-        <!-- Quick Actions -->
-        <div class="glass-effect p-6 rounded-lg">
-            <h2 class="text-xl font-bold mb-4">
-                <i class="fas fa-bolt mr-2 text-orange-400"></i>Quick Actions
-            </h2>
-            <div class="space-y-2">
-                <button onclick="generateDocuments()" class="w-full bg-green-600 hover:bg-green-700 py-2 px-4 rounded text-sm font-bold transition-colors">
-                    <i class="fas fa-file-alt mr-2"></i>Generate Documents
-                </button>
-                <button onclick="showNotification('Feature coming soon!', 'info')" class="w-full bg-blue-600 hover:bg-blue-700 py-2 px-4 rounded text-sm font-bold transition-colors">
-                    <i class="fas fa-download mr-2"></i>Export Project
-                </button>
-                <button onclick="showNotification('Feature coming soon!', 'info')" class="w-full bg-purple-600 hover:bg-purple-700 py-2 px-4 rounded text-sm font-bold transition-colors">
-                    <i class="fas fa-cog mr-2"></i>Project Settings
-                </button>
-            </div>
-        </div>
-
-        <!-- Recent Activity -->
-        <div class="glass-effect p-6 rounded-lg">
-            <h2 class="text-xl font-bold mb-4">
-                <i class="fas fa-history mr-2 text-cyan-400"></i>Recent Activity
-            </h2>
-            <div id="recentActivity" class="space-y-2 text-sm max-h-48 overflow-y-auto">
-                <!-- Activity will be populated by JavaScript -->
-            </div>
-        </div>
+    <!-- Financial Dashboard -->
+    <div class="glass-effect p-6 rounded-lg">
+      <h2 class="text-xl font-bold mb-4">
+        <i class="fas fa-chart-line mr-2 text-green-400"></i>Financial Dashboard
+      </h2>
+      <div id="financialChart" style="height: 300px"></div>
     </div>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="space-y-6">
+    <!-- CEO Chat -->
+    <div class="glass-effect p-6 rounded-lg">
+      <h2 class="text-xl font-bold mb-4">
+        <i class="fas fa-comments mr-2 text-blue-400"></i>CEO Chat
+      </h2>
+
+      <div
+        class="bg-gray-800 rounded-lg p-4 mb-4 h-64 overflow-y-auto"
+        id="chatMessages"
+      >
+        <div class="text-sm text-gray-400 mb-2">
+          Welcome to your virtual company! I'm your AI CEO.
+        </div>
+      </div>
+
+      <div class="flex space-x-2">
+        <input
+          type="text"
+          id="chatInput"
+          placeholder="Message your CEO..."
+          class="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:border-yellow-400 focus:outline-none text-sm"
+        />
+        <button
+          onclick="sendMessage()"
+          class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition-colors"
+        >
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Team Status -->
+    <div class="glass-effect p-6 rounded-lg">
+      <h2 class="text-xl font-bold mb-4">
+        <i class="fas fa-users mr-2 text-purple-400"></i>Team Status
+      </h2>
+      <div id="teamStatus" class="space-y-2 text-sm">
+        <!-- Team status will be populated by JavaScript -->
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="glass-effect p-6 rounded-lg">
+      <h2 class="text-xl font-bold mb-4">
+        <i class="fas fa-bolt mr-2 text-orange-400"></i>Quick Actions
+      </h2>
+      <div class="space-y-2">
+        <button
+          onclick="generateDocuments()"
+          class="w-full bg-green-600 hover:bg-green-700 py-2 px-4 rounded text-sm font-bold transition-colors"
+        >
+          <i class="fas fa-file-alt mr-2"></i>Generate Documents
+        </button>
+        <button
+          onclick="showNotification('Feature coming soon!', 'info')"
+          class="w-full bg-blue-600 hover:bg-blue-700 py-2 px-4 rounded text-sm font-bold transition-colors"
+        >
+          <i class="fas fa-download mr-2"></i>Export Project
+        </button>
+        <button
+          onclick="showNotification('Feature coming soon!', 'info')"
+          class="w-full bg-purple-600 hover:bg-purple-700 py-2 px-4 rounded text-sm font-bold transition-colors"
+        >
+          <i class="fas fa-cog mr-2"></i>Project Settings
+        </button>
+      </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="glass-effect p-6 rounded-lg">
+      <h2 class="text-xl font-bold mb-4">
+        <i class="fas fa-history mr-2 text-cyan-400"></i>Recent Activity
+      </h2>
+      <div
+        id="recentActivity"
+        class="space-y-2 text-sm max-h-48 overflow-y-auto"
+      >
+        <!-- Activity will be populated by JavaScript -->
+      </div>
+    </div>
+  </div>
 </div>
-{% endblock %}
-
-{% block scripts %}
+{% endblock %} {% block scripts %}
 <script>
-let simulationRunning = true;
-let simulationSpeed = 1;
-let agents = [];
-let messages = [];
+  let simulationRunning = true;
+  let simulationSpeed = 1;
+  let agents = [];
+  let messages = [];
 
-// Initialize simulation
-function initializeSimulation() {
+  // Initialize simulation
+  function initializeSimulation() {
     createAgents();
     startSimulationLoop();
     loadProjectStatus();
-}
+  }
 
-function createAgents() {
-    const agentContainer = document.getElementById('agentContainer');
+  function createAgents() {
+    const agentContainer = document.getElementById("agentContainer");
     const agentPositions = [
-        {x: 100, y: 100, color: '#ff6b6b', name: 'CEO-001'},
-        {x: 200, y: 150, color: '#4ecdc4', name: 'DEV-001'},
-        {x: 300, y: 200, color: '#45b7d1', name: 'UX-001'},
-        {x: 150, y: 250, color: '#96ceb4', name: 'PM-001'},
-        {x: 250, y: 300, color: '#feca57', name: 'DEV-002'},
-        {x: 350, y: 350, color: '#ff9ff3', name: 'ADMIN-002'},
-        {x: 450, y: 400, color: '#54a0ff', name: 'DEV-003'},
-        {x: 550, y: 450, color: '#5f27cd', name: 'UX-002'},
-        {x: 650, y: 500, color: '#00d2d3', name: 'DEV-004'},
-        {x: 750, y: 550, color: '#ff6348', name: 'DEV-005'}
+      { x: 100, y: 100, color: "#ff6b6b", name: "CEO-001" },
+      { x: 200, y: 150, color: "#4ecdc4", name: "DEV-001" },
+      { x: 300, y: 200, color: "#45b7d1", name: "UX-001" },
+      { x: 150, y: 250, color: "#96ceb4", name: "PM-001" },
+      { x: 250, y: 300, color: "#feca57", name: "DEV-002" },
+      { x: 350, y: 350, color: "#ff9ff3", name: "ADMIN-002" },
+      { x: 450, y: 400, color: "#54a0ff", name: "DEV-003" },
+      { x: 550, y: 450, color: "#5f27cd", name: "UX-002" },
+      { x: 650, y: 500, color: "#00d2d3", name: "DEV-004" },
+      { x: 750, y: 550, color: "#ff6348", name: "DEV-005" },
     ];
 
     agentPositions.forEach((pos, index) => {
-        const agent = document.createElement('div');
-        agent.className = 'agent-sprite';
-        agent.style.left = pos.x + 'px';
-        agent.style.top = pos.y + 'px';
-        agent.style.backgroundColor = pos.color;
-        agent.title = pos.name;
-        agent.id = 'agent-' + index;
-        
-        agentContainer.appendChild(agent);
-        agents.push({
-            element: agent,
-            x: pos.x,
-            y: pos.y,
-            targetX: pos.x,
-            targetY: pos.y,
-            name: pos.name,
-            color: pos.color,
-            status: 'idle',
-            speech: null
-        });
-    });
-}
+      const agent = document.createElement("div");
+      agent.className = "agent-sprite";
+      agent.style.left = pos.x + "px";
+      agent.style.top = pos.y + "px";
+      agent.style.backgroundColor = pos.color;
+      agent.title = pos.name;
+      agent.id = "agent-" + index;
 
-function startSimulationLoop() {
+      agentContainer.appendChild(agent);
+      agents.push({
+        element: agent,
+        x: pos.x,
+        y: pos.y,
+        targetX: pos.x,
+        targetY: pos.y,
+        name: pos.name,
+        color: pos.color,
+        status: "idle",
+        speech: null,
+      });
+    });
+  }
+
+  function startSimulationLoop() {
     setInterval(() => {
-        if (simulationRunning) {
-            updateAgents();
-            updateServerRacks();
-            updateTicker();
-            updateTeamStatus();
-            updateRecentActivity();
-        }
+      if (simulationRunning) {
+        updateAgents();
+        updateServerRacks();
+        updateTicker();
+        updateTeamStatus();
+        updateRecentActivity();
+      }
     }, 1000 / simulationSpeed);
-}
+  }
 
-function updateAgents() {
-    agents.forEach(agent => {
-        // Random movement
-        if (Math.random() < 0.01) {
-            agent.targetX = Math.max(50, Math.min(750, agent.x + (Math.random() - 0.5) * 100));
-            agent.targetY = Math.max(50, Math.min(550, agent.y + (Math.random() - 0.5) * 100));
-        }
+  function updateAgents() {
+    agents.forEach((agent) => {
+      // Random movement
+      if (Math.random() < 0.01) {
+        agent.targetX = Math.max(
+          50,
+          Math.min(750, agent.x + (Math.random() - 0.5) * 100)
+        );
+        agent.targetY = Math.max(
+          50,
+          Math.min(550, agent.y + (Math.random() - 0.5) * 100)
+        );
+      }
 
-        // Move towards target
-        const dx = agent.targetX - agent.x;
-        const dy = agent.targetY - agent.y;
-        
-        if (Math.abs(dx) > 1) agent.x += dx * 0.1;
-        if (Math.abs(dy) > 1) agent.y += dy * 0.1;
+      // Move towards target
+      const dx = agent.targetX - agent.x;
+      const dy = agent.targetY - agent.y;
 
-        // Update position
-        agent.element.style.left = agent.x + 'px';
-        agent.element.style.top = agent.y + 'px';
+      if (Math.abs(dx) > 1) agent.x += dx * 0.1;
+      if (Math.abs(dy) > 1) agent.y += dy * 0.1;
 
-        // Random speech bubbles
-        if (Math.random() < 0.005 && !agent.speech) {
-            const messages = [
-                'Working on the sprint...',
-                'Code review completed',
-                'Testing in progress',
-                'Meeting with the team',
-                'Deploying to staging',
-                'Analyzing user feedback',
-                'Optimizing performance'
-            ];
-            
-            agent.speech = messages[Math.floor(Math.random() * messages.length)];
-            showSpeechBubble(agent, agent.speech);
-            
-            setTimeout(() => {
-                hideSpeechBubble(agent);
-                agent.speech = null;
-            }, 3000);
-        }
+      // Update position
+      agent.element.style.left = agent.x + "px";
+      agent.element.style.top = agent.y + "px";
+
+      // Random speech bubbles
+      if (Math.random() < 0.005 && !agent.speech) {
+        const messages = [
+          "Working on the sprint...",
+          "Code review completed",
+          "Testing in progress",
+          "Meeting with the team",
+          "Deploying to staging",
+          "Analyzing user feedback",
+          "Optimizing performance",
+        ];
+
+        agent.speech = messages[Math.floor(Math.random() * messages.length)];
+        showSpeechBubble(agent, agent.speech);
+
+        setTimeout(() => {
+          hideSpeechBubble(agent);
+          agent.speech = null;
+        }, 3000);
+      }
     });
-}
+  }
 
-function showSpeechBubble(agent, text) {
-    const bubble = document.createElement('div');
-    bubble.className = 'speech-bubble';
+  function showSpeechBubble(agent, text) {
+    const bubble = document.createElement("div");
+    bubble.className = "speech-bubble";
     bubble.textContent = text;
-    bubble.style.left = (agent.x + 25) + 'px';
-    bubble.style.top = (agent.y - 30) + 'px';
-    bubble.id = 'speech-' + agent.name;
-    
-    document.getElementById('agentContainer').appendChild(bubble);
-}
+    bubble.style.left = agent.x + 25 + "px";
+    bubble.style.top = agent.y - 30 + "px";
+    bubble.id = "speech-" + agent.name;
 
-function hideSpeechBubble(agent) {
-    const bubble = document.getElementById('speech-' + agent.name);
+    document.getElementById("agentContainer").appendChild(bubble);
+  }
+
+  function hideSpeechBubble(agent) {
+    const bubble = document.getElementById("speech-" + agent.name);
     if (bubble) {
-        bubble.remove();
+      bubble.remove();
     }
-}
+  }
 
-function updateServerRacks() {
+  function updateServerRacks() {
     for (let i = 1; i <= 8; i++) {
-        const server = document.getElementById('server' + i);
-        if (server) {
-            const usage = Math.random() * 100;
-            const intensity = Math.floor(usage * 2.55);
-            server.style.backgroundColor = `rgb(0, ${intensity}, 0)`;
-        }
+      const server = document.getElementById("server" + i);
+      if (server) {
+        const usage = Math.random() * 100;
+        const intensity = Math.floor(usage * 2.55);
+        server.style.backgroundColor = `rgb(0, ${intensity}, 0)`;
+      }
     }
-}
+  }
 
-function updateTicker() {
-    const ticker = document.getElementById('tickerText');
+  function updateTicker() {
+    const ticker = document.getElementById("tickerText");
     const messages = [
-        'ZTO Inc. - Revenue: $' + Math.floor(Math.random() * 100000) + ' - Runway: ' + (180 - Math.floor(Math.random() * 50)) + ' days',
-        'DEV-001: System architecture optimized',
-        'UX-001: User research completed',
-        'PM-001: Sprint planning in progress',
-        'QA-001: Automated tests passing',
-        'CEO-001: Board meeting scheduled'
+      "ZTO Inc. - Revenue: $" +
+        Math.floor(Math.random() * 100000) +
+        " - Runway: " +
+        (180 - Math.floor(Math.random() * 50)) +
+        " days",
+      "DEV-001: System architecture optimized",
+      "UX-001: User research completed",
+      "PM-001: Sprint planning in progress",
+      "QA-001: Automated tests passing",
+      "CEO-001: Board meeting scheduled",
     ];
-    
-    if (Math.random() < 0.1) {
-        ticker.textContent = messages[Math.floor(Math.random() * messages.length)];
-    }
-}
 
-function updateTeamStatus() {
-    const statusContainer = document.getElementById('teamStatus');
+    if (Math.random() < 0.1) {
+      ticker.textContent =
+        messages[Math.floor(Math.random() * messages.length)];
+    }
+  }
+
+  function updateTeamStatus() {
+    const statusContainer = document.getElementById("teamStatus");
     const statuses = [
-        {name: 'CEO-001', status: 'Strategic Planning', color: 'text-green-400'},
-        {name: 'DEV-001', status: 'Code Review', color: 'text-blue-400'},
-        {name: 'UX-001', status: 'User Research', color: 'text-purple-400'},
-        {name: 'PM-001', status: 'Sprint Planning', color: 'text-yellow-400'},
-        {name: 'DEV-002', status: 'Testing', color: 'text-cyan-400'},
-        {name: 'ADMIN-002', status: 'Financial Analysis', color: 'text-orange-400'}
+      {
+        name: "CEO-001",
+        status: "Strategic Planning",
+        color: "text-green-400",
+      },
+      { name: "DEV-001", status: "Code Review", color: "text-blue-400" },
+      { name: "UX-001", status: "User Research", color: "text-purple-400" },
+      { name: "PM-001", status: "Sprint Planning", color: "text-yellow-400" },
+      { name: "DEV-002", status: "Testing", color: "text-cyan-400" },
+      {
+        name: "ADMIN-002",
+        status: "Financial Analysis",
+        color: "text-orange-400",
+      },
     ];
-    
-    statusContainer.innerHTML = statuses.map(agent => 
-        `<div class="flex justify-between">
+
+    statusContainer.innerHTML = statuses
+      .map(
+        (agent) =>
+          `<div class="flex justify-between">
             <span>${agent.name}</span>
             <span class="${agent.color}">${agent.status}</span>
         </div>`
-    ).join('');
-}
+      )
+      .join("");
+  }
 
-function updateRecentActivity() {
-    const activityContainer = document.getElementById('recentActivity');
+  function updateRecentActivity() {
+    const activityContainer = document.getElementById("recentActivity");
     const activities = [
-        'DEV-001 completed code review',
-        'UX-001 finished user interviews',
-        'PM-001 updated sprint backlog',
-        'QA-001 deployed to staging',
-        'CEO-001 scheduled board meeting',
-        'ADMIN-002 generated financial report'
+      "DEV-001 completed code review",
+      "UX-001 finished user interviews",
+      "PM-001 updated sprint backlog",
+      "QA-001 deployed to staging",
+      "CEO-001 scheduled board meeting",
+      "ADMIN-002 generated financial report",
     ];
-    
-    const recentActivities = activities.slice(0, 5).map(activity => 
-        `<div class="text-xs opacity-75">${activity}</div>`
-    ).join('');
-    
+
+    const recentActivities = activities
+      .slice(0, 5)
+      .map((activity) => `<div class="text-xs opacity-75">${activity}</div>`)
+      .join("");
+
     activityContainer.innerHTML = recentActivities;
-}
+  }
 
-function toggleSimulation() {
+  function toggleSimulation() {
     simulationRunning = !simulationRunning;
-    const btn = document.getElementById('simToggleBtn');
-    
+    const btn = document.getElementById("simToggleBtn");
+
     if (simulationRunning) {
-        btn.innerHTML = '<i class="fas fa-pause mr-1"></i>Running';
-        btn.className = 'bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm font-bold transition-colors';
+      btn.innerHTML = '<i class="fas fa-pause mr-1"></i>Running';
+      btn.className =
+        "bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm font-bold transition-colors";
     } else {
-        btn.innerHTML = '<i class="fas fa-play mr-1"></i>Paused';
-        btn.className = 'bg-yellow-600 hover:bg-yellow-700 px-3 py-1 rounded text-sm font-bold transition-colors';
+      btn.innerHTML = '<i class="fas fa-play mr-1"></i>Paused';
+      btn.className =
+        "bg-yellow-600 hover:bg-yellow-700 px-3 py-1 rounded text-sm font-bold transition-colors";
     }
-}
+  }
 
-function resetSimulation() {
-    if (confirm('Reset simulation to initial state?')) {
-        // Reset agent positions
-        agents.forEach(agent => {
-            agent.x = Math.random() * 700 + 50;
-            agent.y = Math.random() * 500 + 50;
-            agent.targetX = agent.x;
-            agent.targetY = agent.y;
-        });
-        
-        showNotification('Simulation reset successfully', 'success');
+  function resetSimulation() {
+    if (confirm("Reset simulation to initial state?")) {
+      // Reset agent positions
+      agents.forEach((agent) => {
+        agent.x = Math.random() * 700 + 50;
+        agent.y = Math.random() * 500 + 50;
+        agent.targetX = agent.x;
+        agent.targetY = agent.y;
+      });
+
+      showNotification("Simulation reset successfully", "success");
     }
-}
+  }
 
-function changeSpeed(speed) {
+  function changeSpeed(speed) {
     simulationSpeed = speed;
-    document.getElementById('simSpeed').textContent = speed + 'x';
-}
+    document.getElementById("simSpeed").textContent = speed + "x";
+  }
 
-function sendMessage() {
-    const input = document.getElementById('chatInput');
+  function sendMessage() {
+    const input = document.getElementById("chatInput");
     const message = input.value.trim();
-    
+
     if (!message) return;
-    
+
     // Add user message to chat
-    addChatMessage('You', message, 'user');
-    input.value = '';
-    
+    addChatMessage("You", message, "user");
+    input.value = "";
+
     // Send to backend
     fetch(`/api/project/{{ project.project_id }}/message`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({message: message})
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ message: message }),
     })
-    .then(response => response.json())
-    .then(data => {
+      .then((response) => response.json())
+      .then((data) => {
         if (data.success) {
-            // Simulate CEO response
-            setTimeout(() => {
-                const responses = [
-                    'Excellent idea! I\'ll coordinate with the team immediately.',
-                    'Thank you for the input. I\'ll add this to our backlog.',
-                    'Great suggestion! Let me discuss this with our architects.',
-                    'I understand. I\'ll have the UX team research this further.',
-                    'Good point. I\'ll schedule a meeting with the development team.'
-                ];
-                
-                const response = responses[Math.floor(Math.random() * responses.length)];
-                addChatMessage('CEO-001', response, 'agent');
-            }, 1000);
-        }
-    })
-    .catch(error => {
-        showNotification('Failed to send message', 'error');
-    });
-}
+          // Simulate CEO response
+          setTimeout(() => {
+            const responses = [
+              "Excellent idea! I'll coordinate with the team immediately.",
+              "Thank you for the input. I'll add this to our backlog.",
+              "Great suggestion! Let me discuss this with our architects.",
+              "I understand. I'll have the UX team research this further.",
+              "Good point. I'll schedule a meeting with the development team.",
+            ];
 
-function addChatMessage(sender, message, type) {
-    const chatContainer = document.getElementById('chatMessages');
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `mb-2 ${type === 'user' ? 'text-right' : 'text-left'}`;
-    
-    const messageClass = type === 'user' ? 'bg-blue-600' : 'bg-gray-600';
+            const response =
+              responses[Math.floor(Math.random() * responses.length)];
+            addChatMessage("CEO-001", response, "agent");
+          }, 1000);
+        }
+      })
+      .catch((error) => {
+        showNotification("Failed to send message", "error");
+      });
+  }
+
+  function addChatMessage(sender, message, type) {
+    const chatContainer = document.getElementById("chatMessages");
+    const messageDiv = document.createElement("div");
+    messageDiv.className = `mb-2 ${
+      type === "user" ? "text-right" : "text-left"
+    }`;
+
+    const messageClass = type === "user" ? "bg-blue-600" : "bg-gray-600";
     messageDiv.innerHTML = `
         <div class="inline-block ${messageClass} px-3 py-2 rounded-lg text-sm max-w-xs">
             <div class="font-bold text-xs opacity-75">${sender}</div>
             <div>${message}</div>
         </div>
     `;
-    
+
     chatContainer.appendChild(messageDiv);
     chatContainer.scrollTop = chatContainer.scrollHeight;
-}
+  }
 
-function generateDocuments() {
-    showNotification('Generating business documents...', 'info');
-    
+  function generateDocuments() {
+    showNotification("Generating business documents...", "info");
+
     fetch(`/api/project/{{ project.project_id }}/generate_documents`, {
-        method: 'POST'
+      method: "POST",
     })
-    .then(response => response.json())
-    .then(data => {
+      .then((response) => response.json())
+      .then((data) => {
         if (data.success) {
-            showNotification('Documents generated successfully! Check the output folder.', 'success');
+          showNotification(
+            "Documents generated successfully! Check the output folder.",
+            "success"
+          );
         } else {
-            showNotification(data.error || 'Failed to generate documents', 'error');
+          showNotification(
+            data.error || "Failed to generate documents",
+            "error"
+          );
         }
-    })
-    .catch(error => {
-        showNotification('Failed to generate documents', 'error');
-    });
-}
+      })
+      .catch((error) => {
+        showNotification("Failed to generate documents", "error");
+      });
+  }
 
-function loadProjectStatus() {
+  function loadProjectStatus() {
     // Load initial project data
     fetch(`/api/project/{{ project.project_id }}/status`)
-    .then(response => response.json())
-    .then(data => {
+      .then((response) => response.json())
+      .then((data) => {
         updateFinancialChart(data.company_state);
-    })
-    .catch(error => {
-        console.error('Failed to load project status:', error);
-    });
-}
+      })
+      .catch((error) => {
+        console.error("Failed to load project status:", error);
+      });
+  }
 
-function updateFinancialChart(companyState) {
+  function updateFinancialChart(companyState) {
     const trace1 = {
-        x: [0, 30, 60, 90, 120, 150, 180],
-        y: [0, 10000, 50000, 150000, 300000, 600000, 1000000],
-        type: 'scatter',
-        mode: 'lines+markers',
-        name: 'Target Revenue',
-        line: {color: '#10b981', width: 2}
+      x: [0, 30, 60, 90, 120, 150, 180],
+      y: [0, 10000, 50000, 150000, 300000, 600000, 1000000],
+      type: "scatter",
+      mode: "lines+markers",
+      name: "Target Revenue",
+      line: { color: "#10b981", width: 2 },
     };
-    
-    const trace2 = {
-        x: [0, companyState.days_elapsed],
-        y: [0, companyState.revenue],
-        type: 'scatter',
-        mode: 'lines+markers',
-        name: 'Actual Revenue',
-        line: {color: '#f59e0b', width: 3}
-    };
-    
-    const layout = {
-        title: 'Revenue Progress',
-        xaxis: {title: 'Days'},
-        yaxis: {title: 'Revenue ($)'},
-        paper_bgcolor: 'rgba(0,0,0,0)',
-        plot_bgcolor: 'rgba(0,0,0,0)',
-        font: {color: 'white'},
-        showlegend: true
-    };
-    
-    Plotly.newPlot('financialChart', [trace1, trace2], layout, {responsive: true});
-}
 
-// Initialize everything when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    initializeSimulation();
-    
-    // Chat input enter key
-    document.getElementById('chatInput').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            sendMessage();
-        }
+    const trace2 = {
+      x: [0, companyState.days_elapsed],
+      y: [0, companyState.revenue],
+      type: "scatter",
+      mode: "lines+markers",
+      name: "Actual Revenue",
+      line: { color: "#f59e0b", width: 3 },
+    };
+
+    const layout = {
+      title: "Revenue Progress",
+      xaxis: { title: "Days" },
+      yaxis: { title: "Revenue ($)" },
+      paper_bgcolor: "rgba(0,0,0,0)",
+      plot_bgcolor: "rgba(0,0,0,0)",
+      font: { color: "white" },
+      showlegend: true,
+    };
+
+    Plotly.newPlot("financialChart", [trace1, trace2], layout, {
+      responsive: true,
     });
-    
+  }
+
+  // Initialize everything when page loads
+  document.addEventListener("DOMContentLoaded", function () {
+    initializeSimulation();
+
+    // Chat input enter key
+    document
+      .getElementById("chatInput")
+      .addEventListener("keypress", function (e) {
+        if (e.key === "Enter") {
+          sendMessage();
+        }
+      });
+
     // Auto-refresh every 10 seconds
     setInterval(loadProjectStatus, 10000);
-});
+  });
 </script>
 {% endblock %}

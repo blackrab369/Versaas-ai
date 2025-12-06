@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Zero-to-One Virtual Software Inc. - Main Launcher
+Virsaas Virtual Software Inc. - Main Launcher
 Launches the complete virtual company simulation
 """
 
@@ -89,7 +89,7 @@ def create_windows_shortcut():
 def show_menu():
     """Show interactive menu"""
     print("\n" + "="*60)
-    print("Zero-to-One Virtual Software Inc. - Main Menu")
+    print("Virsaas Virtual Software Inc. - Main Menu")
     print("="*60)
     print("1. Launch 2.5D Auditorium (Virtual Office)")
     print("2. Launch CEO Chat Interface")
@@ -144,14 +144,14 @@ def launch_all():
 
 def main():
     """Main entry point"""
-    parser = argparse.ArgumentParser(description="Launch Zero-to-One Virtual Software Inc.")
+    parser = argparse.ArgumentParser(description="Launch Virsaas Virtual Software Inc.")
     parser.add_argument('--mode', choices=['menu', 'auditorium', 'chat', 'dashboard', 'all'], 
                        default='menu', help='Launch mode')
     parser.add_argument('--no-shortcut', action='store_true', help='Skip Windows shortcut creation')
     
     args = parser.parse_args()
     
-    print("Zero-to-One Virtual Software Inc. - Virtual Company Launcher")
+    print("Virsaas Virtual Software Inc. - Virtual Company Launcher")
     print("="*65)
     print("Initializing virtual software company with 25 AI employees...")
     

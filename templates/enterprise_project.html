@@ -1,1512 +1,1761 @@
-{% extends "base.html" %}
-
-{% block title %}{{ project.name }} - Zero-to-One Virtual Software Inc.{% endblock %}
-
-{% block content %}
+{% extends "base.html" %} {% block title %}{{ project.name }} - Virsaas Virtual
+Software Inc.{% endblock %} {% block content %}
 <!-- Project Header -->
 <div class="mb-8">
-    <div class="flex justify-between items-start mb-6">
-        <div>
-            <h1 class="text-4xl font-bold mb-2">{{ project.name }}</h1>
-            <p class="text-xl opacity-75">{{ project.description }}</p>
-            <div class="flex items-center space-x-4 mt-4 text-sm">
-                <span class="px-3 py-1 rounded-full bg-blue-600 text-white font-bold">
-                    {{ project.industry }}
-                </span>
-                <span class="px-3 py-1 rounded-full bg-green-600 text-white font-bold">
-                    {{ project.business_model }}
-                </span>
-                <span class="px-3 py-1 rounded-full bg-purple-600 text-white font-bold">
-                    {{ project.target_market }}
-                </span>
-            </div>
-        </div>
-        <div class="flex space-x-2">
-            <span class="px-3 py-1 rounded text-sm font-bold 
-                   {% if project.status == 'active' %}bg-green-600{% else %}bg-gray-600{% endif %}">
-                {{ project.status.title() }}
-            </span>
-            <a href="{{ url_for('dashboard') }}" class="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded text-sm font-bold transition-colors">
-                <i class="fas fa-arrow-left mr-1"></i>Dashboard
-            </a>
-        </div>
+  <div class="flex justify-between items-start mb-6">
+    <div>
+      <h1 class="text-4xl font-bold mb-2">{{ project.name }}</h1>
+      <p class="text-xl opacity-75">{{ project.description }}</p>
+      <div class="flex items-center space-x-4 mt-4 text-sm">
+        <span class="px-3 py-1 rounded-full bg-blue-600 text-white font-bold">
+          {{ project.industry }}
+        </span>
+        <span class="px-3 py-1 rounded-full bg-green-600 text-white font-bold">
+          {{ project.business_model }}
+        </span>
+        <span class="px-3 py-1 rounded-full bg-purple-600 text-white font-bold">
+          {{ project.target_market }}
+        </span>
+      </div>
     </div>
+    <div class="flex space-x-2">
+      <span
+        class="px-3 py-1 rounded text-sm font-bold {% if project.status == 'active' %}bg-green-600{% else %}bg-gray-600{% endif %}"
+      >
+        {{ project.status.title() }}
+      </span>
+      <a
+        href="{{ url_for('dashboard') }}"
+        class="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded text-sm font-bold transition-colors"
+      >
+        <i class="fas fa-arrow-left mr-1"></i>Dashboard
+      </a>
+    </div>
+  </div>
 
-    <!-- Project Stats -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div class="glass-effect p-4 rounded-lg text-center hover-lift">
-            <div class="text-3xl font-bold text-green-400 mb-1">{{ project.revenue|format_currency }}</div>
-            <div class="text-sm opacity-75">Revenue</div>
-            <div class="text-xs mt-1 text-green-300">+12% this week</div>
-        </div>
-        <div class="glass-effect p-4 rounded-lg text-center hover-lift">
-            <div class="text-3xl font-bold text-yellow-400 mb-1">{{ project.days_elapsed }}</div>
-            <div class="text-sm opacity-75">Days Elapsed</div>
-            <div class="text-xs mt-1 text-yellow-300">{{ (project.days_elapsed / 180 * 100)|round(1) }}% complete</div>
-        </div>
-        <div class="glass-effect p-4 rounded-lg text-center hover-lift">
-            <div class="text-3xl font-bold text-blue-400 mb-1">{{ project.current_phase }}</div>
-            <div class="text-sm opacity-75">Current Phase</div>
-            <div class="text-xs mt-1 text-blue-300">On track</div>
-        </div>
-        <div class="glass-effect p-4 rounded-lg text-center hover-lift">
-            <div class="text-3xl font-bold text-purple-400 mb-1">25</div>
-            <div class="text-sm opacity-75">AI Employees</div>
-            <div class="text-xs mt-1 text-purple-300">{{ agents|length }} active</div>
-        </div>
+  <!-- Project Stats -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+    <div class="glass-effect p-4 rounded-lg text-center hover-lift">
+      <div class="text-3xl font-bold text-green-400 mb-1">
+        {{ project.revenue|format_currency }}
+      </div>
+      <div class="text-sm opacity-75">Revenue</div>
+      <div class="text-xs mt-1 text-green-300">+12% this week</div>
     </div>
+    <div class="glass-effect p-4 rounded-lg text-center hover-lift">
+      <div class="text-3xl font-bold text-yellow-400 mb-1">
+        {{ project.days_elapsed }}
+      </div>
+      <div class="text-sm opacity-75">Days Elapsed</div>
+      <div class="text-xs mt-1 text-yellow-300">
+        {{ (project.days_elapsed / 180 * 100)|round(1) }}% complete
+      </div>
+    </div>
+    <div class="glass-effect p-4 rounded-lg text-center hover-lift">
+      <div class="text-3xl font-bold text-blue-400 mb-1">
+        {{ project.current_phase }}
+      </div>
+      <div class="text-sm opacity-75">Current Phase</div>
+      <div class="text-xs mt-1 text-blue-300">On track</div>
+    </div>
+    <div class="glass-effect p-4 rounded-lg text-center hover-lift">
+      <div class="text-3xl font-bold text-purple-400 mb-1">25</div>
+      <div class="text-sm opacity-75">AI Employees</div>
+      <div class="text-xs mt-1 text-purple-300">{{ agents|length }} active</div>
+    </div>
+  </div>
 </div>
 
 <!-- Main Content Grid -->
 <div class="grid lg:grid-cols-3 gap-8">
-    <!-- Virtual Office (2.5D Simulation) -->
-    <div class="lg:col-span-2">
-        <div class="glass-effect p-6 rounded-lg mb-6">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-2xl font-bold">
-                    <i class="fas fa-building mr-2 text-yellow-400"></i>Virtual Office
-                    <span class="text-sm font-normal opacity-75 ml-2">32-bit Enhanced Graphics</span>
-                </h2>
-                <div class="flex space-x-2">
-                    <button onclick="toggleSimulation()" id="simToggleBtn" class="bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm font-bold transition-colors">
-                        <i class="fas fa-play mr-1"></i>Running
-                    </button>
-                    <button onclick="resetSimulation()" class="bg-yellow-600 hover:bg-yellow-700 px-3 py-1 rounded text-sm font-bold transition-colors">
-                        <i class="fas fa-redo mr-1"></i>Reset
-                    </button>
-                    <button onclick="showOfficeOverview()" class="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-sm font-bold transition-colors">
-                        <i class="fas fa-eye mr-1"></i>Overview
-                    </button>
-                </div>
-            </div>
-            
-            <!-- 2.5D Simulation Viewport -->
-            <div class="simulation-viewport" id="simulationViewport">
-                <!-- Enhanced Office Layout -->
-                <div class="office-background">
-                    <!-- North Wall -->
-                    <div class="wall-horizontal" style="top: 0; left: 0; right: 0; height: 20px;"></div>
-                    
-                    <!-- South Wall -->
-                    <div class="wall-horizontal" style="bottom: 30px; left: 0; right: 0; height: 20px;"></div>
-                    
-                    <!-- West Wall -->
-                    <div class="wall-vertical" style="left: 0; top: 20px; bottom: 50px; width: 20px;"></div>
-                    
-                    <!-- East Wall -->
-                    <div class="wall-vertical" style="right: 0; top: 20px; bottom: 50px; width: 20px;"></div>
-                    
-                    <!-- Boardroom -->
-                    <div class="room" style="left: 300px; top: 20px; width: 200px; height: 100px; background: rgba(255, 215, 0, 0.1); border: 2px solid #ffd700;">
-                        <div class="room-label">Boardroom</div>
-                    </div>
-                    
-                    <!-- Development Area -->
-                    <div class="room" style="left: 100px; top: 200px; width: 600px; height: 300px; background: rgba(100, 149, 237, 0.1); border: 2px solid #6495ed;">
-                        <div class="room-label">Development Floor</div>
-                    </div>
-                    
-                    <!-- Server Room -->
-                    <div class="room" style="right: 30px; top: 100px; width: 80px; height: 120px; background: rgba(255, 69, 0, 0.1); border: 2px solid #ff4500;">
-                        <div class="room-label">Server Room</div>
-                    </div>
-                </div>
+  <!-- Virtual Office (2.5D Simulation) -->
+  <div class="lg:col-span-2">
+    <div class="glass-effect p-6 rounded-lg mb-6">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-2xl font-bold">
+          <i class="fas fa-building mr-2 text-yellow-400"></i>Virtual Office
+          <span class="text-sm font-normal opacity-75 ml-2"
+            >32-bit Enhanced Graphics</span
+          >
+        </h2>
+        <div class="flex space-x-2">
+          <button
+            onclick="toggleSimulation()"
+            id="simToggleBtn"
+            class="bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm font-bold transition-colors"
+          >
+            <i class="fas fa-play mr-1"></i>Running
+          </button>
+          <button
+            onclick="resetSimulation()"
+            class="bg-yellow-600 hover:bg-yellow-700 px-3 py-1 rounded text-sm font-bold transition-colors"
+          >
+            <i class="fas fa-redo mr-1"></i>Reset
+          </button>
+          <button
+            onclick="showOfficeOverview()"
+            class="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-sm font-bold transition-colors"
+          >
+            <i class="fas fa-eye mr-1"></i>Overview
+          </button>
+        </div>
+      </div>
 
-                <!-- Server Racks -->
-                <div class="server-rack" style="top: 120px; right: 40px;">
-                    <div class="server-unit" id="server1" title="CPU: 45% | Memory: 62%"></div>
-                    <div class="server-unit" id="server2" title="CPU: 78% | Memory: 85%"></div>
-                    <div class="server-unit" id="server3" title="CPU: 23% | Memory: 34%"></div>
-                    <div class="server-unit" id="server4" title="CPU: 67% | Memory: 91%"></div>
-                    <div class="server-unit" id="server5" title="CPU: 89% | Memory: 76%"></div>
-                    <div class="server-unit" id="server6" title="CPU: 12% | Memory: 45%"></div>
-                    <div class="server-unit" id="server7" title="CPU: 56% | Memory: 67%"></div>
-                    <div class="server-unit" id="server8" title="CPU: 34% | Memory: 52%"></div>
-                </div>
+      <!-- 2.5D Simulation Viewport -->
+      <div class="simulation-viewport" id="simulationViewport">
+        <!-- Enhanced Office Layout -->
+        <div class="office-background">
+          <!-- North Wall -->
+          <div
+            class="wall-horizontal"
+            style="top: 0; left: 0; right: 0; height: 20px"
+          ></div>
 
-                <!-- Agent Sprites -->
-                <div id="agentContainer"></div>
+          <!-- South Wall -->
+          <div
+            class="wall-horizontal"
+            style="bottom: 30px; left: 0; right: 0; height: 20px"
+          ></div>
 
-                <!-- Interactive Elements -->
-                <div class="interactive-elements">
-                    <div class="coffee-machine" style="bottom: 100px; left: 50px;" title="Coffee Machine - Fuel for developers"></div>
-                    <div class="water-cooler" style="bottom: 100px; right: 100px;" title="Water Cooler - Office gossip central"></div>
-                    <div class="printer" style="bottom: 80px; left: 200px;" title="3D Printer - Prototyping station"></div>
-                </div>
+          <!-- West Wall -->
+          <div
+            class="wall-vertical"
+            style="left: 0; top: 20px; bottom: 50px; width: 20px"
+          ></div>
 
-                <!-- LED Ticker -->
-                <div class="led-ticker" id="ledTicker">
-                    <div class="ticker-content" id="tickerText">
-                        ZTO Inc. - Revenue: $0 - Runway: 180 days - Phase: Discovery - Team Morale: 95% - Code Quality: 92%
-                    </div>
-                </div>
-            </div>
+          <!-- East Wall -->
+          <div
+            class="wall-vertical"
+            style="right: 0; top: 20px; bottom: 50px; width: 20px"
+          ></div>
 
-            <!-- Simulation Controls and Info -->
-            <div class="mt-4 flex justify-between items-center text-sm">
-                <div class="flex space-x-6">
-                    <span>Speed: <span id="simSpeed">1x</span></span>
-                    <span>Agents: <span id="agentCount">{{ agents|length }}</span></span>
-                    <span>Active Tasks: <span id="activeTasks">12</span></span>
-                    <span>Build Status: <span id="buildStatus" class="text-green-400">PASSING</span></span>
-                </div>
-                <div class="flex space-x-2">
-                    <button onclick="changeSpeed(0.5)" class="bg-gray-600 hover:bg-gray-700 px-2 py-1 rounded text-xs">0.5x</button>
-                    <button onclick="changeSpeed(1)" class="bg-gray-600 hover:bg-gray-700 px-2 py-1 rounded text-xs">1x</button>
-                    <button onclick="changeSpeed(2)" class="bg-gray-600 hover:bg-gray-700 px-2 py-1 rounded text-xs">2x</button>
-                    <button onclick="changeSpeed(5)" class="bg-gray-600 hover:bg-gray-700 px-2 py-1 rounded text-xs">5x</button>
-                </div>
-            </div>
+          <!-- Boardroom -->
+          <div
+            class="room"
+            style="
+              left: 300px;
+              top: 20px;
+              width: 200px;
+              height: 100px;
+              background: rgba(255, 215, 0, 0.1);
+              border: 2px solid #ffd700;
+            "
+          >
+            <div class="room-label">Boardroom</div>
+          </div>
+
+          <!-- Development Area -->
+          <div
+            class="room"
+            style="
+              left: 100px;
+              top: 200px;
+              width: 600px;
+              height: 300px;
+              background: rgba(100, 149, 237, 0.1);
+              border: 2px solid #6495ed;
+            "
+          >
+            <div class="room-label">Development Floor</div>
+          </div>
+
+          <!-- Server Room -->
+          <div
+            class="room"
+            style="
+              right: 30px;
+              top: 100px;
+              width: 80px;
+              height: 120px;
+              background: rgba(255, 69, 0, 0.1);
+              border: 2px solid #ff4500;
+            "
+          >
+            <div class="room-label">Server Room</div>
+          </div>
         </div>
 
-        <!-- Enhanced Financial Dashboard -->
-        <div class="glass-effect p-6 rounded-lg">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-2xl font-bold">
-                    <i class="fas fa-chart-line mr-2 text-green-400"></i>Financial Dashboard
-                </h2>
-                <div class="flex space-x-2">
-                    <button onclick="toggleChartView('revenue')" class="bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm font-bold transition-colors">
-                        Revenue
-                    </button>
-                    <button onclick="toggleChartView('burn')" class="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm font-bold transition-colors">
-                        Burn Rate
-                    </button>
-                    <button onclick="toggleChartView('runway')" class="bg-yellow-600 hover:bg-yellow-700 px-3 py-1 rounded text-sm font-bold transition-colors">
-                        Runway
-                    </button>
-                </div>
-            </div>
-            <div id="financialChart" style="height: 400px;"></div>
-            
-            <!-- Financial Metrics Grid -->
-            <div class="grid grid-cols-3 gap-4 mt-4">
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-green-400" id="monthlyRevenue">$0</div>
-                    <div class="text-xs opacity-75">Monthly Revenue</div>
-                </div>
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-red-400" id="monthlyBurn">$75,000</div>
-                    <div class="text-xs opacity-75">Monthly Burn</div>
-                </div>
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-yellow-400" id="runwayDays">180</div>
-                    <div class="text-xs opacity-75">Days Runway</div>
-                </div>
-            </div>
+        <!-- Server Racks -->
+        <div class="server-rack" style="top: 120px; right: 40px">
+          <div
+            class="server-unit"
+            id="server1"
+            title="CPU: 45% | Memory: 62%"
+          ></div>
+          <div
+            class="server-unit"
+            id="server2"
+            title="CPU: 78% | Memory: 85%"
+          ></div>
+          <div
+            class="server-unit"
+            id="server3"
+            title="CPU: 23% | Memory: 34%"
+          ></div>
+          <div
+            class="server-unit"
+            id="server4"
+            title="CPU: 67% | Memory: 91%"
+          ></div>
+          <div
+            class="server-unit"
+            id="server5"
+            title="CPU: 89% | Memory: 76%"
+          ></div>
+          <div
+            class="server-unit"
+            id="server6"
+            title="CPU: 12% | Memory: 45%"
+          ></div>
+          <div
+            class="server-unit"
+            id="server7"
+            title="CPU: 56% | Memory: 67%"
+          ></div>
+          <div
+            class="server-unit"
+            id="server8"
+            title="CPU: 34% | Memory: 52%"
+          ></div>
         </div>
+
+        <!-- Agent Sprites -->
+        <div id="agentContainer"></div>
+
+        <!-- Interactive Elements -->
+        <div class="interactive-elements">
+          <div
+            class="coffee-machine"
+            style="bottom: 100px; left: 50px"
+            title="Coffee Machine - Fuel for developers"
+          ></div>
+          <div
+            class="water-cooler"
+            style="bottom: 100px; right: 100px"
+            title="Water Cooler - Office gossip central"
+          ></div>
+          <div
+            class="printer"
+            style="bottom: 80px; left: 200px"
+            title="3D Printer - Prototyping station"
+          ></div>
+        </div>
+
+        <!-- LED Ticker -->
+        <div class="led-ticker" id="ledTicker">
+          <div class="ticker-content" id="tickerText">
+            ZTO Inc. - Revenue: $0 - Runway: 180 days - Phase: Discovery - Team
+            Morale: 95% - Code Quality: 92%
+          </div>
+        </div>
+      </div>
+
+      <!-- Simulation Controls and Info -->
+      <div class="mt-4 flex justify-between items-center text-sm">
+        <div class="flex space-x-6">
+          <span>Speed: <span id="simSpeed">1x</span></span>
+          <span>Agents: <span id="agentCount">{{ agents|length }}</span></span>
+          <span>Active Tasks: <span id="activeTasks">12</span></span>
+          <span
+            >Build Status:
+            <span id="buildStatus" class="text-green-400">PASSING</span></span
+          >
+        </div>
+        <div class="flex space-x-2">
+          <button
+            onclick="changeSpeed(0.5)"
+            class="bg-gray-600 hover:bg-gray-700 px-2 py-1 rounded text-xs"
+          >
+            0.5x
+          </button>
+          <button
+            onclick="changeSpeed(1)"
+            class="bg-gray-600 hover:bg-gray-700 px-2 py-1 rounded text-xs"
+          >
+            1x
+          </button>
+          <button
+            onclick="changeSpeed(2)"
+            class="bg-gray-600 hover:bg-gray-700 px-2 py-1 rounded text-xs"
+          >
+            2x
+          </button>
+          <button
+            onclick="changeSpeed(5)"
+            class="bg-gray-600 hover:bg-gray-700 px-2 py-1 rounded text-xs"
+          >
+            5x
+          </button>
+        </div>
+      </div>
     </div>
 
-    <!-- Enhanced Sidebar -->
-    <div class="space-y-6">
-        <!-- CEO Chat -->
-        <div class="glass-effect p-6 rounded-lg">
-            <h2 class="text-xl font-bold mb-4">
-                <i class="fas fa-comments mr-2 text-blue-400"></i>CEO Chat
-            </h2>
-            
-            <div class="bg-gray-800 rounded-lg p-4 mb-4 h-80 overflow-y-auto" id="chatMessages">
-                <div class="text-sm text-gray-400 mb-2">
-                    <i class="fas fa-robot mr-2"></i>
-                    <strong>CEO-001 (Alex Chen)</strong>
-                    <div class="text-xs opacity-75">{{ project.created_at|format_datetime }}</div>
-                </div>
-                <div class="text-sm mb-4">
-                    Welcome to your virtual company! I'm your AI CEO. Our team of 25 specialized agents is ready to bring your vision to life. What would you like to discuss?
-                </div>
-            </div>
-
-            <div class="flex space-x-2">
-                <input type="text" id="chatInput" placeholder="Message your CEO..." 
-                       class="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:border-yellow-400 focus:outline-none text-sm">
-                <button onclick="sendMessage()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition-colors">
-                    <i class="fas fa-paper-plane"></i>
-                </button>
-            </div>
-            
-            <!-- Quick Actions -->
-            <div class="mt-4 space-y-2">
-                <button onclick="sendQuickMessage('What is the current project status?')" class="w-full text-left text-xs bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded transition-colors">
-                    <i class="fas fa-chart-bar mr-2"></i>What's our current status?
-                </button>
-                <button onclick="sendQuickMessage('Show me the financial projections')" class="w-full text-left text-xs bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded transition-colors">
-                    <i class="fas fa-dollar-sign mr-2"></i>Financial projections
-                </button>
-                <button onclick="sendQuickMessage('What are the next milestones?')" class="w-full text-left text-xs bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded transition-colors">
-                    <i class="fas fa-flag mr-2"></i>Next milestones
-                </button>
-            </div>
+    <!-- Enhanced Financial Dashboard -->
+    <div class="glass-effect p-6 rounded-lg">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-2xl font-bold">
+          <i class="fas fa-chart-line mr-2 text-green-400"></i>Financial
+          Dashboard
+        </h2>
+        <div class="flex space-x-2">
+          <button
+            onclick="toggleChartView('revenue')"
+            class="bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm font-bold transition-colors"
+          >
+            Revenue
+          </button>
+          <button
+            onclick="toggleChartView('burn')"
+            class="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm font-bold transition-colors"
+          >
+            Burn Rate
+          </button>
+          <button
+            onclick="toggleChartView('runway')"
+            class="bg-yellow-600 hover:bg-yellow-700 px-3 py-1 rounded text-sm font-bold transition-colors"
+          >
+            Runway
+          </button>
         </div>
+      </div>
+      <div id="financialChart" style="height: 400px"></div>
 
-        <!-- Team Status -->
-        <div class="glass-effect p-6 rounded-lg">
-            <h2 class="text-xl font-bold mb-4">
-                <i class="fas fa-users mr-2 text-purple-400"></i>Team Status
-            </h2>
-            <div id="teamStatus" class="space-y-3 text-sm max-h-64 overflow-y-auto">
-                <!-- Team status will be populated by JavaScript -->
-            </div>
-            
-            <!-- Team Morale Indicator -->
-            <div class="mt-4">
-                <div class="flex justify-between text-xs mb-1">
-                    <span>Team Morale</span>
-                    <span id="teamMoraleValue">94%</span>
-                </div>
-                <div class="w-full bg-gray-700 rounded-full h-2">
-                    <div class="bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 h-2 rounded-full transition-all duration-500" 
-                         id="teamMoraleBar" style="width: 94%"></div>
-                </div>
-            </div>
+      <!-- Financial Metrics Grid -->
+      <div class="grid grid-cols-3 gap-4 mt-4">
+        <div class="text-center">
+          <div class="text-2xl font-bold text-green-400" id="monthlyRevenue">
+            $0
+          </div>
+          <div class="text-xs opacity-75">Monthly Revenue</div>
         </div>
-
-        <!-- Agent Details Modal Trigger -->
-        <div class="glass-effect p-6 rounded-lg">
-            <h2 class="text-xl font-bold mb-4">
-                <i class="fas fa-user-tie mr-2 text-cyan-400"></i>Agent Details
-            </h2>
-            <p class="text-sm opacity-75 mb-4">
-                Click on any agent in the virtual office to see their detailed profile, current tasks, and thought processes.
-            </p>
-            <div id="selectedAgentInfo" class="text-sm">
-                <div class="text-center opacity-50">
-                    <i class="fas fa-hand-pointer text-2xl mb-2"></i>
-                    <p>Select an agent to view details</p>
-                </div>
-            </div>
+        <div class="text-center">
+          <div class="text-2xl font-bold text-red-400" id="monthlyBurn">
+            $75,000
+          </div>
+          <div class="text-xs opacity-75">Monthly Burn</div>
         </div>
-
-        <!-- Computer Systems -->
-        <div class="glass-effect p-6 rounded-lg">
-            <h2 class="text-xl font-bold mb-4">
-                <i class="fas fa-desktop mr-2 text-orange-400"></i>Computer Systems
-            </h2>
-            <div id="computerSystems" class="space-y-2 text-sm">
-                <!-- Computer systems will be populated by JavaScript -->
-            </div>
-            <button onclick="showSystemOverview()" class="w-full mt-4 bg-orange-600 hover:bg-orange-700 py-2 px-4 rounded text-sm font-bold transition-colors">
-                <i class="fas fa-server mr-2"></i>System Overview
-            </button>
+        <div class="text-center">
+          <div class="text-2xl font-bold text-yellow-400" id="runwayDays">
+            180
+          </div>
+          <div class="text-xs opacity-75">Days Runway</div>
         </div>
-
-        <!-- Quick Actions -->
-        <div class="glass-effect p-6 rounded-lg">
-            <h2 class="text-xl font-bold mb-4">
-                <i class="fas fa-bolt mr-2 text-orange-400"></i>Quick Actions
-            </h2>
-            <div class="space-y-2">
-                <button onclick="generateDocuments()" class="w-full bg-green-600 hover:bg-green-700 py-2 px-4 rounded text-sm font-bold transition-colors">
-                    <i class="fas fa-file-alt mr-2"></i>Generate Documents
-                </button>
-                <button onclick="scheduleMeeting()" class="w-full bg-blue-600 hover:bg-blue-700 py-2 px-4 rounded text-sm font-bold transition-colors">
-                    <i class="fas fa-calendar mr-2"></i>Schedule Meeting
-                </button>
-                <button onclick="downloadProject('{{ project.project_id }}')" class="w-full bg-purple-600 hover:bg-purple-700 py-2 px-4 rounded text-sm font-bold transition-colors">
-                    <i class="fas fa-download mr-2"></i>Export Project
-                </button>
-                <button onclick="showNotification('Feature coming soon!', 'info')" class="w-full bg-gray-600 hover:bg-gray-700 py-2 px-4 rounded text-sm font-bold transition-colors">
-                    <i class="fas fa-cog mr-2"></i>Project Settings
-                </button>
-            </div>
-        </div>
-
-        <!-- Recent Activity -->
-        <div class="glass-effect p-6 rounded-lg">
-            <h2 class="text-xl font-bold mb-4">
-                <i class="fas fa-history mr-2 text-cyan-400"></i>Recent Activity
-            </h2>
-            <div id="recentActivity" class="space-y-3 text-sm max-h-64 overflow-y-auto">
-                <!-- Activity will be populated by JavaScript -->
-            </div>
-            
-            <!-- Activity Filter -->
-            <div class="mt-4 flex space-x-2">
-                <button onclick="filterActivity('all')" class="text-xs bg-gray-600 hover:bg-gray-700 px-2 py-1 rounded">All</button>
-                <button onclick="filterActivity('development')" class="text-xs bg-blue-600 hover:bg-blue-700 px-2 py-1 rounded">Dev</button>
-                <button onclick="filterActivity('communication')" class="text-xs bg-green-600 hover:bg-green-700 px-2 py-1 rounded">Chat</button>
-                <button onclick="filterActivity('milestone')" class="text-xs bg-yellow-600 hover:bg-yellow-700 px-2 py-1 rounded">Milestones</button>
-            </div>
-        </div>
-
-        <!-- Performance Metrics -->
-        <div class="glass-effect p-6 rounded-lg">
-            <h2 class="text-xl font-bold mb-4">
-                <i class="fas fa-tachometer-alt mr-2 text-red-400"></i>Performance
-            </h2>
-            <div class="space-y-3 text-sm">
-                <div class="flex justify-between">
-                    <span>Code Quality</span>
-                    <span class="text-green-400">94%</span>
-                </div>
-                <div class="flex justify-between">
-                    <span>Test Coverage</span>
-                    <span class="text-blue-400">87%</span>
-                </div>
-                <div class="flex justify-between">
-                    <span>Build Success</span>
-                    <span class="text-green-400">98%</span>
-                </div>
-                <div class="flex justify-between">
-                    <span>Security Score</span>
-                    <span class="text-yellow-400">A+</span>
-                </div>
-                <div class="flex justify-between">
-                    <span>Performance</span>
-                    <span class="text-green-400">Excellent</span>
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
+  </div>
+
+  <!-- Enhanced Sidebar -->
+  <div class="space-y-6">
+    <!-- CEO Chat -->
+    <div class="glass-effect p-6 rounded-lg">
+      <h2 class="text-xl font-bold mb-4">
+        <i class="fas fa-comments mr-2 text-blue-400"></i>CEO Chat
+      </h2>
+
+      <div
+        class="bg-gray-800 rounded-lg p-4 mb-4 h-80 overflow-y-auto"
+        id="chatMessages"
+      >
+        <div class="text-sm text-gray-400 mb-2">
+          <i class="fas fa-robot mr-2"></i>
+          <strong>CEO-001 (Alex Chen)</strong>
+          <div class="text-xs opacity-75">
+            {{ project.created_at|format_datetime }}
+          </div>
+        </div>
+        <div class="text-sm mb-4">
+          Welcome to your virtual company! I'm your AI CEO. Our team of 25
+          specialized agents is ready to bring your vision to life. What would
+          you like to discuss?
+        </div>
+      </div>
+
+      <div class="flex space-x-2">
+        <input
+          type="text"
+          id="chatInput"
+          placeholder="Message your CEO..."
+          class="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:border-yellow-400 focus:outline-none text-sm"
+        />
+        <button
+          onclick="sendMessage()"
+          class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition-colors"
+        >
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="mt-4 space-y-2">
+        <button
+          onclick="sendQuickMessage('What is the current project status?')"
+          class="w-full text-left text-xs bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded transition-colors"
+        >
+          <i class="fas fa-chart-bar mr-2"></i>What's our current status?
+        </button>
+        <button
+          onclick="sendQuickMessage('Show me the financial projections')"
+          class="w-full text-left text-xs bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded transition-colors"
+        >
+          <i class="fas fa-dollar-sign mr-2"></i>Financial projections
+        </button>
+        <button
+          onclick="sendQuickMessage('What are the next milestones?')"
+          class="w-full text-left text-xs bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded transition-colors"
+        >
+          <i class="fas fa-flag mr-2"></i>Next milestones
+        </button>
+      </div>
+    </div>
+
+    <!-- Team Status -->
+    <div class="glass-effect p-6 rounded-lg">
+      <h2 class="text-xl font-bold mb-4">
+        <i class="fas fa-users mr-2 text-purple-400"></i>Team Status
+      </h2>
+      <div id="teamStatus" class="space-y-3 text-sm max-h-64 overflow-y-auto">
+        <!-- Team status will be populated by JavaScript -->
+      </div>
+
+      <!-- Team Morale Indicator -->
+      <div class="mt-4">
+        <div class="flex justify-between text-xs mb-1">
+          <span>Team Morale</span>
+          <span id="teamMoraleValue">94%</span>
+        </div>
+        <div class="w-full bg-gray-700 rounded-full h-2">
+          <div
+            class="bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 h-2 rounded-full transition-all duration-500"
+            id="teamMoraleBar"
+            style="width: 94%"
+          ></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Agent Details Modal Trigger -->
+    <div class="glass-effect p-6 rounded-lg">
+      <h2 class="text-xl font-bold mb-4">
+        <i class="fas fa-user-tie mr-2 text-cyan-400"></i>Agent Details
+      </h2>
+      <p class="text-sm opacity-75 mb-4">
+        Click on any agent in the virtual office to see their detailed profile,
+        current tasks, and thought processes.
+      </p>
+      <div id="selectedAgentInfo" class="text-sm">
+        <div class="text-center opacity-50">
+          <i class="fas fa-hand-pointer text-2xl mb-2"></i>
+          <p>Select an agent to view details</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Computer Systems -->
+    <div class="glass-effect p-6 rounded-lg">
+      <h2 class="text-xl font-bold mb-4">
+        <i class="fas fa-desktop mr-2 text-orange-400"></i>Computer Systems
+      </h2>
+      <div id="computerSystems" class="space-y-2 text-sm">
+        <!-- Computer systems will be populated by JavaScript -->
+      </div>
+      <button
+        onclick="showSystemOverview()"
+        class="w-full mt-4 bg-orange-600 hover:bg-orange-700 py-2 px-4 rounded text-sm font-bold transition-colors"
+      >
+        <i class="fas fa-server mr-2"></i>System Overview
+      </button>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="glass-effect p-6 rounded-lg">
+      <h2 class="text-xl font-bold mb-4">
+        <i class="fas fa-bolt mr-2 text-orange-400"></i>Quick Actions
+      </h2>
+      <div class="space-y-2">
+        <button
+          onclick="generateDocuments()"
+          class="w-full bg-green-600 hover:bg-green-700 py-2 px-4 rounded text-sm font-bold transition-colors"
+        >
+          <i class="fas fa-file-alt mr-2"></i>Generate Documents
+        </button>
+        <button
+          onclick="scheduleMeeting()"
+          class="w-full bg-blue-600 hover:bg-blue-700 py-2 px-4 rounded text-sm font-bold transition-colors"
+        >
+          <i class="fas fa-calendar mr-2"></i>Schedule Meeting
+        </button>
+        <button
+          onclick="downloadProject('{{ project.project_id }}')"
+          class="w-full bg-purple-600 hover:bg-purple-700 py-2 px-4 rounded text-sm font-bold transition-colors"
+        >
+          <i class="fas fa-download mr-2"></i>Export Project
+        </button>
+        <button
+          onclick="showNotification('Feature coming soon!', 'info')"
+          class="w-full bg-gray-600 hover:bg-gray-700 py-2 px-4 rounded text-sm font-bold transition-colors"
+        >
+          <i class="fas fa-cog mr-2"></i>Project Settings
+        </button>
+      </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="glass-effect p-6 rounded-lg">
+      <h2 class="text-xl font-bold mb-4">
+        <i class="fas fa-history mr-2 text-cyan-400"></i>Recent Activity
+      </h2>
+      <div
+        id="recentActivity"
+        class="space-y-3 text-sm max-h-64 overflow-y-auto"
+      >
+        <!-- Activity will be populated by JavaScript -->
+      </div>
+
+      <!-- Activity Filter -->
+      <div class="mt-4 flex space-x-2">
+        <button
+          onclick="filterActivity('all')"
+          class="text-xs bg-gray-600 hover:bg-gray-700 px-2 py-1 rounded"
+        >
+          All
+        </button>
+        <button
+          onclick="filterActivity('development')"
+          class="text-xs bg-blue-600 hover:bg-blue-700 px-2 py-1 rounded"
+        >
+          Dev
+        </button>
+        <button
+          onclick="filterActivity('communication')"
+          class="text-xs bg-green-600 hover:bg-green-700 px-2 py-1 rounded"
+        >
+          Chat
+        </button>
+        <button
+          onclick="filterActivity('milestone')"
+          class="text-xs bg-yellow-600 hover:bg-yellow-700 px-2 py-1 rounded"
+        >
+          Milestones
+        </button>
+      </div>
+    </div>
+
+    <!-- Performance Metrics -->
+    <div class="glass-effect p-6 rounded-lg">
+      <h2 class="text-xl font-bold mb-4">
+        <i class="fas fa-tachometer-alt mr-2 text-red-400"></i>Performance
+      </h2>
+      <div class="space-y-3 text-sm">
+        <div class="flex justify-between">
+          <span>Code Quality</span>
+          <span class="text-green-400">94%</span>
+        </div>
+        <div class="flex justify-between">
+          <span>Test Coverage</span>
+          <span class="text-blue-400">87%</span>
+        </div>
+        <div class="flex justify-between">
+          <span>Build Success</span>
+          <span class="text-green-400">98%</span>
+        </div>
+        <div class="flex justify-between">
+          <span>Security Score</span>
+          <span class="text-yellow-400">A+</span>
+        </div>
+        <div class="flex justify-between">
+          <span>Performance</span>
+          <span class="text-green-400">Excellent</span>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- Agent Detail Modal -->
-<div id="agentModal" class="fixed inset-0 bg-black bg-opacity-75 hidden z-50 flex items-center justify-center">
-    <div class="glass-effect p-8 rounded-lg max-w-4xl w-full mx-4 max-h-screen overflow-y-auto">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-3xl font-bold" id="agentModalTitle">Agent Details</h2>
-            <button onclick="closeAgentModal()" class="text-gray-400 hover:text-white text-2xl">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        
-        <div class="grid md:grid-cols-2 gap-8">
-            <!-- Agent Info -->
-            <div>
-                <div class="mb-6">
-                    <h3 class="text-xl font-bold mb-4">Agent Information</h3>
-                    <div id="agentBasicInfo"></div>
-                </div>
-                
-                <div class="mb-6">
-                    <h3 class="text-xl font-bold mb-4">Skills & Attributes</h3>
-                    <div id="agentSkills"></div>
-                </div>
-                
-                <div class="mb-6">
-                    <h3 class="text-xl font-bold mb-4">Current Status</h3>
-                    <div id="agentStatus"></div>
-                </div>
-            </div>
-            
-            <!-- Thought Process & Communications -->
-            <div>
-                <div class="mb-6">
-                    <h3 class="text-xl font-bold mb-4">Thought Process</h3>
-                    <div class="bg-gray-800 p-4 rounded-lg">
-                        <div id="agentThoughts" class="text-sm italic"></div>
-                    </div>
-                </div>
-                
-                <div class="mb-6">
-                    <h3 class="text-xl font-bold mb-4">Recent Communications</h3>
-                    <div class="space-y-2 max-h-64 overflow-y-auto" id="agentCommunications">
-                        <!-- Communications will be populated -->
-                    </div>
-                </div>
-                
-                <div>
-                    <h3 class="text-xl font-bold mb-4">Work History</h3>
-                    <div class="space-y-2 max-h-48 overflow-y-auto" id="agentWorkHistory">
-                        <!-- Work history will be populated -->
-                    </div>
-                </div>
-            </div>
-        </div>
+<div
+  id="agentModal"
+  class="fixed inset-0 bg-black bg-opacity-75 hidden z-50 flex items-center justify-center"
+>
+  <div
+    class="glass-effect p-8 rounded-lg max-w-4xl w-full mx-4 max-h-screen overflow-y-auto"
+  >
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-3xl font-bold" id="agentModalTitle">Agent Details</h2>
+      <button
+        onclick="closeAgentModal()"
+        class="text-gray-400 hover:text-white text-2xl"
+      >
+        <i class="fas fa-times"></i>
+      </button>
     </div>
+
+    <div class="grid md:grid-cols-2 gap-8">
+      <!-- Agent Info -->
+      <div>
+        <div class="mb-6">
+          <h3 class="text-xl font-bold mb-4">Agent Information</h3>
+          <div id="agentBasicInfo"></div>
+        </div>
+
+        <div class="mb-6">
+          <h3 class="text-xl font-bold mb-4">Skills & Attributes</h3>
+          <div id="agentSkills"></div>
+        </div>
+
+        <div class="mb-6">
+          <h3 class="text-xl font-bold mb-4">Current Status</h3>
+          <div id="agentStatus"></div>
+        </div>
+      </div>
+
+      <!-- Thought Process & Communications -->
+      <div>
+        <div class="mb-6">
+          <h3 class="text-xl font-bold mb-4">Thought Process</h3>
+          <div class="bg-gray-800 p-4 rounded-lg">
+            <div id="agentThoughts" class="text-sm italic"></div>
+          </div>
+        </div>
+
+        <div class="mb-6">
+          <h3 class="text-xl font-bold mb-4">Recent Communications</h3>
+          <div
+            class="space-y-2 max-h-64 overflow-y-auto"
+            id="agentCommunications"
+          >
+            <!-- Communications will be populated -->
+          </div>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-bold mb-4">Work History</h3>
+          <div class="space-y-2 max-h-48 overflow-y-auto" id="agentWorkHistory">
+            <!-- Work history will be populated -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- Computer System Modal -->
-<div id="computerModal" class="fixed inset-0 bg-black bg-opacity-75 hidden z-50 flex items-center justify-center">
-    <div class="glass-effect p-8 rounded-lg max-w-6xl w-full mx-4 max-h-screen overflow-y-auto">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-3xl font-bold">Computer System Details</h2>
-            <button onclick="closeComputerModal()" class="text-gray-400 hover:text-white text-2xl">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        
-        <div class="grid md:grid-cols-2 gap-8">
-            <!-- System Info -->
-            <div>
-                <h3 class="text-xl font-bold mb-4">System Information</h3>
-                <div class="space-y-3 text-sm" id="systemInfo">
-                    <!-- System info will be populated -->
-                </div>
-                
-                <h3 class="text-xl font-bold mb-4 mt-6">Active Processes</h3>
-                <div class="space-y-2 max-h-64 overflow-y-auto" id="activeProcesses">
-                    <!-- Processes will be populated -->
-                </div>
-            </div>
-            
-            <!-- Code View -->
-            <div>
-                <h3 class="text-xl font-bold mb-4">Current Development</h3>
-                <div class="bg-gray-900 p-4 rounded-lg font-mono text-sm">
-                    <div class="text-green-400 mb-2">// Current Development Session</div>
-                    <div id="codeView" class="max-h-96 overflow-y-auto">
-                        <!-- Code will be populated -->
-                    </div>
-                </div>
-                
-                <div class="mt-4 flex space-x-2">
-                    <button onclick="toggleCodeView('frontend')" class="text-xs bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded">Frontend</button>
-                    <button onclick="toggleCodeView('backend')" class="text-xs bg-green-600 hover:bg-green-700 px-3 py-1 rounded">Backend</button>
-                    <button onclick="toggleCodeView('database')" class="text-xs bg-yellow-600 hover:bg-yellow-700 px-3 py-1 rounded">Database</button>
-                    <button onclick="toggleCodeView('devops')" class="text-xs bg-purple-600 hover:bg-purple-700 px-3 py-1 rounded">DevOps</button>
-                </div>
-            </div>
-        </div>
+<div
+  id="computerModal"
+  class="fixed inset-0 bg-black bg-opacity-75 hidden z-50 flex items-center justify-center"
+>
+  <div
+    class="glass-effect p-8 rounded-lg max-w-6xl w-full mx-4 max-h-screen overflow-y-auto"
+  >
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-3xl font-bold">Computer System Details</h2>
+      <button
+        onclick="closeComputerModal()"
+        class="text-gray-400 hover:text-white text-2xl"
+      >
+        <i class="fas fa-times"></i>
+      </button>
     </div>
+
+    <div class="grid md:grid-cols-2 gap-8">
+      <!-- System Info -->
+      <div>
+        <h3 class="text-xl font-bold mb-4">System Information</h3>
+        <div class="space-y-3 text-sm" id="systemInfo">
+          <!-- System info will be populated -->
+        </div>
+
+        <h3 class="text-xl font-bold mb-4 mt-6">Active Processes</h3>
+        <div class="space-y-2 max-h-64 overflow-y-auto" id="activeProcesses">
+          <!-- Processes will be populated -->
+        </div>
+      </div>
+
+      <!-- Code View -->
+      <div>
+        <h3 class="text-xl font-bold mb-4">Current Development</h3>
+        <div class="bg-gray-900 p-4 rounded-lg font-mono text-sm">
+          <div class="text-green-400 mb-2">// Current Development Session</div>
+          <div id="codeView" class="max-h-96 overflow-y-auto">
+            <!-- Code will be populated -->
+          </div>
+        </div>
+
+        <div class="mt-4 flex space-x-2">
+          <button
+            onclick="toggleCodeView('frontend')"
+            class="text-xs bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded"
+          >
+            Frontend
+          </button>
+          <button
+            onclick="toggleCodeView('backend')"
+            class="text-xs bg-green-600 hover:bg-green-700 px-3 py-1 rounded"
+          >
+            Backend
+          </button>
+          <button
+            onclick="toggleCodeView('database')"
+            class="text-xs bg-yellow-600 hover:bg-yellow-700 px-3 py-1 rounded"
+          >
+            Database
+          </button>
+          <button
+            onclick="toggleCodeView('devops')"
+            class="text-xs bg-purple-600 hover:bg-purple-700 px-3 py-1 rounded"
+          >
+            DevOps
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
-{% endblock %}
-
-{% block scripts %}
+{% endblock %} {% block scripts %}
 <script>
-let simulationRunning = true;
-let simulationSpeed = 1;
-let agents = [];
-let selectedAgent = null;
-let currentChartView = 'revenue';
+  let simulationRunning = true;
+  let simulationSpeed = 1;
+  let agents = [];
+  let selectedAgent = null;
+  let currentChartView = 'revenue';
 
-// Initialize simulation
-function initializeSimulation() {
-    loadAgents();
-    startSimulationLoop();
-    loadProjectStatus();
-    initializeFinancialChart();
-}
+  // Initialize simulation
+  function initializeSimulation() {
+      loadAgents();
+      startSimulationLoop();
+      loadProjectStatus();
+      initializeFinancialChart();
+  }
 
-function loadAgents() {
-    // Load agent data from the backend
-    fetch('/api/project/{{ project.project_id }}/status')
-        .then(response => response.json())
-        .then(data => {
-            agents = data.agents || [];
-            createAgentSprites();
-            updateTeamStatus();
-        })
-        .catch(error => {
-            console.error('Failed to load agents:', error);
-            // Create demo agents for fallback
-            createDemoAgents();
-        });
-}
+  function loadAgents() {
+      // Load agent data from the backend
+      fetch('/api/project/{{ project.project_id }}/status')
+          .then(response => response.json())
+          .then(data => {
+              agents = data.agents || [];
+              createAgentSprites();
+              updateTeamStatus();
+          })
+          .catch(error => {
+              console.error('Failed to load agents:', error);
+              // Create demo agents for fallback
+              createDemoAgents();
+          });
+  }
 
-function createDemoAgents() {
-    const agentPositions = [
-        {x: 400, y: 100, color: '#ff6b6b', name: 'CEO-001', role: 'Chief Executive Officer'},
-        {x: 500, y: 300, color: '#4ecdc4', name: 'DEV-001', role: 'Principal Architect'},
-        {x: 150, y: 250, color: '#45b7d1', name: 'UX-001', role: 'Lead UX Researcher'},
-        {x: 600, y: 150, color: '#96ceb4', name: 'PM-001', role: 'Project Manager'},
-        {x: 300, y: 500, color: '#feca57', name: 'DEV-002', role: 'Senior Backend Engineer'}
-    ];
-    
-    const agentContainer = document.getElementById('agentContainer');
-    agentContainer.innerHTML = '';
-    
-    agentPositions.forEach((pos, index) => {
-        const agent = document.createElement('div');
-        agent.className = 'agent-sprite enhanced-agent';
-        agent.style.left = pos.x + 'px';
-        agent.style.top = pos.y + 'px';
-        agent.style.backgroundColor = pos.color;
-        agent.title = `${pos.name} - ${pos.role}`;
-        agent.id = 'agent-' + pos.name;
-        agent.onclick = () => showAgentDetails(pos.name);
-        
-        // Add agent status indicator
-        const statusIndicator = document.createElement('div');
-        statusIndicator.className = 'agent-status-indicator';
-        statusIndicator.style.backgroundColor = getStatusColor('working');
-        agent.appendChild(statusIndicator);
-        
-        agentContainer.appendChild(agent);
-        
-        agents.push({
-            element: agent,
-            x: pos.x,
-            y: pos.y,
-            targetX: pos.x,
-            targetY: pos.y,
-            name: pos.name,
-            color: pos.color,
-            status: 'working',
-            speech: null,
-            role: pos.role,
-            thought_process: `Working on ${project.name} development tasks`
-        });
-    });
-}
+  function createDemoAgents() {
+      const agentPositions = [
+          {x: 400, y: 100, color: '#ff6b6b', name: 'CEO-001', role: 'Chief Executive Officer'},
+          {x: 500, y: 300, color: '#4ecdc4', name: 'DEV-001', role: 'Principal Architect'},
+          {x: 150, y: 250, color: '#45b7d1', name: 'UX-001', role: 'Lead UX Researcher'},
+          {x: 600, y: 150, color: '#96ceb4', name: 'PM-001', role: 'Project Manager'},
+          {x: 300, y: 500, color: '#feca57', name: 'DEV-002', role: 'Senior Backend Engineer'}
+      ];
 
-function createAgentSprites() {
-    const agentContainer = document.getElementById('agentContainer');
-    agentContainer.innerHTML = '';
-    
-    agents.forEach(agent => {
-        const agentElement = document.createElement('div');
-        agentElement.className = 'agent-sprite enhanced-agent';
-        agentElement.style.left = agent.location_x + 'px';
-        agentElement.style.top = agent.location_y + 'px';
-        agentElement.style.backgroundColor = getRoleColor(agent.role);
-        agentElement.title = `${agent.name} - ${agent.role}`;
-        agentElement.id = 'agent-' + agent.agent_id;
-        agentElement.onclick = () => showAgentDetails(agent.agent_id);
-        
-        // Add agent status indicator
-        const statusIndicator = document.createElement('div');
-        statusIndicator.className = 'agent-status-indicator';
-        statusIndicator.style.backgroundColor = getStatusColor(agent.status);
-        agentElement.appendChild(statusIndicator);
-        
-        agentElement.addEventListener('mouseenter', function() {
-            showAgentTooltip(agent);
-        });
-        
-        agentElement.addEventListener('mouseleave', function() {
-            hideAgentTooltip();
-        });
-        
-        agentContainer.appendChild(agentElement);
-        
-        // Store element reference
-        agent.element = agentElement;
-    });
-}
+      const agentContainer = document.getElementById('agentContainer');
+      agentContainer.innerHTML = '';
 
-function getRoleColor(role) {
-    const roleColors = {
-        'Chief Executive Officer': '#ff6b6b',
-        'Principal Full-Stack Architect': '#4ecdc4',
-        'Lead UX Researcher': '#45b7d1',
-        'Project Manager': '#96ceb4',
-        'Senior Back-End Engineer': '#feca57',
-        'Senior Front-End Engineer': '#ff9ff3',
-        'Senior Mobile Engineer': '#54a0ff',
-        'Senior Cloud Engineer': '#5f27cd',
-        'Senior DevOps / SRE': '#00d2d3',
-        'Senior Security Engineer': '#ff6348'
-    };
-    return roleColors[role] || '#a4b0be';
-}
+      agentPositions.forEach((pos, index) => {
+          const agent = document.createElement('div');
+          agent.className = 'agent-sprite enhanced-agent';
+          agent.style.left = pos.x + 'px';
+          agent.style.top = pos.y + 'px';
+          agent.style.backgroundColor = pos.color;
+          agent.title = `${pos.name} - ${pos.role}`;
+          agent.id = 'agent-' + pos.name;
+          agent.onclick = () => showAgentDetails(pos.name);
 
-function getStatusColor(status) {
-    const statusColors = {
-        'working': '#10b981',
-        'idle': '#6b7280',
-        'meeting': '#f59e0b',
-        'thinking': '#8b5cf6',
-        'coding': '#06b6d4',
-        'testing': '#84cc16',
-        'deploying': '#f97316'
-    };
-    return statusColors[status] || '#6b7280';
-}
+          // Add agent status indicator
+          const statusIndicator = document.createElement('div');
+          statusIndicator.className = 'agent-status-indicator';
+          statusIndicator.style.backgroundColor = getStatusColor('working');
+          agent.appendChild(statusIndicator);
 
-function showAgentTooltip(agent) {
-    const tooltip = document.createElement('div');
-    tooltip.className = 'agent-tooltip';
-    tooltip.innerHTML = `
-        <div class="font-bold">${agent.name}</div>
-        <div class="text-xs opacity-75">${agent.role}</div>
-        <div class="text-xs mt-1">Status: ${agent.status}</div>
-        <div class="text-xs">Task: ${agent.current_task || 'Available'}</div>
-    `;
-    tooltip.style.position = 'absolute';
-    tooltip.style.zIndex = '1000';
-    tooltip.style.background = 'rgba(0, 0, 0, 0.9)';
-    tooltip.style.color = 'white';
-    tooltip.style.padding = '8px';
-    tooltip.style.borderRadius = '4px';
-    tooltip.style.fontSize = '12px';
-    tooltip.style.pointerEvents = 'none';
-    
-    document.body.appendChild(tooltip);
-    
-    const rect = agent.element.getBoundingClientRect();
-    tooltip.style.left = rect.left + 'px';
-    tooltip.style.top = (rect.top - tooltip.offsetHeight - 10) + 'px';
-    
-    agent.element.tooltip = tooltip;
-}
+          agentContainer.appendChild(agent);
 
-function hideAgentTooltip() {
-    const tooltips = document.querySelectorAll('.agent-tooltip');
-    tooltips.forEach(tooltip => tooltip.remove());
-}
+          agents.push({
+              element: agent,
+              x: pos.x,
+              y: pos.y,
+              targetX: pos.x,
+              targetY: pos.y,
+              name: pos.name,
+              color: pos.color,
+              status: 'working',
+              speech: null,
+              role: pos.role,
+              thought_process: `Working on ${project.name} development tasks`
+          });
+      });
+  }
 
-function startSimulationLoop() {
-    setInterval(() => {
-        if (simulationRunning) {
-            updateAgents();
-            updateServerRacks();
-            updateTicker();
-            updateTeamStatus();
-            updateRecentActivity();
-            updateFinancialMetrics();
-        }
-    }, 1000 / simulationSpeed);
-}
+  function createAgentSprites() {
+      const agentContainer = document.getElementById('agentContainer');
+      agentContainer.innerHTML = '';
 
-function updateAgents() {
-    agents.forEach(agent => {
-        if (!agent.element) return;
-        
-        // Random movement
-        if (Math.random() < 0.02) {
-            agent.targetX = Math.max(50, Math.min(750, agent.location_x + (Math.random() - 0.5) * 100));
-            agent.targetY = Math.max(50, Math.min(550, agent.location_y + (Math.random() - 0.5) * 100));
-        }
+      agents.forEach(agent => {
+          const agentElement = document.createElement('div');
+          agentElement.className = 'agent-sprite enhanced-agent';
+          agentElement.style.left = agent.location_x + 'px';
+          agentElement.style.top = agent.location_y + 'px';
+          agentElement.style.backgroundColor = getRoleColor(agent.role);
+          agentElement.title = `${agent.name} - ${agent.role}`;
+          agentElement.id = 'agent-' + agent.agent_id;
+          agentElement.onclick = () => showAgentDetails(agent.agent_id);
 
-        // Move towards target
-        const dx = agent.targetX - agent.location_x;
-        const dy = agent.targetY - agent.location_y;
-        
-        if (Math.abs(dx) > 1) agent.location_x += dx * 0.1;
-        if (Math.abs(dy) > 1) agent.location_y += dy * 0.1;
+          // Add agent status indicator
+          const statusIndicator = document.createElement('div');
+          statusIndicator.className = 'agent-status-indicator';
+          statusIndicator.style.backgroundColor = getStatusColor(agent.status);
+          agentElement.appendChild(statusIndicator);
 
-        // Update position
-        agent.element.style.left = agent.location_x + 'px';
-        agent.element.style.top = agent.location_y + 'px';
+          agentElement.addEventListener('mouseenter', function() {
+              showAgentTooltip(agent);
+          });
 
-        // Update status indicator
-        const statusIndicator = agent.element.querySelector('.agent-status-indicator');
-        if (statusIndicator) {
-            statusIndicator.style.backgroundColor = getStatusColor(agent.status);
-        }
+          agentElement.addEventListener('mouseleave', function() {
+              hideAgentTooltip();
+          });
 
-        // Random thought updates
-        if (Math.random() < 0.005) {
-            updateAgentThoughts(agent);
-        }
-    });
-}
+          agentContainer.appendChild(agentElement);
 
-function updateAgentThoughts(agent) {
-    const thoughts = [
-        `Optimizing ${project.name} performance...`,
-        `Reviewing code for ${agent.specializations ? agent.specializations[0] : 'general'} improvements...`,
-        `Collaborating with team on next sprint planning...`,
-        `Analyzing user feedback for feature improvements...`,
-        `Implementing security best practices...`,
-        `Refactoring legacy code for better maintainability...`,
-        `Writing comprehensive tests for new features...`,
-        `Documenting API endpoints and usage...`,
-        `Monitoring system performance metrics...`,
-        `Researching new technologies for implementation...`
-    ];
-    
-    agent.thought_process = thoughts[Math.floor(Math.random() * thoughts.length)];
-    
-    // Show thought bubble occasionally
-    if (Math.random() < 0.1) {
-        showThoughtBubble(agent);
-    }
-}
+          // Store element reference
+          agent.element = agentElement;
+      });
+  }
 
-function showThoughtBubble(agent) {
-    const bubble = document.createElement('div');
-    bubble.className = 'thought-bubble';
-    bubble.textContent = agent.thought_process;
-    bubble.style.left = (agent.location_x + 25) + 'px';
-    bubble.style.top = (agent.location_y - 40) + 'px';
-    
-    document.getElementById('agentContainer').appendChild(bubble);
-    
-    setTimeout(() => {
-        bubble.remove();
-    }, 4000);
-}
+  function getRoleColor(role) {
+      const roleColors = {
+          'Chief Executive Officer': '#ff6b6b',
+          'Principal Full-Stack Architect': '#4ecdc4',
+          'Lead UX Researcher': '#45b7d1',
+          'Project Manager': '#96ceb4',
+          'Senior Back-End Engineer': '#feca57',
+          'Senior Front-End Engineer': '#ff9ff3',
+          'Senior Mobile Engineer': '#54a0ff',
+          'Senior Cloud Engineer': '#5f27cd',
+          'Senior DevOps / SRE': '#00d2d3',
+          'Senior Security Engineer': '#ff6348'
+      };
+      return roleColors[role] || '#a4b0be';
+  }
 
-function updateServerRacks() {
-    for (let i = 1; i <= 8; i++) {
-        const server = document.getElementById('server' + i);
-        if (server) {
-            const usage = Math.random() * 100;
-            const intensity = Math.floor(usage * 2.55);
-            server.style.backgroundColor = `rgb(${Math.max(0, 255 - intensity)}, ${intensity}, 0)`;
-            
-            // Update tooltip
-            const cpu = Math.floor(usage);
-            const memory = Math.floor(Math.random() * 100);
-            server.title = `CPU: ${cpu}% | Memory: ${memory}% | Temperature: ${Math.floor(35 + usage * 0.3)}°C`;
-        }
-    }
-}
+  function getStatusColor(status) {
+      const statusColors = {
+          'working': '#10b981',
+          'idle': '#6b7280',
+          'meeting': '#f59e0b',
+          'thinking': '#8b5cf6',
+          'coding': '#06b6d4',
+          'testing': '#84cc16',
+          'deploying': '#f97316'
+      };
+      return statusColors[status] || '#6b7280';
+  }
 
-function updateTicker() {
-    const ticker = document.getElementById('tickerText');
-    const messages = [
-        `ZTO Inc. - Revenue: ${Math.floor(Math.random() * 100000)} - Runway: ${180 - project.days_elapsed} days - Phase: ${project.current_phase}`,
-        `DEV-001: Optimizing database queries for ${project.name}`,
-        `UX-001: Conducting user research for ${project.target_market} segment`,
-        `PM-001: Planning next sprint with ${agents.length} active agents`,
-        `QA-001: Automated tests passing at 94% success rate`,
-        `CEO-001: Board meeting scheduled to review ${project.business_model} strategy`,
-        `ADMIN-002: Financial projections updated for Q4 planning`,
-        `DEV-005: Cloud infrastructure scaling for expected growth`,
-        `UX-002: New UI mockups ready for ${project.industry} standards`,
-        `DEV-010: Security audit completed with A+ rating`
-    ];
-    
-    if (Math.random() < 0.1) {
-        ticker.textContent = messages[Math.floor(Math.random() * messages.length)];
-    }
-    
-    // Animate ticker
-    const tickerContent = ticker.parentElement;
-    tickerContent.style.transform = 'translateX(-10px)';
-    setTimeout(() => {
-        tickerContent.style.transform = 'translateX(0)';
-    }, 100);
-}
+  function showAgentTooltip(agent) {
+      const tooltip = document.createElement('div');
+      tooltip.className = 'agent-tooltip';
+      tooltip.innerHTML = `
+          <div class="font-bold">${agent.name}</div>
+          <div class="text-xs opacity-75">${agent.role}</div>
+          <div class="text-xs mt-1">Status: ${agent.status}</div>
+          <div class="text-xs">Task: ${agent.current_task || 'Available'}</div>
+      `;
+      tooltip.style.position = 'absolute';
+      tooltip.style.zIndex = '1000';
+      tooltip.style.background = 'rgba(0, 0, 0, 0.9)';
+      tooltip.style.color = 'white';
+      tooltip.style.padding = '8px';
+      tooltip.style.borderRadius = '4px';
+      tooltip.style.fontSize = '12px';
+      tooltip.style.pointerEvents = 'none';
 
-function updateTeamStatus() {
-    const statusContainer = document.getElementById('teamStatus');
-    
-    if (agents.length === 0) {
-        statusContainer.innerHTML = '<div class="text-center opacity-50">Loading team status...</div>';
-        return;
-    }
-    
-    const statusHTML = agents.slice(0, 8).map(agent => {
-        const statusColor = getStatusColor(agent.status);
-        return `
-            <div class="flex justify-between items-center p-2 bg-gray-800 rounded hover:bg-gray-700 transition-colors cursor-pointer" 
-                 onclick="showAgentDetails('${agent.agent_id || agent.name}')">
-                <div>
-                    <div class="font-bold text-sm">${agent.name || agent.agent_id}</div>
-                    <div class="text-xs opacity-75">${agent.role || 'Developer'}</div>
-                </div>
-                <div class="flex items-center space-x-2">
-                    <div class="w-3 h-3 rounded-full" style="background-color: ${statusColor}"></div>
-                    <span class="text-xs">${agent.status || 'working'}</span>
-                </div>
-            </div>
-        `;
-    }).join('');
-    
-    statusContainer.innerHTML = statusHTML;
-    
-    // Update team morale
-    const morale = Math.floor(Math.random() * 20) + 85; // 85-105%
-    document.getElementById('teamMoraleValue').textContent = morale + '%';
-    document.getElementById('teamMoraleBar').style.width = Math.min(morale, 100) + '%';
-}
+      document.body.appendChild(tooltip);
 
-function updateRecentActivity() {
-    const activityContainer = document.getElementById('recentActivity');
-    
-    const activities = [
-        {type: 'development', icon: 'fas fa-code', text: 'DEV-001 pushed new feature to staging', time: '2 min ago', color: 'text-blue-400'},
-        {type: 'communication', icon: 'fas fa-comments', text: 'UX-001 shared user research findings', time: '5 min ago', color: 'text-green-400'},
-        {type: 'milestone', icon: 'fas fa-flag', text: 'Sprint 3 completed successfully', time: '15 min ago', color: 'text-yellow-400'},
-        {type: 'development', icon: 'fas fa-bug', text: 'QA-001 found and fixed critical bug', time: '23 min ago', color: 'text-red-400'},
-        {type: 'communication', icon: 'fas fa-handshake', text: 'PM-001 scheduled client meeting', time: '31 min ago', color: 'text-purple-400'},
-        {type: 'development', icon: 'fas fa-chart-line', text: 'Performance optimization completed', time: '45 min ago', color: 'text-cyan-400'},
-        {type: 'milestone', icon: 'fas fa-rocket', text: 'Beta version deployed to production', time: '1 hour ago', color: 'text-orange-400'},
-        {type: 'development', icon: 'fas fa-shield-alt', text: 'Security audit passed with A+ rating', time: '2 hours ago', color: 'text-green-400'}
-    ];
-    
-    const recentActivities = activities.map(activity => `
-        <div class="flex items-start space-x-3 p-2 rounded hover:bg-gray-700 transition-colors activity-item" data-type="${activity.type}">
-            <i class="${activity.icon} ${activity.color} mt-1"></i>
-            <div class="flex-1">
-                <div class="text-sm">${activity.text}</div>
-                <div class="text-xs opacity-50">${activity.time}</div>
-            </div>
-        </div>
-    `).join('');
-    
-    activityContainer.innerHTML = recentActivities;
-}
+      const rect = agent.element.getBoundingClientRect();
+      tooltip.style.left = rect.left + 'px';
+      tooltip.style.top = (rect.top - tooltip.offsetHeight - 10) + 'px';
 
-function updateFinancialMetrics() {
-    // Simulate financial data updates
-    const revenue = Math.floor(Math.random() * 50000) + 25000;
-    const burn = 75000 + Math.floor(Math.random() * 10000);
-    const runway = Math.max(0, 180 - project.days_elapsed);
-    
-    document.getElementById('monthlyRevenue').textContent = '$' + revenue.toLocaleString();
-    document.getElementById('monthlyBurn').textContent = '$' + burn.toLocaleString();
-    document.getElementById('runwayDays').textContent = runway;
-}
+      agent.element.tooltip = tooltip;
+  }
 
-function initializeFinancialChart() {
-    const trace1 = {
-        x: [0, 30, 60, 90, 120, 150, 180],
-        y: [0, 50000, 150000, 350000, 650000, 900000, 1000000],
-        type: 'scatter',
-        mode: 'lines+markers',
-        name: 'Target Revenue',
-        line: {color: '#10b981', width: 3, dash: 'dash'},
-        marker: {size: 8}
-    };
-    
-    const trace2 = {
-        x: [0, project.days_elapsed],
-        y: [0, project.revenue],
-        type: 'scatter',
-        mode: 'lines+markers',
-        name: 'Actual Revenue',
-        line: {color: '#f59e0b', width: 4},
-        marker: {size: 10}
-    };
-    
-    const layout = {
-        title: {
-            text: 'Revenue Progress - ' + project.name,
-            font: {size: 18, color: 'white'}
-        },
-        xaxis: {
-            title: 'Days',
-            gridcolor: 'rgba(255,255,255,0.1)',
-            color: 'white'
-        },
-        yaxis: {
-            title: 'Revenue ($)',
-            gridcolor: 'rgba(255,255,255,0.1)',
-            color: 'white'
-        },
-        paper_bgcolor: 'rgba(0,0,0,0)',
-        plot_bgcolor: 'rgba(0,0,0,0)',
-        font: {color: 'white'},
-        showlegend: true,
-        legend: {
-            bgcolor: 'rgba(0,0,0,0.5)',
-            bordercolor: 'rgba(255,255,255,0.3)',
-            borderwidth: 1
-        }
-    };
-    
-    Plotly.newPlot('financialChart', [trace1, trace2], layout, {responsive: true});
-}
+  function hideAgentTooltip() {
+      const tooltips = document.querySelectorAll('.agent-tooltip');
+      tooltips.forEach(tooltip => tooltip.remove());
+  }
 
-function toggleChartView(view) {
-    currentChartView = view;
-    
-    // Update button states
-    document.querySelectorAll('[onclick^="toggleChartView"]').forEach(btn => {
-        btn.className = btn.className.replace(/bg-\w+-600/, 'bg-gray-600');
-    });
-    event.target.className = event.target.className.replace(/bg-gray-600/, 'bg-' + 
-        (view === 'revenue' ? 'green' : view === 'burn' ? 'red' : 'yellow') + '-600');
-    
-    // Update chart based on view
-    // This would fetch different data based on the selected view
-    showNotification(`Switched to ${view} view`, 'info');
-}
+  function startSimulationLoop() {
+      setInterval(() => {
+          if (simulationRunning) {
+              updateAgents();
+              updateServerRacks();
+              updateTicker();
+              updateTeamStatus();
+              updateRecentActivity();
+              updateFinancialMetrics();
+          }
+      }, 1000 / simulationSpeed);
+  }
 
-function showAgentDetails(agentId) {
-    selectedAgent = agents.find(a => (a.agent_id || a.name) === agentId);
-    if (!selectedAgent) return;
-    
-    // Fetch detailed agent information
-    fetch(`/api/project/{{ project.project_id }}/agent/${agentId}`)
-        .then(response => response.json())
-        .then(data => {
-            populateAgentModal(data);
-            document.getElementById('agentModal').classList.remove('hidden');
-        })
-        .catch(error => {
-            console.error('Failed to fetch agent details:', error);
-            // Show demo data
-            populateAgentModalWithDemoData(selectedAgent);
-            document.getElementById('agentModal').classList.remove('hidden');
-        });
-}
+  function updateAgents() {
+      agents.forEach(agent => {
+          if (!agent.element) return;
 
-function populateAgentModal(agent) {
-    document.getElementById('agentModalTitle').textContent = `${agent.name} - ${agent.role}`;
-    
-    // Basic info
-    const basicInfo = `
-        <div class="space-y-3">
-            <div><strong>ID:</strong> ${agent.agent_id}</div>
-            <div><strong>Role:</strong> ${agent.role}</div>
-            <div><strong>Seniority:</strong> ${agent.seniority}</div>
-            <div><strong>Status:</strong> <span class="px-2 py-1 rounded text-xs" style="background-color: ${getStatusColor(agent.status)}">${agent.status}</span></div>
-            <div><strong>Energy:</strong> ${agent.energy || 95}%</div>
-            <div><strong>Morale:</strong> ${agent.morale || 92}%</div>
-            <div><strong>Productivity:</strong> ${agent.productivity || 88}%</div>
-        </div>
-    `;
-    document.getElementById('agentBasicInfo').innerHTML = basicInfo;
-    
-    // Skills
-    let skillsHTML = '<div class="space-y-3">';
-    if (agent.technical_skills) {
-        skillsHTML += '<div><strong>Technical Skills:</strong><div class="mt-2 space-y-1">';
-        Object.entries(agent.technical_skills).forEach(([skill, level]) => {
-            skillsHTML += `
-                <div class="flex justify-between items-center">
-                    <span class="text-sm">${skill}</span>
-                    <div class="flex-1 mx-2 bg-gray-700 rounded-full h-2">
-                        <div class="bg-blue-500 h-2 rounded-full" style="width: ${level}%"></div>
-                    </div>
-                    <span class="text-xs">${level}%</span>
-                </div>
-            `;
-        });
-        skillsHTML += '</div></div>';
-    }
-    if (agent.soft_skills) {
-        skillsHTML += '<div><strong>Soft Skills:</strong><div class="mt-2 space-y-1">';
-        Object.entries(agent.soft_skills).forEach(([skill, level]) => {
-            skillsHTML += `
-                <div class="flex justify-between items-center">
-                    <span class="text-sm">${skill}</span>
-                    <div class="flex-1 mx-2 bg-gray-700 rounded-full h-2">
-                        <div class="bg-green-500 h-2 rounded-full" style="width: ${level}%"></div>
-                    </div>
-                    <span class="text-xs">${level}%</span>
-                </div>
-            `;
-        });
-        skillsHTML += '</div></div>';
-    }
-    if (agent.specializations) {
-        skillsHTML += '<div><strong>Specializations:</strong><div class="mt-2 flex flex-wrap gap-1">';
-        agent.specializations.forEach(spec => {
-            skillsHTML += `<span class="px-2 py-1 bg-purple-600 rounded text-xs">${spec}</span>`;
-        });
-        skillsHTML += '</div></div>';
-    }
-    skillsHTML += '</div>';
-    document.getElementById('agentSkills').innerHTML = skillsHTML;
-    
-    // Status
-    const statusHTML = `
-        <div class="space-y-3">
-            <div><strong>Current Task:</strong> ${agent.current_task || 'Available for assignment'}</div>
-            <div><strong>Last Active:</strong> ${agent.last_active ? new Date(agent.last_active).toLocaleString() : 'Just now'}</div>
-            <div><strong>Location:</strong> Virtual Office (${Math.round(agent.location_x || 400)}, ${Math.round(agent.location_y || 300)})</div>
-        </div>
-    `;
-    document.getElementById('agentStatus').innerHTML = statusHTML;
-    
-    // Thought process
-    document.getElementById('agentThoughts').textContent = agent.thought_process || 
-        `Currently focused on ${agent.current_task || 'optimizing system performance'} and thinking about ${agent.specializations ? agent.specializations[0] : 'best practices'}.`;
-    
-    // Communications
-    const communications = [
-        {from: 'PM-001', to: agent.agent_id, message: 'Can you review the sprint backlog?', time: '5 min ago'},
-        {from: agent.agent_id, to: 'DEV-002', message: 'I\'ve pushed the latest changes to staging', time: '12 min ago'},
-        {from: 'UX-001', to: agent.agent_id, message: 'User testing results are ready for review', time: '18 min ago'},
-        {from: agent.agent_id, to: 'QA-001', message: 'Added comprehensive test coverage for new features', time: '25 min ago'}
-    ];
-    
-    const commsHTML = communications.map(comm => `
-        <div class="p-2 bg-gray-800 rounded text-xs">
-            <div class="flex justify-between">
-                <span class="font-bold">${comm.from} → ${comm.to}</span>
-                <span class="opacity-50">${comm.time}</span>
-            </div>
-            <div class="mt-1">${comm.message}</div>
-        </div>
-    `).join('');
-    document.getElementById('agentCommunications').innerHTML = commsHTML;
-    
-    // Work history
-    const workHistory = [
-        {task: 'Implemented user authentication system', status: 'completed', time: '2 hours ago'},
-        {task: 'Optimized database queries', status: 'completed', time: '4 hours ago'},
-        {task: 'Code review for sprint 3 features', status: 'completed', time: '6 hours ago'},
-        {task: 'Security audit preparation', status: 'in_progress', time: 'Current'},
-        {task: 'API documentation update', status: 'pending', time: 'Next'}
-    ];
-    
-    const workHTML = workHistory.map(work => `
-        <div class="flex justify-between items-center p-2 bg-gray-800 rounded text-xs">
-            <div class="flex-1">${work.task}</div>
-            <div class="flex items-center space-x-2">
-                <span class="px-2 py-1 rounded ${work.status === 'completed' ? 'bg-green-600' : work.status === 'in_progress' ? 'bg-yellow-600' : 'bg-gray-600'}">${work.status}</span>
-                <span class="opacity-50">${work.time}</span>
-            </div>
-        </div>
-    `).join('');
-    document.getElementById('agentWorkHistory').innerHTML = workHTML;
-}
+          // Random movement
+          if (Math.random() < 0.02) {
+              agent.targetX = Math.max(50, Math.min(750, agent.location_x + (Math.random() - 0.5) * 100));
+              agent.targetY = Math.max(50, Math.min(550, agent.location_y + (Math.random() - 0.5) * 100));
+          }
 
-function populateAgentModalWithDemoData(agent) {
-    // Create demo data for the modal
-    const demoAgent = {
-        agent_id: agent.name,
-        name: agent.name || 'Alex Chen',
-        role: agent.role || 'Principal Full-Stack Architect',
-        seniority: 'L7',
-        status: agent.status || 'working',
-        current_task: agent.current_task || 'Optimizing database performance',
-        location_x: agent.location_x || 400,
-        location_y: agent.location_y || 300,
-        energy: 95,
-        morale: 92,
-        productivity: 88,
-        thought_process: agent.thought_process,
-        technical_skills: {
-            'JavaScript': 95,
-            'Python': 88,
-            'React': 92,
-            'Node.js': 90,
-            'PostgreSQL': 85,
-            'Docker': 82
-        },
-        soft_skills: {
-            'Leadership': 85,
-            'Communication': 78,
-            'Problem Solving': 95,
-            'Teamwork': 88
-        },
-        specializations: ['System Architecture', 'Performance Optimization', 'Microservices'],
-        last_active: new Date().toISOString()
-    };
-    
-    populateAgentModal(demoAgent);
-}
+          // Move towards target
+          const dx = agent.targetX - agent.location_x;
+          const dy = agent.targetY - agent.location_y;
 
-function closeAgentModal() {
-    document.getElementById('agentModal').classList.add('hidden');
-}
+          if (Math.abs(dx) > 1) agent.location_x += dx * 0.1;
+          if (Math.abs(dy) > 1) agent.location_y += dy * 0.1;
 
-function showComputerSystem(agentId) {
-    // Show computer system details for the agent
-    document.getElementById('computerModal').classList.remove('hidden');
-    
-    // Populate computer system info
-    const systemInfo = `
-        <div><strong>Agent:</strong> ${agentId}</div>
-        <div><strong>System:</strong> Ubuntu 22.04 LTS</div>
-        <div><strong>CPU:</strong> Intel Core i9-12900K (16 cores)</div>
-        <div><strong>Memory:</strong> 64GB DDR5-5600</div>
-        <div><strong>Storage:</strong> 2TB NVMe SSD</div>
-        <div><strong>GPU:</strong> NVIDIA RTX 4090 (24GB)</div>
-        <div><strong>Network:</strong> 10Gbps Fiber</div>
-        <div><strong>Development Environment:</strong> VS Code + Docker</div>
-        <div><strong>Active Time:</strong> ${Math.floor(Math.random() * 12) + 6} hours</div>
-    `;
-    document.getElementById('systemInfo').innerHTML = systemInfo;
-    
-    // Active processes
-    const processes = [
-        {name: 'node app.js', cpu: '12%', memory: '245MB', pid: 1234},
-        {name: 'python manage.py', cpu: '8%', memory: '189MB', pid: 5678},
-        {name: 'docker container', cpu: '15%', memory: '1.2GB', pid: 9012},
-        {name: 'webpack --watch', cpu: '23%', memory: '456MB', pid: 3456},
-        {name: 'jest --watch', cpu: '5%', memory: '123MB', pid: 7890}
-    ];
-    
-    const processesHTML = processes.map(proc => `
-        <div class="flex justify-between items-center p-2 bg-gray-800 rounded text-xs">
-            <div class="flex-1">${proc.name}</div>
-            <div class="flex space-x-4">
-                <span>CPU: ${proc.cpu}</span>
-                <span>RAM: ${proc.memory}</span>
-                <span>PID: ${proc.pid}</span>
-            </div>
-        </div>
-    `).join('');
-    document.getElementById('activeProcesses').innerHTML = processesHTML;
-    
-    // Code view
-    const codeView = `
-        <div class="text-gray-400">// Current Development Session</div>
-        <div class="text-blue-400">import</div> <div class="text-white">React, { useState, useEffect }</div> <div class="text-blue-400">from</div> <div class="text-orange-400">'react'</div>;
-        <div class="text-blue-400">import</div> <div class="text-white">axios</div> <div class="text-blue-400">from</div> <div class="text-orange-400">'axios'</div>;
-        <br>
-        <div class="text-blue-400">const</div> <div class="text-yellow-400">DashboardComponent</div> = ({ <div class="text-white">projectId</div> }) => {
-        <div class="text-blue-400">const</div> [<div class="text-white">metrics</div>, <div class="text-white">setMetrics</div>] = <div class="text-yellow-400">useState</div>(<div class="text-blue-400">null</div>);
-        <br>
-        &nbsp;&nbsp;<div class="text-yellow-400">useEffect</div>(() => {
-        &nbsp;&nbsp;&nbsp;&nbsp;<div class="text-yellow-400">fetchMetrics</div>();
-        &nbsp;&nbsp;&nbsp;&nbsp;<div class="text-blue-400">const</div> <div class="text-white">interval</div> = <div class="text-yellow-400">setInterval</div>(<div class="text-white">fetchMetrics</div>, <div class="text-orange-400">5000</div>);
-        &nbsp;&nbsp;&nbsp;&nbsp;<div class="text-blue-400">return</div> () => <div class="text-yellow-400">clearInterval</div>(<div class="text-white">interval</div>);
-        &nbsp;&nbsp;}, [<div class="text-white">projectId</div>]);
-        <br>
-        &nbsp;&nbsp;<div class="text-blue-400">const</div> <div class="text-white">fetchMetrics</div> = <div class="text-blue-400">async</div> () => {
-        &nbsp;&nbsp;&nbsp;&nbsp;<div class="text-blue-400">try</div> {
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<div class="text-blue-400">const</div> <div class="text-white">response</div> = <div class="text-blue-400">await</div> <div class="text-white">axios</div>.<div class="text-yellow-400">get</div>(<div class="text-orange-400">`/api/project/${projectId}/metrics`</div>);
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<div class="text-white">setMetrics</div>(<div class="text-white">response</div>.<div class="text-white">data</div>);
-        &nbsp;&nbsp;&nbsp;&nbsp;} <div class="text-blue-400">catch</div> (<div class="text-white">error</div>) {
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<div class="text-yellow-400">console</div>.<div class="text-white">error</div>(<div class="text-orange-400">'Failed to fetch metrics:'</div>, <div class="text-white">error</div>);
-        &nbsp;&nbsp;&nbsp;&nbsp;}
-        &nbsp;&nbsp;};
-        <br>
-        &nbsp;&nbsp;<div class="text-blue-400">return</div> (
-        &nbsp;&nbsp;&nbsp;&nbsp;<div class="text-gray-400">// Component JSX would go here</div>
-        &nbsp;&nbsp;);
-        };
-        <br>
-        <div class="text-blue-400">export default</div> <div class="text-yellow-400">DashboardComponent</div>;
-    `;
-    document.getElementById('codeView').innerHTML = codeView;
-}
+          // Update position
+          agent.element.style.left = agent.location_x + 'px';
+          agent.element.style.top = agent.location_y + 'px';
 
-function closeComputerModal() {
-    document.getElementById('computerModal').classList.add('hidden');
-}
+          // Update status indicator
+          const statusIndicator = agent.element.querySelector('.agent-status-indicator');
+          if (statusIndicator) {
+              statusIndicator.style.backgroundColor = getStatusColor(agent.status);
+          }
 
-function toggleCodeView(type) {
-    // Update code view based on selected type
-    showNotification(`Switched to ${type} code view`, 'info');
-}
+          // Random thought updates
+          if (Math.random() < 0.005) {
+              updateAgentThoughts(agent);
+          }
+      });
+  }
 
-function toggleSimulation() {
-    simulationRunning = !simulationRunning;
-    const btn = document.getElementById('simToggleBtn');
-    
-    if (simulationRunning) {
-        btn.innerHTML = '<i class="fas fa-pause mr-1"></i>Running';
-        btn.className = 'bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm font-bold transition-colors';
-    } else {
-        btn.innerHTML = '<i class="fas fa-play mr-1"></i>Paused';
-        btn.className = 'bg-yellow-600 hover:bg-yellow-700 px-3 py-1 rounded text-sm font-bold transition-colors';
-    }
-}
+  function updateAgentThoughts(agent) {
+      const thoughts = [
+          `Optimizing ${project.name} performance...`,
+          `Reviewing code for ${agent.specializations ? agent.specializations[0] : 'general'} improvements...`,
+          `Collaborating with team on next sprint planning...`,
+          `Analyzing user feedback for feature improvements...`,
+          `Implementing security best practices...`,
+          `Refactoring legacy code for better maintainability...`,
+          `Writing comprehensive tests for new features...`,
+          `Documenting API endpoints and usage...`,
+          `Monitoring system performance metrics...`,
+          `Researching new technologies for implementation...`
+      ];
 
-function resetSimulation() {
-    if (confirm('Reset simulation to initial state? This will clear all progress.')) {
-        // Reset agent positions
-        agents.forEach(agent => {
-            if (agent.element) {
-                agent.location_x = Math.random() * 700 + 50;
-                agent.location_y = Math.random() * 500 + 50;
-                agent.targetX = agent.location_x;
-                agent.targetY = agent.location_y;
-                agent.element.style.left = agent.location_x + 'px';
-                agent.element.style.top = agent.location_y + 'px';
-            }
-        });
-        
-        showNotification('Simulation reset successfully', 'success');
-    }
-}
+      agent.thought_process = thoughts[Math.floor(Math.random() * thoughts.length)];
 
-function changeSpeed(speed) {
-    simulationSpeed = speed;
-    document.getElementById('simSpeed').textContent = speed + 'x';
-}
+      // Show thought bubble occasionally
+      if (Math.random() < 0.1) {
+          showThoughtBubble(agent);
+      }
+  }
 
-function sendMessage() {
-    const input = document.getElementById('chatInput');
-    const message = input.value.trim();
-    
-    if (!message) return;
-    
-    // Add user message to chat
-    addChatMessage('You', message, 'user');
-    input.value = '';
-    
-    // Send to backend
-    fetch(`/api/project/{{ project.project_id }}/message`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({message: message})
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Simulate CEO response
-            setTimeout(() => {
-                const responses = [
-                    `Excellent question! Let me check with our ${project.industry} specialist team.`,
-                    `Great insight. I'll have ${agents[Math.floor(Math.random() * agents.length)].name || 'our team'} analyze this further.`,
-                    `Thank you for the input. This aligns perfectly with our ${project.business_model} strategy.`,
-                    `I understand your concern. Let me schedule a meeting with the relevant departments.`,
-                    `That's a valuable perspective. I'll incorporate this into our development roadmap.`,
-                    `Excellent suggestion! This will help us better serve the ${project.target_market} market.`,
-                    `I appreciate your feedback. Our AI team will process this information immediately.`,
-                    `That's a strategic approach. Let me review our current priorities and resources.`
-                ];
-                
-                const response = responses[Math.floor(Math.random() * responses.length)];
-                addChatMessage('CEO-001 (Alex Chen)', response, 'agent');
-            }, 1000 + Math.random() * 2000);
-        }
-    })
-    .catch(error => {
-        showNotification('Failed to send message', 'error');
-    });
-}
+  function showThoughtBubble(agent) {
+      const bubble = document.createElement('div');
+      bubble.className = 'thought-bubble';
+      bubble.textContent = agent.thought_process;
+      bubble.style.left = (agent.location_x + 25) + 'px';
+      bubble.style.top = (agent.location_y - 40) + 'px';
 
-function sendQuickMessage(message) {
-    document.getElementById('chatInput').value = message;
-    sendMessage();
-}
+      document.getElementById('agentContainer').appendChild(bubble);
 
-function addChatMessage(sender, message, type) {
-    const chatContainer = document.getElementById('chatMessages');
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `mb-3 ${type === 'user' ? 'text-right' : 'text-left'}`;
-    
-    const messageClass = type === 'user' ? 'bg-blue-600' : 'bg-gray-600';
-    const icon = type === 'user' ? 'fas fa-user' : 'fas fa-robot';
-    
-    messageDiv.innerHTML = `
-        <div class="inline-block ${messageClass} px-4 py-2 rounded-lg text-sm max-w-xs text-left">
-            <div class="flex items-center space-x-2 mb-1">
-                <i class="${icon} text-xs"></i>
-                <span class="font-bold">${sender}</span>
-                <span class="text-xs opacity-75">${new Date().toLocaleTimeString()}</span>
-            </div>
-            <div class="text-sm">${message}</div>
-        </div>
-    `;
-    
-    chatContainer.appendChild(messageDiv);
-    chatContainer.scrollTop = chatContainer.scrollHeight;
-}
+      setTimeout(() => {
+          bubble.remove();
+      }, 4000);
+  }
 
-function generateDocuments() {
-    showNotification('Generating comprehensive business documents...', 'info');
-    
-    fetch(`/api/project/{{ project.project_id }}/generate_documents`, {
-        method: 'POST'
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showNotification('Documents generated successfully! Check the output folder.', 'success');
-            
-            // Show what documents were generated
-            setTimeout(() => {
-                addChatMessage('CEO-001 (Alex Chen)', 
-                    `Business documents have been generated! You'll find: Business Plan, Terms of Service, Privacy Policy, and Customer Agreement. Our legal team has ensured everything is compliant and professional.`, 
-                    'agent');
-            }, 2000);
-        } else {
-            showNotification(data.error || 'Failed to generate documents', 'error');
-        }
-    })
-    .catch(error => {
-        showNotification('Failed to generate documents', 'error');
-    });
-}
+  function updateServerRacks() {
+      for (let i = 1; i <= 8; i++) {
+          const server = document.getElementById('server' + i);
+          if (server) {
+              const usage = Math.random() * 100;
+              const intensity = Math.floor(usage * 2.55);
+              server.style.backgroundColor = `rgb(${Math.max(0, 255 - intensity)}, ${intensity}, 0)`;
 
-function scheduleMeeting() {
-    showNotification('Meeting scheduler coming soon!', 'info');
-    addChatMessage('CEO-001 (Alex Chen)', 
-        'I can help you schedule meetings with our team. For now, you can communicate with any agent through the chat interface. Would you like me to arrange a specific consultation?', 
-        'agent');
-}
+              // Update tooltip
+              const cpu = Math.floor(usage);
+              const memory = Math.floor(Math.random() * 100);
+              server.title = `CPU: ${cpu}% | Memory: ${memory}% | Temperature: ${Math.floor(35 + usage * 0.3)}°C`;
+          }
+      }
+  }
 
-function showOfficeOverview() {
-    showNotification('Office overview feature coming soon!', 'info');
-    addChatMessage('CEO-001 (Alex Chen)', 
-        'Great idea! An office overview would show you the complete layout, team distribution, and real-time productivity metrics. I\'ll have our UX team prioritize this feature.', 
-        'agent');
-}
+  function updateTicker() {
+      const ticker = document.getElementById('tickerText');
+      const messages = [
+          `ZTO Inc. - Revenue: ${Math.floor(Math.random() * 100000)} - Runway: ${180 - project.days_elapsed} days - Phase: ${project.current_phase}`,
+          `DEV-001: Optimizing database queries for ${project.name}`,
+          `UX-001: Conducting user research for ${project.target_market} segment`,
+          `PM-001: Planning next sprint with ${agents.length} active agents`,
+          `QA-001: Automated tests passing at 94% success rate`,
+          `CEO-001: Board meeting scheduled to review ${project.business_model} strategy`,
+          `ADMIN-002: Financial projections updated for Q4 planning`,
+          `DEV-005: Cloud infrastructure scaling for expected growth`,
+          `UX-002: New UI mockups ready for ${project.industry} standards`,
+          `DEV-010: Security audit completed with A+ rating`
+      ];
 
-function showSystemOverview() {
-    showComputerSystem('System-001');
-}
+      if (Math.random() < 0.1) {
+          ticker.textContent = messages[Math.floor(Math.random() * messages.length)];
+      }
 
-function filterActivity(type) {
-    const activities = document.querySelectorAll('.activity-item');
-    activities.forEach(activity => {
-        if (type === 'all' || activity.dataset.type === type) {
-            activity.style.display = 'flex';
-        } else {
-            activity.style.display = 'none';
-        }
-    });
-}
+      // Animate ticker
+      const tickerContent = ticker.parentElement;
+      tickerContent.style.transform = 'translateX(-10px)';
+      setTimeout(() => {
+          tickerContent.style.transform = 'translateX(0)';
+      }, 100);
+  }
 
-function loadProjectStatus() {
-    // Load initial project data
-    fetch(`/api/project/{{ project.project_id }}/status`)
-        .then(response => response.json())
-        .then(data => {
-            updateFinancialChart(data.company_state);
-        })
-        .catch(error => {
-            console.error('Failed to load project status:', error);
-        });
-}
+  function updateTeamStatus() {
+      const statusContainer = document.getElementById('teamStatus');
 
-function updateFinancialChart(companyState) {
-    // This would update the chart with real data
-    if (companyState) {
-        // Update chart with real data
-    }
-}
+      if (agents.length === 0) {
+          statusContainer.innerHTML = '<div class="text-center opacity-50">Loading team status...</div>';
+          return;
+      }
 
-// Initialize everything when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    initializeSimulation();
-    
-    // Chat input enter key
-    document.getElementById('chatInput').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            sendMessage();
-        }
-    });
-    
-    // Auto-refresh every 10 seconds
-    setInterval(loadProjectStatus, 10000);
-    
-    // Add CSS for enhanced elements
-    const style = document.createElement('style');
-    style.textContent = `
-        .enhanced-agent {
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .enhanced-agent:hover {
-            transform: scale(1.2);
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
-            z-index: 100;
-        }
-        
-        .agent-status-indicator {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            border: 2px solid white;
-        }
-        
-        .thought-bubble {
-            position: absolute;
-            background: rgba(0, 0, 0, 0.9);
-            color: white;
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 11px;
-            max-width: 200px;
-            z-index: 200;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-        }
-        
-        .thought-bubble::after {
-            content: '';
-            position: absolute;
-            bottom: -8px;
-            left: 20px;
-            border-left: 8px solid transparent;
-            border-right: 8px solid transparent;
-            border-top: 8px solid rgba(0, 0, 0, 0.9);
-        }
-        
-        .office-background {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(45deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-        }
-        
-        .wall-horizontal {
-            background: linear-gradient(90deg, #4a5568, #2d3748);
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
-        }
-        
-        .wall-vertical {
-            background: linear-gradient(180deg, #4a5568, #2d3748);
-            box-shadow: inset 2px 0 4px rgba(0, 0, 0, 0.3);
-        }
-        
-        .room {
-            border-radius: 8px;
-            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
-        }
-        
-        .room-label {
-            position: absolute;
-            top: 5px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 10px;
-            font-weight: bold;
-            color: rgba(255, 255, 255, 0.8);
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
-        }
-        
-        .server-rack {
-            background: linear-gradient(180deg, #2d3748, #1a202c);
-            border-radius: 4px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
-        }
-        
-        .server-unit {
-            border-radius: 2px;
-            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
-            transition: all 0.3s ease;
-        }
-        
-        .interactive-elements {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            pointer-events: none;
-        }
-        
-        .coffee-machine, .water-cooler, .printer {
-            position: absolute;
-            width: 30px;
-            height: 30px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 4px;
-            cursor: pointer;
-            pointer-events: all;
-            transition: all 0.3s ease;
-        }
-        
-        .coffee-machine:hover, .water-cooler:hover, .printer:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: scale(1.1);
-        }
-        
-        .coffee-machine {
-            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23d97706"><path d="M4 19h16v2H4zm4-8h8c2.21 0 4 1.79 4 4v4H4v-4c0-2.21 1.79-4 4-4zm0 2c-1.1 0-2 .9-2 2v2h12v-2c0-1.1-.9-2-2-2H8z"/></svg>');
-            background-size: 20px;
-            background-repeat: no-repeat;
-            background-position: center;
-        }
-        
-        .water-cooler {
-            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%233b82f6"><path d="M12 2c-4.97 0-9 4.03-9 9 0 4.97 4.03 9 9 9s9-4.03 9-9c0-4.97-4.03-9-9-9zm0 16c-3.86 0-7-3.14-7-7s3.14-7 7-7 7 3.14 7 7-3.14 7-7 7z"/></svg>');
-            background-size: 20px;
-            background-repeat: no-repeat;
-            background-position: center;
-        }
-        
-        .printer {
-            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%238b5cf6"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>');
-            background-size: 20px;
-            background-repeat: no-repeat;
-            background-position: center;
-        }
-        
-        .led-ticker {
-            background: linear-gradient(90deg, #000000, #1a1a1a);
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
-        }
-        
-        .ticker-content {
-            display: inline-block;
-            white-space: nowrap;
-            animation: scroll-left 30s linear infinite;
-        }
-        
-        @keyframes scroll-left {
-            0% { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
-        }
-    `;
-    document.head.appendChild(style);
-});
+      const statusHTML = agents.slice(0, 8).map(agent => {
+          const statusColor = getStatusColor(agent.status);
+          return `
+              <div class="flex justify-between items-center p-2 bg-gray-800 rounded hover:bg-gray-700 transition-colors cursor-pointer"
+                   onclick="showAgentDetails('${agent.agent_id || agent.name}')">
+                  <div>
+                      <div class="font-bold text-sm">${agent.name || agent.agent_id}</div>
+                      <div class="text-xs opacity-75">${agent.role || 'Developer'}</div>
+                  </div>
+                  <div class="flex items-center space-x-2">
+                      <div class="w-3 h-3 rounded-full" style="background-color: ${statusColor}"></div>
+                      <span class="text-xs">${agent.status || 'working'}</span>
+                  </div>
+              </div>
+          `;
+      }).join('');
+
+      statusContainer.innerHTML = statusHTML;
+
+      // Update team morale
+      const morale = Math.floor(Math.random() * 20) + 85; // 85-105%
+      document.getElementById('teamMoraleValue').textContent = morale + '%';
+      document.getElementById('teamMoraleBar').style.width = Math.min(morale, 100) + '%';
+  }
+
+  function updateRecentActivity() {
+      const activityContainer = document.getElementById('recentActivity');
+
+      const activities = [
+          {type: 'development', icon: 'fas fa-code', text: 'DEV-001 pushed new feature to staging', time: '2 min ago', color: 'text-blue-400'},
+          {type: 'communication', icon: 'fas fa-comments', text: 'UX-001 shared user research findings', time: '5 min ago', color: 'text-green-400'},
+          {type: 'milestone', icon: 'fas fa-flag', text: 'Sprint 3 completed successfully', time: '15 min ago', color: 'text-yellow-400'},
+          {type: 'development', icon: 'fas fa-bug', text: 'QA-001 found and fixed critical bug', time: '23 min ago', color: 'text-red-400'},
+          {type: 'communication', icon: 'fas fa-handshake', text: 'PM-001 scheduled client meeting', time: '31 min ago', color: 'text-purple-400'},
+          {type: 'development', icon: 'fas fa-chart-line', text: 'Performance optimization completed', time: '45 min ago', color: 'text-cyan-400'},
+          {type: 'milestone', icon: 'fas fa-rocket', text: 'Beta version deployed to production', time: '1 hour ago', color: 'text-orange-400'},
+          {type: 'development', icon: 'fas fa-shield-alt', text: 'Security audit passed with A+ rating', time: '2 hours ago', color: 'text-green-400'}
+      ];
+
+      const recentActivities = activities.map(activity => `
+          <div class="flex items-start space-x-3 p-2 rounded hover:bg-gray-700 transition-colors activity-item" data-type="${activity.type}">
+              <i class="${activity.icon} ${activity.color} mt-1"></i>
+              <div class="flex-1">
+                  <div class="text-sm">${activity.text}</div>
+                  <div class="text-xs opacity-50">${activity.time}</div>
+              </div>
+          </div>
+      `).join('');
+
+      activityContainer.innerHTML = recentActivities;
+  }
+
+  function updateFinancialMetrics() {
+      // Simulate financial data updates
+      const revenue = Math.floor(Math.random() * 50000) + 25000;
+      const burn = 75000 + Math.floor(Math.random() * 10000);
+      const runway = Math.max(0, 180 - project.days_elapsed);
+
+      document.getElementById('monthlyRevenue').textContent = '$' + revenue.toLocaleString();
+      document.getElementById('monthlyBurn').textContent = '$' + burn.toLocaleString();
+      document.getElementById('runwayDays').textContent = runway;
+  }
+
+  function initializeFinancialChart() {
+      const trace1 = {
+          x: [0, 30, 60, 90, 120, 150, 180],
+          y: [0, 50000, 150000, 350000, 650000, 900000, 1000000],
+          type: 'scatter',
+          mode: 'lines+markers',
+          name: 'Target Revenue',
+          line: {color: '#10b981', width: 3, dash: 'dash'},
+          marker: {size: 8}
+      };
+
+      const trace2 = {
+          x: [0, project.days_elapsed],
+          y: [0, project.revenue],
+          type: 'scatter',
+          mode: 'lines+markers',
+          name: 'Actual Revenue',
+          line: {color: '#f59e0b', width: 4},
+          marker: {size: 10}
+      };
+
+      const layout = {
+          title: {
+              text: 'Revenue Progress - ' + project.name,
+              font: {size: 18, color: 'white'}
+          },
+          xaxis: {
+              title: 'Days',
+              gridcolor: 'rgba(255,255,255,0.1)',
+              color: 'white'
+          },
+          yaxis: {
+              title: 'Revenue ($)',
+              gridcolor: 'rgba(255,255,255,0.1)',
+              color: 'white'
+          },
+          paper_bgcolor: 'rgba(0,0,0,0)',
+          plot_bgcolor: 'rgba(0,0,0,0)',
+          font: {color: 'white'},
+          showlegend: true,
+          legend: {
+              bgcolor: 'rgba(0,0,0,0.5)',
+              bordercolor: 'rgba(255,255,255,0.3)',
+              borderwidth: 1
+          }
+      };
+
+      Plotly.newPlot('financialChart', [trace1, trace2], layout, {responsive: true});
+  }
+
+  function toggleChartView(view) {
+      currentChartView = view;
+
+      // Update button states
+      document.querySelectorAll('[onclick^="toggleChartView"]').forEach(btn => {
+          btn.className = btn.className.replace(/bg-\w+-600/, 'bg-gray-600');
+      });
+      event.target.className = event.target.className.replace(/bg-gray-600/, 'bg-' +
+          (view === 'revenue' ? 'green' : view === 'burn' ? 'red' : 'yellow') + '-600');
+
+      // Update chart based on view
+      // This would fetch different data based on the selected view
+      showNotification(`Switched to ${view} view`, 'info');
+  }
+
+  function showAgentDetails(agentId) {
+      selectedAgent = agents.find(a => (a.agent_id || a.name) === agentId);
+      if (!selectedAgent) return;
+
+      // Fetch detailed agent information
+      fetch(`/api/project/{{ project.project_id }}/agent/${agentId}`)
+          .then(response => response.json())
+          .then(data => {
+              populateAgentModal(data);
+              document.getElementById('agentModal').classList.remove('hidden');
+          })
+          .catch(error => {
+              console.error('Failed to fetch agent details:', error);
+              // Show demo data
+              populateAgentModalWithDemoData(selectedAgent);
+              document.getElementById('agentModal').classList.remove('hidden');
+          });
+  }
+
+  function populateAgentModal(agent) {
+      document.getElementById('agentModalTitle').textContent = `${agent.name} - ${agent.role}`;
+
+      // Basic info
+      const basicInfo = `
+          <div class="space-y-3">
+              <div><strong>ID:</strong> ${agent.agent_id}</div>
+              <div><strong>Role:</strong> ${agent.role}</div>
+              <div><strong>Seniority:</strong> ${agent.seniority}</div>
+              <div><strong>Status:</strong> <span class="px-2 py-1 rounded text-xs" style="background-color: ${getStatusColor(agent.status)}">${agent.status}</span></div>
+              <div><strong>Energy:</strong> ${agent.energy || 95}%</div>
+              <div><strong>Morale:</strong> ${agent.morale || 92}%</div>
+              <div><strong>Productivity:</strong> ${agent.productivity || 88}%</div>
+          </div>
+      `;
+      document.getElementById('agentBasicInfo').innerHTML = basicInfo;
+
+      // Skills
+      let skillsHTML = '<div class="space-y-3">';
+      if (agent.technical_skills) {
+          skillsHTML += '<div><strong>Technical Skills:</strong><div class="mt-2 space-y-1">';
+          Object.entries(agent.technical_skills).forEach(([skill, level]) => {
+              skillsHTML += `
+                  <div class="flex justify-between items-center">
+                      <span class="text-sm">${skill}</span>
+                      <div class="flex-1 mx-2 bg-gray-700 rounded-full h-2">
+                          <div class="bg-blue-500 h-2 rounded-full" style="width: ${level}%"></div>
+                      </div>
+                      <span class="text-xs">${level}%</span>
+                  </div>
+              `;
+          });
+          skillsHTML += '</div></div>';
+      }
+      if (agent.soft_skills) {
+          skillsHTML += '<div><strong>Soft Skills:</strong><div class="mt-2 space-y-1">';
+          Object.entries(agent.soft_skills).forEach(([skill, level]) => {
+              skillsHTML += `
+                  <div class="flex justify-between items-center">
+                      <span class="text-sm">${skill}</span>
+                      <div class="flex-1 mx-2 bg-gray-700 rounded-full h-2">
+                          <div class="bg-green-500 h-2 rounded-full" style="width: ${level}%"></div>
+                      </div>
+                      <span class="text-xs">${level}%</span>
+                  </div>
+              `;
+          });
+          skillsHTML += '</div></div>';
+      }
+      if (agent.specializations) {
+          skillsHTML += '<div><strong>Specializations:</strong><div class="mt-2 flex flex-wrap gap-1">';
+          agent.specializations.forEach(spec => {
+              skillsHTML += `<span class="px-2 py-1 bg-purple-600 rounded text-xs">${spec}</span>`;
+          });
+          skillsHTML += '</div></div>';
+      }
+      skillsHTML += '</div>';
+      document.getElementById('agentSkills').innerHTML = skillsHTML;
+
+      // Status
+      const statusHTML = `
+          <div class="space-y-3">
+              <div><strong>Current Task:</strong> ${agent.current_task || 'Available for assignment'}</div>
+              <div><strong>Last Active:</strong> ${agent.last_active ? new Date(agent.last_active).toLocaleString() : 'Just now'}</div>
+              <div><strong>Location:</strong> Virtual Office (${Math.round(agent.location_x || 400)}, ${Math.round(agent.location_y || 300)})</div>
+          </div>
+      `;
+      document.getElementById('agentStatus').innerHTML = statusHTML;
+
+      // Thought process
+      document.getElementById('agentThoughts').textContent = agent.thought_process ||
+          `Currently focused on ${agent.current_task || 'optimizing system performance'} and thinking about ${agent.specializations ? agent.specializations[0] : 'best practices'}.`;
+
+      // Communications
+      const communications = [
+          {from: 'PM-001', to: agent.agent_id, message: 'Can you review the sprint backlog?', time: '5 min ago'},
+          {from: agent.agent_id, to: 'DEV-002', message: 'I\'ve pushed the latest changes to staging', time: '12 min ago'},
+          {from: 'UX-001', to: agent.agent_id, message: 'User testing results are ready for review', time: '18 min ago'},
+          {from: agent.agent_id, to: 'QA-001', message: 'Added comprehensive test coverage for new features', time: '25 min ago'}
+      ];
+
+      const commsHTML = communications.map(comm => `
+          <div class="p-2 bg-gray-800 rounded text-xs">
+              <div class="flex justify-between">
+                  <span class="font-bold">${comm.from} → ${comm.to}</span>
+                  <span class="opacity-50">${comm.time}</span>
+              </div>
+              <div class="mt-1">${comm.message}</div>
+          </div>
+      `).join('');
+      document.getElementById('agentCommunications').innerHTML = commsHTML;
+
+      // Work history
+      const workHistory = [
+          {task: 'Implemented user authentication system', status: 'completed', time: '2 hours ago'},
+          {task: 'Optimized database queries', status: 'completed', time: '4 hours ago'},
+          {task: 'Code review for sprint 3 features', status: 'completed', time: '6 hours ago'},
+          {task: 'Security audit preparation', status: 'in_progress', time: 'Current'},
+          {task: 'API documentation update', status: 'pending', time: 'Next'}
+      ];
+
+      const workHTML = workHistory.map(work => `
+          <div class="flex justify-between items-center p-2 bg-gray-800 rounded text-xs">
+              <div class="flex-1">${work.task}</div>
+              <div class="flex items-center space-x-2">
+                  <span class="px-2 py-1 rounded ${work.status === 'completed' ? 'bg-green-600' : work.status === 'in_progress' ? 'bg-yellow-600' : 'bg-gray-600'}">${work.status}</span>
+                  <span class="opacity-50">${work.time}</span>
+              </div>
+          </div>
+      `).join('');
+      document.getElementById('agentWorkHistory').innerHTML = workHTML;
+  }
+
+  function populateAgentModalWithDemoData(agent) {
+      // Create demo data for the modal
+      const demoAgent = {
+          agent_id: agent.name,
+          name: agent.name || 'Alex Chen',
+          role: agent.role || 'Principal Full-Stack Architect',
+          seniority: 'L7',
+          status: agent.status || 'working',
+          current_task: agent.current_task || 'Optimizing database performance',
+          location_x: agent.location_x || 400,
+          location_y: agent.location_y || 300,
+          energy: 95,
+          morale: 92,
+          productivity: 88,
+          thought_process: agent.thought_process,
+          technical_skills: {
+              'JavaScript': 95,
+              'Python': 88,
+              'React': 92,
+              'Node.js': 90,
+              'PostgreSQL': 85,
+              'Docker': 82
+          },
+          soft_skills: {
+              'Leadership': 85,
+              'Communication': 78,
+              'Problem Solving': 95,
+              'Teamwork': 88
+          },
+          specializations: ['System Architecture', 'Performance Optimization', 'Microservices'],
+          last_active: new Date().toISOString()
+      };
+
+      populateAgentModal(demoAgent);
+  }
+
+  function closeAgentModal() {
+      document.getElementById('agentModal').classList.add('hidden');
+  }
+
+  function showComputerSystem(agentId) {
+      // Show computer system details for the agent
+      document.getElementById('computerModal').classList.remove('hidden');
+
+      // Populate computer system info
+      const systemInfo = `
+          <div><strong>Agent:</strong> ${agentId}</div>
+          <div><strong>System:</strong> Ubuntu 22.04 LTS</div>
+          <div><strong>CPU:</strong> Intel Core i9-12900K (16 cores)</div>
+          <div><strong>Memory:</strong> 64GB DDR5-5600</div>
+          <div><strong>Storage:</strong> 2TB NVMe SSD</div>
+          <div><strong>GPU:</strong> NVIDIA RTX 4090 (24GB)</div>
+          <div><strong>Network:</strong> 10Gbps Fiber</div>
+          <div><strong>Development Environment:</strong> VS Code + Docker</div>
+          <div><strong>Active Time:</strong> ${Math.floor(Math.random() * 12) + 6} hours</div>
+      `;
+      document.getElementById('systemInfo').innerHTML = systemInfo;
+
+      // Active processes
+      const processes = [
+          {name: 'node app.js', cpu: '12%', memory: '245MB', pid: 1234},
+          {name: 'python manage.py', cpu: '8%', memory: '189MB', pid: 5678},
+          {name: 'docker container', cpu: '15%', memory: '1.2GB', pid: 9012},
+          {name: 'webpack --watch', cpu: '23%', memory: '456MB', pid: 3456},
+          {name: 'jest --watch', cpu: '5%', memory: '123MB', pid: 7890}
+      ];
+
+      const processesHTML = processes.map(proc => `
+          <div class="flex justify-between items-center p-2 bg-gray-800 rounded text-xs">
+              <div class="flex-1">${proc.name}</div>
+              <div class="flex space-x-4">
+                  <span>CPU: ${proc.cpu}</span>
+                  <span>RAM: ${proc.memory}</span>
+                  <span>PID: ${proc.pid}</span>
+              </div>
+          </div>
+      `).join('');
+      document.getElementById('activeProcesses').innerHTML = processesHTML;
+
+      // Code view
+      const codeView = `
+          <div class="text-gray-400">// Current Development Session</div>
+          <div class="text-blue-400">import</div> <div class="text-white">React, { useState, useEffect }</div> <div class="text-blue-400">from</div> <div class="text-orange-400">'react'</div>;
+          <div class="text-blue-400">import</div> <div class="text-white">axios</div> <div class="text-blue-400">from</div> <div class="text-orange-400">'axios'</div>;
+          <br>
+          <div class="text-blue-400">const</div> <div class="text-yellow-400">DashboardComponent</div> = ({ <div class="text-white">projectId</div> }) => {
+          <div class="text-blue-400">const</div> [<div class="text-white">metrics</div>, <div class="text-white">setMetrics</div>] = <div class="text-yellow-400">useState</div>(<div class="text-blue-400">null</div>);
+          <br>
+          &nbsp;&nbsp;<div class="text-yellow-400">useEffect</div>(() => {
+          &nbsp;&nbsp;&nbsp;&nbsp;<div class="text-yellow-400">fetchMetrics</div>();
+          &nbsp;&nbsp;&nbsp;&nbsp;<div class="text-blue-400">const</div> <div class="text-white">interval</div> = <div class="text-yellow-400">setInterval</div>(<div class="text-white">fetchMetrics</div>, <div class="text-orange-400">5000</div>);
+          &nbsp;&nbsp;&nbsp;&nbsp;<div class="text-blue-400">return</div> () => <div class="text-yellow-400">clearInterval</div>(<div class="text-white">interval</div>);
+          &nbsp;&nbsp;}, [<div class="text-white">projectId</div>]);
+          <br>
+          &nbsp;&nbsp;<div class="text-blue-400">const</div> <div class="text-white">fetchMetrics</div> = <div class="text-blue-400">async</div> () => {
+          &nbsp;&nbsp;&nbsp;&nbsp;<div class="text-blue-400">try</div> {
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<div class="text-blue-400">const</div> <div class="text-white">response</div> = <div class="text-blue-400">await</div> <div class="text-white">axios</div>.<div class="text-yellow-400">get</div>(<div class="text-orange-400">`/api/project/${projectId}/metrics`</div>);
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<div class="text-white">setMetrics</div>(<div class="text-white">response</div>.<div class="text-white">data</div>);
+          &nbsp;&nbsp;&nbsp;&nbsp;} <div class="text-blue-400">catch</div> (<div class="text-white">error</div>) {
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<div class="text-yellow-400">console</div>.<div class="text-white">error</div>(<div class="text-orange-400">'Failed to fetch metrics:'</div>, <div class="text-white">error</div>);
+          &nbsp;&nbsp;&nbsp;&nbsp;}
+          &nbsp;&nbsp;};
+          <br>
+          &nbsp;&nbsp;<div class="text-blue-400">return</div> (
+          &nbsp;&nbsp;&nbsp;&nbsp;<div class="text-gray-400">// Component JSX would go here</div>
+          &nbsp;&nbsp;);
+          };
+          <br>
+          <div class="text-blue-400">export default</div> <div class="text-yellow-400">DashboardComponent</div>;
+      `;
+      document.getElementById('codeView').innerHTML = codeView;
+  }
+
+  function closeComputerModal() {
+      document.getElementById('computerModal').classList.add('hidden');
+  }
+
+  function toggleCodeView(type) {
+      // Update code view based on selected type
+      showNotification(`Switched to ${type} code view`, 'info');
+  }
+
+  function toggleSimulation() {
+      simulationRunning = !simulationRunning;
+      const btn = document.getElementById('simToggleBtn');
+
+      if (simulationRunning) {
+          btn.innerHTML = '<i class="fas fa-pause mr-1"></i>Running';
+          btn.className = 'bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm font-bold transition-colors';
+      } else {
+          btn.innerHTML = '<i class="fas fa-play mr-1"></i>Paused';
+          btn.className = 'bg-yellow-600 hover:bg-yellow-700 px-3 py-1 rounded text-sm font-bold transition-colors';
+      }
+  }
+
+  function resetSimulation() {
+      if (confirm('Reset simulation to initial state? This will clear all progress.')) {
+          // Reset agent positions
+          agents.forEach(agent => {
+              if (agent.element) {
+                  agent.location_x = Math.random() * 700 + 50;
+                  agent.location_y = Math.random() * 500 + 50;
+                  agent.targetX = agent.location_x;
+                  agent.targetY = agent.location_y;
+                  agent.element.style.left = agent.location_x + 'px';
+                  agent.element.style.top = agent.location_y + 'px';
+              }
+          });
+
+          showNotification('Simulation reset successfully', 'success');
+      }
+  }
+
+  function changeSpeed(speed) {
+      simulationSpeed = speed;
+      document.getElementById('simSpeed').textContent = speed + 'x';
+  }
+
+  function sendMessage() {
+      const input = document.getElementById('chatInput');
+      const message = input.value.trim();
+
+      if (!message) return;
+
+      // Add user message to chat
+      addChatMessage('You', message, 'user');
+      input.value = '';
+
+      // Send to backend
+      fetch(`/api/project/{{ project.project_id }}/message`, {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({message: message})
+      })
+      .then(response => response.json())
+      .then(data => {
+          if (data.success) {
+              // Simulate CEO response
+              setTimeout(() => {
+                  const responses = [
+                      `Excellent question! Let me check with our ${project.industry} specialist team.`,
+                      `Great insight. I'll have ${agents[Math.floor(Math.random() * agents.length)].name || 'our team'} analyze this further.`,
+                      `Thank you for the input. This aligns perfectly with our ${project.business_model} strategy.`,
+                      `I understand your concern. Let me schedule a meeting with the relevant departments.`,
+                      `That's a valuable perspective. I'll incorporate this into our development roadmap.`,
+                      `Excellent suggestion! This will help us better serve the ${project.target_market} market.`,
+                      `I appreciate your feedback. Our AI team will process this information immediately.`,
+                      `That's a strategic approach. Let me review our current priorities and resources.`
+                  ];
+
+                  const response = responses[Math.floor(Math.random() * responses.length)];
+                  addChatMessage('CEO-001 (Alex Chen)', response, 'agent');
+              }, 1000 + Math.random() * 2000);
+          }
+      })
+      .catch(error => {
+          showNotification('Failed to send message', 'error');
+      });
+  }
+
+  function sendQuickMessage(message) {
+      document.getElementById('chatInput').value = message;
+      sendMessage();
+  }
+
+  function addChatMessage(sender, message, type) {
+      const chatContainer = document.getElementById('chatMessages');
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `mb-3 ${type === 'user' ? 'text-right' : 'text-left'}`;
+
+      const messageClass = type === 'user' ? 'bg-blue-600' : 'bg-gray-600';
+      const icon = type === 'user' ? 'fas fa-user' : 'fas fa-robot';
+
+      messageDiv.innerHTML = `
+          <div class="inline-block ${messageClass} px-4 py-2 rounded-lg text-sm max-w-xs text-left">
+              <div class="flex items-center space-x-2 mb-1">
+                  <i class="${icon} text-xs"></i>
+                  <span class="font-bold">${sender}</span>
+                  <span class="text-xs opacity-75">${new Date().toLocaleTimeString()}</span>
+              </div>
+              <div class="text-sm">${message}</div>
+          </div>
+      `;
+
+      chatContainer.appendChild(messageDiv);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+  }
+
+  function generateDocuments() {
+      showNotification('Generating comprehensive business documents...', 'info');
+
+      fetch(`/api/project/{{ project.project_id }}/generate_documents`, {
+          method: 'POST'
+      })
+      .then(response => response.json())
+      .then(data => {
+          if (data.success) {
+              showNotification('Documents generated successfully! Check the output folder.', 'success');
+
+              // Show what documents were generated
+              setTimeout(() => {
+                  addChatMessage('CEO-001 (Alex Chen)',
+                      `Business documents have been generated! You'll find: Business Plan, Terms of Service, Privacy Policy, and Customer Agreement. Our legal team has ensured everything is compliant and professional.`,
+                      'agent');
+              }, 2000);
+          } else {
+              showNotification(data.error || 'Failed to generate documents', 'error');
+          }
+      })
+      .catch(error => {
+          showNotification('Failed to generate documents', 'error');
+      });
+  }
+
+  function scheduleMeeting() {
+      showNotification('Meeting scheduler coming soon!', 'info');
+      addChatMessage('CEO-001 (Alex Chen)',
+          'I can help you schedule meetings with our team. For now, you can communicate with any agent through the chat interface. Would you like me to arrange a specific consultation?',
+          'agent');
+  }
+
+  function showOfficeOverview() {
+      showNotification('Office overview feature coming soon!', 'info');
+      addChatMessage('CEO-001 (Alex Chen)',
+          'Great idea! An office overview would show you the complete layout, team distribution, and real-time productivity metrics. I\'ll have our UX team prioritize this feature.',
+          'agent');
+  }
+
+  function showSystemOverview() {
+      showComputerSystem('System-001');
+  }
+
+  function filterActivity(type) {
+      const activities = document.querySelectorAll('.activity-item');
+      activities.forEach(activity => {
+          if (type === 'all' || activity.dataset.type === type) {
+              activity.style.display = 'flex';
+          } else {
+              activity.style.display = 'none';
+          }
+      });
+  }
+
+  function loadProjectStatus() {
+      // Load initial project data
+      fetch(`/api/project/{{ project.project_id }}/status`)
+          .then(response => response.json())
+          .then(data => {
+              updateFinancialChart(data.company_state);
+          })
+          .catch(error => {
+              console.error('Failed to load project status:', error);
+          });
+  }
+
+  function updateFinancialChart(companyState) {
+      // This would update the chart with real data
+      if (companyState) {
+          // Update chart with real data
+      }
+  }
+
+  // Initialize everything when page loads
+  document.addEventListener('DOMContentLoaded', function() {
+      initializeSimulation();
+
+      // Chat input enter key
+      document.getElementById('chatInput').addEventListener('keypress', function(e) {
+          if (e.key === 'Enter') {
+              sendMessage();
+          }
+      });
+
+      // Auto-refresh every 10 seconds
+      setInterval(loadProjectStatus, 10000);
+
+      // Add CSS for enhanced elements
+      const style = document.createElement('style');
+      style.textContent = `
+          .enhanced-agent {
+              border: 2px solid rgba(255, 255, 255, 0.3);
+              box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+              cursor: pointer;
+              transition: all 0.3s ease;
+          }
+
+          .enhanced-agent:hover {
+              transform: scale(1.2);
+              box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+              z-index: 100;
+          }
+
+          .agent-status-indicator {
+              position: absolute;
+              top: -5px;
+              right: -5px;
+              width: 8px;
+              height: 8px;
+              border-radius: 50%;
+              border: 2px solid white;
+          }
+
+          .thought-bubble {
+              position: absolute;
+              background: rgba(0, 0, 0, 0.9);
+              color: white;
+              padding: 8px 12px;
+              border-radius: 8px;
+              font-size: 11px;
+              max-width: 200px;
+              z-index: 200;
+              border: 1px solid rgba(255, 255, 255, 0.3);
+              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+          }
+
+          .thought-bubble::after {
+              content: '';
+              position: absolute;
+              bottom: -8px;
+              left: 20px;
+              border-left: 8px solid transparent;
+              border-right: 8px solid transparent;
+              border-top: 8px solid rgba(0, 0, 0, 0.9);
+          }
+
+          .office-background {
+              position: absolute;
+              top: 0;
+              left: 0;
+              right: 0;
+              bottom: 0;
+              background: linear-gradient(45deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+          }
+
+          .wall-horizontal {
+              background: linear-gradient(90deg, #4a5568, #2d3748);
+              box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+          }
+
+          .wall-vertical {
+              background: linear-gradient(180deg, #4a5568, #2d3748);
+              box-shadow: inset 2px 0 4px rgba(0, 0, 0, 0.3);
+          }
+
+          .room {
+              border-radius: 8px;
+              box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+          }
+
+          .room-label {
+              position: absolute;
+              top: 5px;
+              left: 50%;
+              transform: translateX(-50%);
+              font-size: 10px;
+              font-weight: bold;
+              color: rgba(255, 255, 255, 0.8);
+              text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+          }
+
+          .server-rack {
+              background: linear-gradient(180deg, #2d3748, #1a202c);
+              border-radius: 4px;
+              box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+          }
+
+          .server-unit {
+              border-radius: 2px;
+              box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
+              transition: all 0.3s ease;
+          }
+
+          .interactive-elements {
+              position: absolute;
+              top: 0;
+              left: 0;
+              right: 0;
+              bottom: 0;
+              pointer-events: none;
+          }
+
+          .coffee-machine, .water-cooler, .printer {
+              position: absolute;
+              width: 30px;
+              height: 30px;
+              background: rgba(255, 255, 255, 0.1);
+              border: 2px solid rgba(255, 255, 255, 0.3);
+              border-radius: 4px;
+              cursor: pointer;
+              pointer-events: all;
+              transition: all 0.3s ease;
+          }
+
+          .coffee-machine:hover, .water-cooler:hover, .printer:hover {
+              background: rgba(255, 255, 255, 0.2);
+              transform: scale(1.1);
+          }
+
+          .coffee-machine {
+              background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23d97706"><path d="M4 19h16v2H4zm4-8h8c2.21 0 4 1.79 4 4v4H4v-4c0-2.21 1.79-4 4-4zm0 2c-1.1 0-2 .9-2 2v2h12v-2c0-1.1-.9-2-2-2H8z"/></svg>');
+              background-size: 20px;
+              background-repeat: no-repeat;
+              background-position: center;
+          }
+
+          .water-cooler {
+              background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%233b82f6"><path d="M12 2c-4.97 0-9 4.03-9 9 0 4.97 4.03 9 9 9s9-4.03 9-9c0-4.97-4.03-9-9-9zm0 16c-3.86 0-7-3.14-7-7s3.14-7 7-7 7 3.14 7 7-3.14 7-7 7z"/></svg>');
+              background-size: 20px;
+              background-repeat: no-repeat;
+              background-position: center;
+          }
+
+          .printer {
+              background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%238b5cf6"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>');
+              background-size: 20px;
+              background-repeat: no-repeat;
+              background-position: center;
+          }
+
+          .led-ticker {
+              background: linear-gradient(90deg, #000000, #1a1a1a);
+              box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+          }
+
+          .ticker-content {
+              display: inline-block;
+              white-space: nowrap;
+              animation: scroll-left 30s linear infinite;
+          }
+
+          @keyframes scroll-left {
+              0% { transform: translateX(100%); }
+              100% { transform: translateX(-100%); }
+          }
+      `;
+      document.head.appendChild(style);
+  });
 </script>
 {% endblock %}

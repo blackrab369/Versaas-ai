@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Zero-to-One Virtual Software Inc. – Enterprise Platform Launcher
+Virsaas Virtual Software Inc. – Enterprise Platform Launcher
 Vercel / Supabase compatible edition
 """
 
@@ -192,7 +192,7 @@ def main():
 
     # banner
     print('\n' + '=' * 80)
-    print('Zero-to-One Virtual Software Inc. – Enterprise Platform')
+    print('Virsaas Virtual Software Inc. – Enterprise Platform')
     print(f'Python {platform.python_version()}  |  DB: {get_database_url().split(":", 1)[0]}')
     print('=' * 80 + '\n')
 
