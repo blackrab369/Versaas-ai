@@ -300,3 +300,11 @@ a:hover {
     grid-template-columns: 1fr;
   }
 }
+
+.selfie {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 2px solid var(--primary);
+  margin-right: 0.5rem;
+}

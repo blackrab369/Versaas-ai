@@ -55,6 +55,7 @@ Virsaas{% endblock %} {% block extra_head %}
         <div class="how-number">01</div>
         <h3>Describe the problem</h3>
         <p>Chat with Alex, our AI CEO. 5 messages free, no sign-up.</p>
+        <button id="mic-btn" class="mic-btn">🎤 CEO</button>
       </div>
       <div class="how-card">
         <div class="how-number">02</div>
@@ -92,5 +93,8 @@ Virsaas{% endblock %} {% block extra_head %}
 {% endblock %} {% block extra_js %}
 <script src="{{ url_for('static', filename='js/ceo-chat.js') }}" defer></script>
 {% endblock %}
-<style>:root { --primary: {{ custom_colour }} !important; }</style>
-{% if agency %}<img src="{{ custom_logo }}" height="32">{% else %}Virsaas{% endif %}
+<style>
+  :root { --primary: {{ custom_colour }} !important; }
+</style>
+{% if agency %}<img src="{{ custom_logo }}" height="32" />{% else %}Virsaas{%
+endif %}

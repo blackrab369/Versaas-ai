@@ -83,8 +83,9 @@ document.getElementById("figma-import").onclick = async () => {
 socket.on("agent_event", (data) => {
   if (data.type === "selfie") {
     const img = document.createElement("img");
-    img.src = "data:image/png;base64," + data.payload.b64;
+    img.src = data.payload.url; // ← Puter CDN URL
     img.className = "selfie";
+    img.alt = data.agent_id + " selfie";
     thoughtsPanel.appendChild(img);
   }
 });

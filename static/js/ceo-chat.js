@@ -18,6 +18,39 @@ function addMessage(sender, text) {
   MESSAGES.scrollTop = MESSAGES.scrollHeight;
 }
 
+const micBtn = document.getElementById("mic-btn");
+let recorder = null;
+
+micBtn.onclick = async () => {
+  if (!recorder) {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    recorder = new MediaRecorder(stream);
+    recorder.start();
+    micBtn.style.color = "#f00";
+    recorder.ondataavailable = (e) => {
+      const blob = new Blob([e.data], { type: "audio/webm" });
+      fetch("/api/ceo/voice", {
+        method: "POST",
+        body: blob,
+        headers: { "Content-Type": "audio/webm" },
+      })
+        .then((r) => r.json())
+        .then((d) => {
+          if (d.text) {
+            document.getElementById("chat-input").value = d.text;
+            document
+              .getElementById("chat-form")
+              .dispatchEvent(new Event("submit"));
+          }
+        });
+    };
+  } else {
+    recorder.stop();
+    recorder = null;
+    micBtn.style.color = "";
+  }
+};
+
 async function sendToCEO(text) {
   try {
     const res = await fetch("/api/ceo/chat", {
@@ -61,5 +94,15 @@ FORM.addEventListener("submit", (e) => {
 // welcome message
 addMessage(
   "ceo",
-  "Hi, I'm Alex – AI CEO of Virsaas. Describe the problem you want solved."
+  "Hi, I'm Alex – AI CEO of Virsaas. Describe the problem you want solved.",
+  speak(
+    "Hi, I'm Alex – AI CEO of Virsaas. Please describe your idea and our team will call it forth from the cyber realm into this reality."
+  )
 );
+
+function speak(text) {
+  const lang = "{{ session.get('lang', 'en') }}";
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = lang;
+  speechSynthesis.speak(utter);
+}

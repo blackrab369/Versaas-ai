@@ -146,7 +146,6 @@ class SimulationManager:
                         # Save state every hour (simulated)
                         if int(orchestrator.company_state['days_elapsed'] * 24) % 60 == 0:
                             self.save_simulation_state(project_id, orchestrator)
-                        
                         time.sleep(1)  # 1 second = 1 hour in simulation
                     except Exception as e:
                         logger.error(f"Simulation error for {project_id}: {e}")
