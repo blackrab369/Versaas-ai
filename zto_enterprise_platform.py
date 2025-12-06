@@ -21,6 +21,7 @@ import logging
 import asyncio
 from typing import Dict, List, Optional, Any
 # ---------- new imports ----------
+import putergenai as puter
 import whisper, tempfile
 from cryptography.fernet import Fernet          # pip install cryptography
 import jwt                                      # pip install pyjwt
@@ -521,7 +522,7 @@ class EnterpriseSimulationManager:
                 
             if int(time.time()) % 30 == 0:  # every 30 s
                 mood = "debugging" if agent.status == "busy" else "idle"
-                selfie = generate_agent_selfie(agent.agent_id, mood)
+                selfie = generate_agent_selfie(agent.agent_id, agent.rolse , mood)
                 agent_event(agent.agent_id, project_id, "selfie", {"b64": selfie, "mood": mood})
         
     def generate_code_patch(self, agent, project_id: str) -> Optional[dict]:
@@ -1493,6 +1494,17 @@ def agency_create():
     db.session.add(agency)
     db.session.flush()
 
+@app.route('/api/pixel/icon')
+def pixel_icon():
+    colour = request.args.get("colour", "00f5d4")
+    size   = int(request.args.get("size", 192))
+    prompt = f"32-bit pixel art icon, neon {colour}, square {size}x{size}, no text"
+    resp = httpx.post(PUTER_API, json={"prompt": prompt, "width": size, "height": size})
+    if resp.status_code == 200:
+        return redirect(resp.json()["url"], code=302)
+    else:
+        return redirect(url_for('static', filename='img/icon-fallback.png'), code=302)
+        
 @app.route('/api/figma/import', methods=['POST'])
 @login_required
 def figma_import():
@@ -1544,18 +1556,16 @@ def set_lang():
     session["lang"] = request.json.get("lang", "en")
     return jsonify({"success": True})
     
-def generate_agent_selfie(agent_id: str, mood: str) -> str:
+def generate_agent_selfie(agent_id: str, role: str, mood: str) -> str:
     """
-    Returns base64 PNG of agent avatar.
-    mood: 'happy' | 'thinking' | 'debugging' | 'idle' | 'focused' | 'excited' | 'concerned'
+    Returns **Puter 32-bit Lego pixel URL** (or fallback static).
+    Moods: happy, thinking, debugging, idle
     """
-    openai.api_key = os.getenv("OPENAI_API_KEY")
-    prompt = f"Cyber-punk style avatar, full-body, lego, neon background, {mood}, friendly, futuristic, 4k"
-    response = openai.Image.create(prompt=prompt, n=1, size="256x256")
-    image_url = response['data'][0]['url']
-    # download & base64
-    img_bytes = httpx.get(image_url).content
-    return base64.b64encode(img_bytes).decode()
+    # grab agency colour (or default neon)
+    colour = g.agency.primary_color if g.agency else "#00f5d4"
+
+    url = puter_pixel_selfie(agent_id, role, mood, colour)
+    return url  # ← already a URL, no base64 needed
     
 # ---------- white-label context ----------
 SUBDOMAIN_RE = re.compile(r"^(?P<sub>[a-z0-9-]{3,60})\.virsaas\.app$", re.I)
@@ -2614,6 +2624,53 @@ if ref_code:
         ref.referred_id = user.id
         ref.status = 'completed'
         db.session.commit()
+
+# ---------- PUTER 32-BIT PIXEL FACTORY ----------
+PUTER_API = "https://api.puter.com/image/generate"
+
+# ---------- PUTER 32-BIT PIXEL FACTORY ----------
+PUTER_API = "https://api.puter.com/image/generate"
+
+def puter_pixel_selfie(agent_id: str, role: str, mood: str, primary_color: str) -> str:
+    """
+    Returns **Puter image URL** (32-bit Lego pixel style).
+    Falls back to static sprite if Puter fails.
+    """
+    cache_key = f"pixel:{agent_id}:{mood}:{primary_color}"
+    if redis_client:
+        cached = redis_client.get(cache_key)
+        if cached:
+            return cached
+    
+    prompt = (
+        f"32-bit Lego pixel art, isometric view, mini-figure, "
+        f"{role}, {mood}, holding tools, neon {primary_color} background, "
+        f"no text, square 256x256, high contrast"
+    )
+    url = "" #back up image
+    try:
+        resp = httpx.post(
+            PUTER_API,
+            json={"prompt": prompt, "width": 256, "height": 256},
+            timeout=10
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        if data.get("url"):
+            return data["url"]  # ← free Puter CDN URL
+    except Exception as e:
+        logger.warning("Puter pixel failed: %s", e)
+        try:
+            url = puter.txt2img(prompt)
+            if redis_client and url:
+                redis_client.setex(cache_key, 3600, url)  # cache 24 h
+            #return request.get(url)
+            return url
+        except:
+            pass #all else failed then to hell with it!
+
+    # fallback → static sprite (already in repo)
+    return url_for('static', filename=f'/static/img/agents/{agent_id}_{mood}.png')
 
 # ---------- run app ----------
 if __name__ == '__main__':

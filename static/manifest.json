@@ -15,6 +15,16 @@
       "src": "/static/img/icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
+    },
+    {
+      "src": "/api/pixel/icon?colour=00f5d4",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/api/pixel/icon?colour=00f5d4&size=512",
+      "sizes": "512x512",
+      "type": "image/png"
     }
   ]
 }
