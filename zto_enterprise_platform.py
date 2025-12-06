@@ -42,6 +42,12 @@ from sqlalchemy.dialects.postgresql import UUID, JSONB
 sys.path.append(str(Path(__file__).parent / 'ZTO_Projects' / 'ZTO_Demo'))
 from zto_kernel import get_orchestrator, ZTOOrchestrator
 
+#stripe payment system integration
+import stripe
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+import jwt
+API_JWT_SECRET = os.getenv("API_JWT_SECRET") or os.urandom(32).hex()
+
 # Initialize Flask app
 app = Flask(__name__)
 app.config['SECRET_KEY'] = secrets.token_hex(32)
@@ -1015,6 +1021,120 @@ def cron_usage_sync():
             logger.exception("cron usage failed for record %s", rec.id)
     return jsonify({"synced": len(unreported)})
 
+@app.route('/referral/create', methods=['POST'])
+@login_required
+def referral_create():
+    if Referral.query.filter_by(referrer_id=current_user.id).count() >= 1:
+        return jsonify({"code": Referral.query.filter_by(referrer_id=current_user.id).first().code})
+
+    code = secrets.token_urlsafe(16)[:12]  # 12-char
+    ref = Referral(referrer_id=current_user.id, code=code)
+    db.session.add(ref)
+    db.session.commit()
+    return jsonify({"code": code, "url": f"https://virsaas.app?ref={code}"})
+
+@app.route('/agency/dashboard')
+@login_required
+def agency_dashboard():
+    agency = g.agency
+    if not agency or not any(au.role == 'owner' for au in agency.agency_users):
+        flash("Agency owner only", "warning")
+        return redirect(url_for('dashboard'))
+
+    # current MRR
+    latest = AgencyMRR.query.filter_by(agency_id=agency.id).order_by(AgencyMRR.date.desc()).first()
+    mrr_cents = latest.mrr_cents if latest else 0
+
+    # downstream user count
+    downstream_users = db.session.query(User).join(AgencyUser).filter(
+        AgencyUser.agency_id == agency.id,
+        AgencyUser.role == 'member'
+    ).count()
+
+    return render_template('agency_dashboard.html',
+                           agency=agency,
+                           mrr_cents=mrr_cents,
+                           downstream_users=downstream_users)
+
+@app.route('/agency/white-label', methods=['POST'])
+@login_required
+def agency_white_label():
+    if not (g.agency and any(au.role == 'owner' for au in g.agency.agency_users)):
+        return jsonify({"error": "Forbidden"}), 403
+    data = request.get_json()
+    g.agency.primary_color = data.get("primary_color", "#00f5d4")[:7]
+    g.agency.logo_url      = (data.get("logo_url") or "")[:500]
+    db.session.commit()
+    return jsonify({"success": True})
+
+@app.route('/agency/create', methods=['POST'])
+@login_required
+def agency_create():
+    if AgencyUser.query.filter_by(user_id=current_user.id, role='owner').first():
+        return jsonify({"error": "You already own an agency"}), 400
+
+    data    = request.get_json()
+    name    = data.get("name", "").strip()[:120]
+    sub     = data.get("subdomain", "").strip().lower()[:60]
+    color   = data.get("primary_color", "#00f5d4")
+
+    if not sub or not sub.isalnum():
+        return jsonify({"error": "Subdomain must be alphanumeric"}), 400
+
+    if Agency.query.filter_by(subdomain=sub).first():
+        return jsonify({"error": "Subdomain taken"}), 400
+
+    # Stripe Connect account (platform keeps 10 %, rest to agency)
+    connect = stripe.Account.create(
+        type="express",
+        country="US",
+        email=current_user.email,
+        metadata={"agency_name": name, "user_id": current_user.id}
+    )
+
+    agency = Agency(
+        name=name,
+        subdomain=sub,
+        primary_color=color,
+        stripe_account_id=connect.id
+    )
+    db.session.add(agency)
+    db.session.flush()
+
+    AgencyUser(agency_id=agency.id, user_id=current_user.id, role='owner')
+    db.session.commit()
+
+    # On-boarding URL for Connect
+    onboard = stripe.AccountLink.create(
+        account=connect.id,
+        refresh_url=url_for('dashboard', _external=True) + "?stripe=refresh",
+        return_url=url_for('dashboard', _external=True) + "?stripe=return",
+        type="account_onboarding"
+    )
+    return jsonify({"success": True, "onboard_url": onboard.url})
+
+# ---------- white-label context ----------
+@app.before_request
+def inject_agency():
+    # strip port if local
+    host = request.host.split(':')[0]
+    parts = host.split('.')
+    if len(parts) >= 3 and parts[-2] == "virsaas" and parts[0] != "www":
+        g.agency = Agency.query.filter_by(subdomain=parts[0]).first()
+    else:
+        g.agency = None
+
+# ---------- custom logo & colour ----------
+@app.context_processor
+def agency_vars():
+    if g.agency:
+        return {
+            "agency": g.agency,
+            "custom_logo": g.agency.logo_url or url_for('static', filename='img/default-logo.svg'),
+            "custom_colour": g.agency.primary_color
+        }
+    return {}
+
 # Template filters
 @app.template_filter('format_currency')
 def format_currency_filter(amount):
@@ -1877,7 +1997,117 @@ def report_usage(user: User, quantity: int):
         db.session.commit()
     except Exception as e:
         logger.exception("Stripe usage report failed")
-        
+
+# ---------- agency / white-label ----------
+class Agency(db.Model):
+    __tablename__ = 'agencies'
+    id            = db.Column(db.Integer, primary_key=True)
+    name          = db.Column(db.String(120), nullable=False)
+    subdomain     = db.Column(db.String(60), unique=True, nullable=False)  # client1
+    logo_url      = db.Column(db.String(500))
+    primary_color = db.Column(db.String(7), default="#00f5d4")
+    stripe_account_id = db.Column(db.String(120))  # Stripe Connect
+    created_at    = db.Column(db.DateTime, default=datetime.utcnow)
+
+class AgencyUser(db.Model):
+    __tablename__ = 'agency_users'
+    id         = db.Column(db.Integer, primary_key=True)
+    agency_id  = db.Column(db.Integer, db.ForeignKey('agencies.id'), nullable=False)
+    user_id    = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    role       = db.Column(db.String(20), default='owner')   # owner | member
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+# ---------- referrals ----------
+class Referral(db.Model):
+    __tablename__ = 'referrals'
+    id          = db.Column(db.Integer, primary_key=True)
+    code        = db.Column(db.String(32), unique=True, nullable=False)
+    referrer_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    referred_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)  # filled on sign-up
+    commission_percent = db.Column(db.Integer, default=20)
+    status      = db.Column(db.String(20), default='pending')   # pending | paid | failed
+    created_at  = db.Column(db.DateTime, default=datetime.utcnow)
+
+# ---------- agency MRR snapshot ----------
+class AgencyMRR(db.Model):
+    __tablename__ = 'agency_mrr'
+    id         = db.Column(db.Integer, primary_key=True)
+    agency_id  = db.Column(db.Integer, db.ForeignKey('agencies.id'), nullable=False)
+    mrr_cents  = db.Column(db.Integer, nullable=False)  # downstream recurring revenue
+    date       = db.Column(db.Date, index=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+@app.route('/cron/agency-mrr')
+def cron_agency_mrr():
+    """
+    Sum all active subscriptions per agency → insert row.
+    Runs daily 06:00 UTC.
+    """
+    stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+    agencies = Agency.query.all()
+    today = datetime.utcnow().date()
+    for ag in agencies:
+        owners = db.session.query(User).join(AgencyUser).filter(
+            AgencyUser.agency_id == ag.id,
+            AgencyUser.role == 'owner'
+        ).all()
+        total_cents = 0
+        for owner in owners:
+            if owner.stripe_customer and owner.stripe_customer.subscription_id:
+                sub = stripe.Subscription.retrieve(owner.stripe_customer.subscription_id)
+                for item in sub['items']['data']:
+                    total_cents += item['price']['unit_amount'] or 0
+        # downstream customers (if you allow sub-accounts, extend here)
+        snap = AgencyMRR(agency_id=ag.id, mrr_cents=total_cents, date=today)
+        db.session.add(snap)
+    db.session.commit()
+    return jsonify({"agencies": len(agencies), "date": str(today)})
+
+@app.route('/api/token', methods=['POST'])
+@login_required
+def api_token():
+    """Return JWT valid for 24 h – agency owners only."""
+    if not (g.agency and g.agency.stripe_account_id):
+        return jsonify({"error": "Agency required"}), 403
+    token = jwt.encode(
+        {"sub": current_user.id, "agency": g.agency.id, "exp": datetime.utcnow() + timedelta(hours=24)},
+        API_JWT_SECRET,
+        algorithm="HS256"
+    )
+    return jsonify({"token": token})
+
+@app.route('/api/v1/projects', methods=['GET'])
+def api_projects():
+    """List projects for agency (JWT auth)."""
+    auth = request.headers.get("Authorization", "").split()
+    if len(auth) != 2 or auth[0] != "Bearer":
+        return jsonify({"error": "Bearer token required"}), 401
+    try:
+        payload = jwt.decode(auth[1], API_JWT_SECRET, algorithms=["HS256"])
+        agency_id = payload["agency"]
+    except jwt.InvalidTokenError:
+        return jsonify({"error": "Invalid token"}), 401
+
+    projects = Project.query.join(User).join(AgencyUser).filter(
+        AgencyUser.agency_id == agency_id
+    ).all()
+    return jsonify([{
+        "id": str(p.project_id),
+        "name": p.name,
+        "status": p.status,
+        "revenue": p.revenue,
+        "days_elapsed": p.days_elapsed
+    } for p in projects])
+
+# inside /register route – add to User creation
+ref_code = request.args.get("ref")
+if ref_code:
+    ref = Referral.query.filter_by(code=ref_code).first()
+    if ref:
+        ref.referred_id = user.id
+        ref.status = 'completed'
+        db.session.commit()
+
 # ---------- run app ----------
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

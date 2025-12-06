@@ -1,0 +1,85 @@
+{% extends "base_dashboard.html" %} {# your existing base #} {% block content %}
+<section class="agency-header">
+  <h2>Agency: {{ agency.name }}</h2>
+  <p>Subdomain: <code>{{ agency.subdomain }}.virsaas.app</code></p>
+  <button id="open-portal" class="btn-secondary">Stripe Connect Portal</button>
+  <button id="gen-ref" class="btn-secondary">Generate Referral Code</button>
+  <button id="api-token" class="btn-secondary">Generate API Token</button>
+</section>
+
+<section class="metrics">
+  <div class="metric-card">
+    <div class="number">{{ mrr_cents//100 }}</div>
+    <div class="label">Current MRR (USD)</div>
+  </div>
+  <div class="metric-card">
+    <div class="number">{{ downstream_users }}</div>
+    <div class="label">Downstream Accounts</div>
+  </div>
+</section>
+
+<section class="white-label">
+  <h3>White-Label Settings</h3>
+  <form id="wl-form">
+    <label>
+      Primary Colour
+      <input
+        type="color"
+        name="primary_color"
+        value="{{ agency.primary_color }}"
+      />
+    </label>
+    <label>
+      Logo URL
+      <input
+        type="url"
+        name="logo_url"
+        value="{{ agency.logo_url or '' }}"
+        placeholder="https://...svg"
+      />
+    </label>
+    <button type="submit" class="btn-primary">Save</button>
+  </form>
+</section>
+
+<section class="referrals">
+  <h3>Referrals</h3>
+  <p id="ref-link"></p>
+</section>
+
+<script>
+  // white-label save
+  document.getElementById("wl-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    await fetch("/agency/white-label", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(Object.fromEntries(fd)),
+    });
+    alert("Saved – refresh to see changes.");
+  });
+
+  // referral code
+  document.getElementById("gen-ref").onclick = async () => {
+    const res = await fetch("/referral/create", { method: "POST" });
+    const data = await res.json();
+    document.getElementById("ref-link").textContent =
+      "Share: https://virsaas.app?ref=" + data.code;
+  };
+
+  // API token
+  document.getElementById("api-token").onclick = async () => {
+    const res = await fetch("/api/token", { method: "POST" });
+    const data = await res.json();
+    prompt("Copy token (24 h):", data.token);
+  };
+
+  // Stripe Connect portal
+  document.getElementById("open-portal").onclick = async () => {
+    const res = await fetch("/stripe/connect/onboard", { method: "POST" });
+    const data = await res.json();
+    window.location = data.url;
+  };
+</script>
+{% endblock %}
