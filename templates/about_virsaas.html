@@ -65,3 +65,8 @@ Employees{% endblock %} {% block content %}
   </div>
 </section>
 {% endblock %}
+<style>
+  :root { --primary: {{ custom_colour }} !important; }
+</style>
+{% if agency %}<img src="{{ custom_logo }}" height="32" />{% else %}Virsaas{%
+endif %}

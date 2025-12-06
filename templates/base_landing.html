@@ -47,3 +47,8 @@
     {% block extra_js %}{% endblock %}
   </body>
 </html>
+<style>
+  :root { --primary: {{ custom_colour }} !important; }
+</style>
+{% if agency %}<img src="{{ custom_logo }}" height="32" />{% else %}Virsaas{%
+endif %}

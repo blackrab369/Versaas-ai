@@ -97,3 +97,8 @@
     margin-left: 1rem;
   }
 </style>
+<style>
+  :root { --primary: {{ custom_colour }} !important; }
+</style>
+{% if agency %}<img src="{{ custom_logo }}" height="32" />{% else %}Virsaas{%
+endif %}

@@ -3,6 +3,10 @@
     {
       "path": "/cron/usage-sync",
       "schedule": "0 4 * * *"
+    },
+    {
+      "path": "/cron/agency-mrr",
+      "schedule": "0 6 * * *"
     }
   ]
 }

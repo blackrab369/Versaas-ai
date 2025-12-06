@@ -1518,3 +1518,5 @@ Software Inc.{% endblock %} {% block content %}
   href="{{ url_for('static', filename='css/enterprise_2d5.css') }}"
 />
 {% endblock %}
+<style>:root { --primary: {{ custom_colour }} !important; }</style>
+{% if agency %}<img src="{{ custom_logo }}" height="32">{% else %}Virsaas{% endif %}
