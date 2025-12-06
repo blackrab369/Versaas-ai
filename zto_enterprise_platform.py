@@ -48,6 +48,22 @@ stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 import jwt
 API_JWT_SECRET = os.getenv("API_JWT_SECRET") or os.urandom(32).hex()
 
+import redis
+r = redis.Redis.from_url(os.environ.get('REDIS_URL'))
+
+import { createClient } from 'redis';
+import { NextResponse } from 'next/server';
+
+const redis = await createClient().connect();
+
+export const POST = async () => {
+  // Fetch data from Redis
+  const result = await redis.get("item");
+  
+  // Return the result in the response
+  return new NextResponse(JSON.stringify({ result }), { status: 200 });
+};
+
 # Initialize Flask app
 app = Flask(__name__)
 app.config['SECRET_KEY'] = secrets.token_hex(32)
