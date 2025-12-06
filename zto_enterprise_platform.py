@@ -4,6 +4,7 @@ Virsaas Virtual Software Inc. - Enterprise Platform
 Professional SaaS platform with PostgreSQL, enhanced 2.5D graphics, and deep simulation insights
 """
 
+import re
 import os
 import sys
 import json
@@ -617,6 +618,9 @@ def debugger_chat():
     """
     User’s own API key → Kimi AI  (or OpenAI fallback)
     """
+        # ----- meter the user message -----
+    report_usage(current_user, 1)
+    
     msg   = (request.json.get("message") or "").strip()[:1000]
     model = request.json.get("model", "kimi")   # "kimi" | "openai"
 
@@ -655,8 +659,6 @@ def debugger_chat():
             logger.exception("OpenAI error")
             return jsonify({"error": "OpenAI API error – check key."}), 502
 
-    report_usage(current_user,1) # log usage for analytics
-    
     return jsonify({"reply": answer})
 
 @app.route('/create_project', methods=['POST'])
@@ -967,7 +969,14 @@ def create_stripe_customer():
         email=current_user.email,
         name=current_user.username,
         metadata={"user_id": current_user.id}
+            # ----- add this -----
+        # retrieve the subscription item id for later usage reporting
+        sub = stripe.Subscription.retrieve(checkout.subscription)
+        item_id = sub['items']['data'][0]['id']
+        stripe_customer.subscription_item_id = item_id
+        # --------------------
     )
+    
     stripe_customer = StripeCustomer(
         user_id=current_user.id,
         customer_id=customer.id
@@ -1130,15 +1139,13 @@ def agency_create():
     return jsonify({"success": True, "onboard_url": onboard.url})
 
 # ---------- white-label context ----------
+SUBDOMAIN_RE = re.compile(r"^(?P<sub>[a-z0-9-]{3,60})\.virsaas\.app$", re.I)
+
 @app.before_request
 def inject_agency():
-    # strip port if local
     host = request.host.split(':')[0]
-    parts = host.split('.')
-    if len(parts) >= 3 and parts[-2] == "virsaas" and parts[0] != "www":
-        g.agency = Agency.query.filter_by(subdomain=parts[0]).first()
-    else:
-        g.agency = None
+    m = SUBDOMAIN_RE.match(host)
+    g.agency = Agency.query.filter_by(subdomain=m.group('sub')).first() if m else None
 
 # ---------- custom logo & colour ----------
 @app.context_processor
@@ -1808,6 +1815,9 @@ def ceo_chat():
     Public endpoint for landing-page CEO chat.
     No auth required – soft-gate after MAX_FREE messages.
     """
+        # ----- meter the user message -----
+    report_usage(current_user, 1)
+    
     MAX_FREE = 5
     data   = request.get_json(silent=True) or {}
     msg    = (data.get("message") or "").strip()[:500]
@@ -1866,8 +1876,6 @@ def ceo_chat():
     else:
         reply = fallback_reply(msg)
 
-    report_usage(current_user,1) # log usage for analytics
-    
     return jsonify({
         "reply": reply,
         "session_id": sid,
