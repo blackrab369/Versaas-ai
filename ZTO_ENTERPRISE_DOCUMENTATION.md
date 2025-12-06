@@ -127,6 +127,14 @@ This document provides comprehensive information about the Virsaas Virtual Softw
 - **Build Pipeline**: Continuous integration status and deployment progress
 - **Security Audits**: Real-time security scanning and vulnerability assessment
 
+### 5. AI Services Integration
+
+- **Model Agnostic**: Support for both Kimi AI and OpenAI GPT models.
+- **Secure Key Management**: Encrypted storage of user API keys (AES-256 encryption).
+- **Debugger Chat**: Dedicated API endpoint (`/api/debugger/chat`) for real-time code debugging assistance.
+- **Privacy First**: API keys are decrypted only in memory during requests and never logged.
+
+
 ## Installation
 
 ### Prerequisites
@@ -258,8 +266,25 @@ services:
     depends_on:
       - web
 
-volumes:
-  postgres_data:
+
+### Cloud Deployment (Vercel & Supabase)
+
+The platform is optimized for modern cloud deployment workflows.
+
+1.  **Database (Supabase)**
+    -   Create a new project on Supabase.
+    -   Get the Connection String (URI) (Transaction pooler recommended).
+    -   Set `DATABASE_URL` environment variable.
+
+2.  **Application (Vercel)**
+    -   Import the repository to Vercel.
+    -   Set `FLASK_ENV=production`.
+    -   Set `DATABASE_URL` from Supabase.
+    -   Set `STRIPE_...` and other keys as needed.
+
+3.  **Initialization**
+    -   Run `python launch_enterprise.py --setup-remote` locally (with `DATABASE_URL` set to the remote DB) to initialize the schema.
+
 ```
 
 ## Configuration
@@ -473,6 +498,40 @@ SELECT
 FROM pg_stat_user_indexes
 ORDER BY idx_scan DESC;
 ```
+
+
+## API Reference
+
+### Authentication
+- **POST /register**
+  - Body: `{ "username": "...", "email": "...", "password": "..." }`
+  - Returns: `{ "success": true, "redirect": "..." }`
+
+- **POST /login**
+  - Body: `{ "username": "...", "password": "..." }`
+  - Returns: `{ "success": true, "redirect": "..." }`
+
+### Project Operations
+- **POST /create_project**
+  - Body: `{ "name": "...", "description": "...", "industry": "..." }`
+  - Returns: `{ "success": true, "project_id": "...", "redirect": "..." }`
+
+- **GET /api/project/<uuid:project_id>/status**
+  - Returns: Real-time JSON data of company state, agents, and metrics.
+
+- **POST /api/project/<uuid:project_id>/message**
+  - Body: `{ "message": "..." }`
+  - Action: Sends a message to the Virtual CEO (Agent CEO-001).
+
+### AI Services
+- **POST /api/debugger/chat**
+  - Body: `{ "message": "...", "model": "kimi|openai" }`
+  - Returns: AI-generated debugging assistance or code snippets.
+  - Note: Requires API key configuration in Dashboard.
+
+- **POST /dashboard/keys**
+  - Body: `{ "openai_key": "...", "kimi_key": "..." }`
+  - Action: Encrypts and stores keys in the user profile.
 
 ## Database Schema
 
