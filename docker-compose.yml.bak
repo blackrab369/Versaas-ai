@@ -18,6 +18,6 @@ services:
     dns_search:
       - supabase.com
     extra_hosts:
-      - "aws-1-us-east-1.pooler.supabase.com:5432/postgres"
+      - "aws-1-us-east-1.pooler.supabase.com:6543/postgres"
   redis:
     image: redis:7-alpine

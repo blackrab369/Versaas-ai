@@ -374,7 +374,7 @@ services:
     ports:
       - "5000:5000"
     environment:
-      - DATABASE_URL=postgresql://user:pass@db:5432/zto_enterprise
+      - DATABASE_URL=postgresql://user:pass@db:6543/zto_enterprise
       - REDIS_URL=redis://redis:6379
     depends_on:
       - db

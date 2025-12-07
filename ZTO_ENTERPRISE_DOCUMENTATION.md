@@ -229,7 +229,7 @@ services:
     ports:
       - "5000:5000"
     environment:
-      - DATABASE_URL=postgresql://zto_user:zto_password@db:5432/zto_enterprise
+      - DATABASE_URL=postgresql://zto_user:zto_password@db:6543/zto_enterprise
       - REDIS_URL=redis://redis:6379/0
     depends_on:
       - db
@@ -247,7 +247,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "6543:6543"
 
   redis:
     image: redis:7-alpine
@@ -297,7 +297,7 @@ FLASK_ENV=production
 FLASK_DEBUG=0
 
 # Database Configuration
-DATABASE_URL=postgresql://zto_user:zto_password@localhost:5432/zto_enterprise
+DATABASE_URL=postgresql://zto_user:zto_password@localhost:6543/zto_enterprise
 DATABASE_POOL_SIZE=20
 DATABASE_MAX_OVERFLOW=30
 DATABASE_POOL_TIMEOUT=30
@@ -360,7 +360,7 @@ HEALTH_CHECK_ENDPOINT=/health
 ```sql
 # Connection Settings
 listen_addresses = 'localhost'
-port = 5432
+port = 6543
 max_connections = 200
 superuser_reserved_connections = 3
 
