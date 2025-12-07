@@ -81,3 +81,5 @@ httpx==0.25.2
 
 #misisng definintions from recent edits
 openai==0.28.1
+solana==0.29.3              # Phantom wallet
+base58==2.1.1               # Solana addressing

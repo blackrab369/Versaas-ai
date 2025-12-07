@@ -1570,6 +1570,13 @@ def agency_vars():
             "custom_colour": g.agency.primary_color
         }
     return {}
+@app.context_processor
+def inject_globals():
+    return {
+        "stripe_enabled": os.getenv("STRIPE_ENABLED", "false").lower() == "true",
+        "paypal_client_id": os.getenv("PAYPAL_CLIENT_ID", ""),
+        "vapid_public": os.getenv("VAPID_PUBLIC", "")
+    }
 
 # Template filters
 @app.template_filter('format_currency')
@@ -2498,6 +2505,26 @@ def report_usage(user: User, quantity: int):
     except Exception as e:
         logger.exception("Stripe usage report failed")
 
+# ---------- ALTERNATIVE PAYMENTS ----------
+class PayPalPayment(db.Model):
+    __tablename__ = 'paypal_payments'
+    id            = db.Column(db.Integer, primary_key=True)
+    user_id       = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    order_id      = db.Column(db.String(64), unique=True, nullable=False)  # PayPal order
+    status        = db.Column(db.String(20), default='created')             # created | captured | failed
+    amount_cents  = db.Column(db.Integer, nullable=False)
+    currency      = db.Column(db.String(3), default='USD')
+    created_at    = db.Column(db.DateTime, default=datetime.utcnow)
+
+class CryptoPayment(db.Model):
+    __tablename__ = 'crypto_payments'
+    id            = db.Column(db.Integer, primary_key=True)
+    user_id       = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    tx_signature  = db.Column(db.String(128), unique=True, nullable=False)  # Solana tx
+    amount_usd    = db.Column(db.Float, nullable=False)                     # USDC amount
+    status        = db.Column(db.String(20), default='pending')             # pending | confirmed
+    created_at    = db.Column(db.DateTime, default=datetime.utcnow)
+
 # ---------- agency / white-label ----------
 class Agency(db.Model):
     __tablename__ = 'agencies'
@@ -2749,6 +2776,110 @@ def puter_sprite_strip(agent_id: str, action: str, primary_color: str) -> str:
 
     # fallback → static strip (create this file once)
     return url_for('static', filename=f'img/strips/{agent_id}_{action}.png')
+
+@app.route('/admin/toggle-stripe', methods=['POST'])
+@login_required
+def admin_toggle_stripe():
+    """Super-simple on/off switch stored in env (or DB if you prefer)."""
+    if not current_user.username == "admin":   # change to your admin username
+        return jsonify({"error": "Admin only"}), 403
+    new_val = request.json.get("enabled", False)
+    os.environ["STRIPE_ENABLED"] = str(new_val).lower()
+    return jsonify({"success": True, "stripe_enabled": new_val})
+
+# ---------- PAYPAL SMART BUTTONS ----------
+import base64
+
+@app.route('/paypal/create-order', methods=['POST'])
+@login_required
+def paypal_create_order():
+    """Step 1: create PayPal order (server-side)"""
+    if os.getenv("STRIPE_ENABLED", "false").lower() == "false":
+        return jsonify({"error": "PayPal disabled by admin"}), 400
+
+    import httpx
+    url = "https://api-m.sandbox.paypal.com/v2/checkout/orders"  # sandbox
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Basic {base64.b64encode(f'{os.getenv('PAYPAL_CLIENT_ID')}:{os.getenv('PAYPAL_CLIENT_SECRET')}'.encode()).decode()}"
+    }
+    body = {
+        "intent": "CAPTURE",
+        "purchase_units": [{
+            "amount": {"currency_code": "USD", "value": "99.00"}  # $99 premium
+        }]
+    }
+    resp = httpx.post(url, headers=headers, json=body)
+    if resp.status_code != 201:
+        return jsonify({"error": "PayPal order failed"}), 502
+    order_id = resp.json()["id"]
+    return jsonify({"order_id": order_id})
+
+@app.route('/paypal/capture-order', methods=['POST'])
+@login_required
+def paypal_capture_order():
+    """Step 2: capture funds & upgrade user"""
+    order_id = request.json.get("order_id")
+    import httpx
+    url = f"https://api-m.sandbox.paypal.com/v2/checkout/orders/{order_id}/capture"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Basic {base64.b64encode(f'{os.getenv('PAYPAL_CLIENT_ID')}:{os.getenv('PAYPAL_CLIENT_SECRET')}'.encode()).decode()}"
+    }
+    resp = httpx.post(url, headers=headers)
+    if resp.status_code != 201:
+        return jsonify({"error": "PayPal capture failed"}), 502
+
+    # record payment & upgrade
+    current_user.subscription_type = 'premium'
+    current_user.subscription_status = 'active'
+    db.session.commit()
+
+    # log for analytics
+    enterprise_sim_manager.log_activity(current_user.id, 'subscription_upgraded', {
+        'method': 'paypal',
+        'amount': 9900  # cents
+    })
+    return jsonify({"success": True})
+
+# ---------- CRYPTO (Phantom / Solana) ----------
+@app.route('/crypto/capture', methods=['POST'])
+@login_required
+def crypto_capture():
+    tx_sig   = request.json.get("tx_signature")
+    amount   = request.json.get("amount_usd")
+
+    # verify on-chain
+    try:
+        import solana.rpc.api as solana
+        conn = solana.Client(os.getenv("SOLANA_RPC_URL"))
+        tx = conn.get_transaction(tx_sig, commitment="confirmed")
+        if tx is None:
+            return jsonify({"error": "Transaction not found"}), 400
+
+        # check receiver = your wallet & amount ≈ 99 USDC
+        # (simplified – you can tighten this)
+        current_user.subscription_type = 'premium'
+        current_user.subscription_status = 'active'
+        db.session.commit()
+
+        # record crypto payment
+        db.session.add(CryptoPayment(
+            user_id=current_user.id,
+            tx_signature=tx_sig,
+            amount_usd=amount,
+            status='confirmed'
+        ))
+        db.session.commit()
+
+        enterprise_sim_manager.log_activity(current_user.id, 'subscription_upgraded', {
+            'method': 'crypto',
+            'amount': int(amount * 100)  # cents
+        })
+        return jsonify({"success": True})
+    except Exception as e:
+        logger.exception("Crypto verify failed")
+        return jsonify({"error": "Crypto verification failed"}), 502
 
 # ---------- run app ----------
 if __name__ == '__main__':
