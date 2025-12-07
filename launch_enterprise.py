@@ -57,9 +57,10 @@ def setup_environment():
     env = os.environ.copy()
     
     global redis_client
-    #redis_client = redis.from_url(os.getenv("UPSTASH_REDIS_REST_URL"), decode_responses=True) if os.getenv("UPSTASH_REDIS_REST_URL") else None
-    redis_url = os.getenv("UPSTASH_REDIS_REST_URL") or "redis://localhost:6379/0"
-    redis_client = redis.from_url(redis_url, decode_responses=True) if redis_url else None
+    redis_client = redis.from_url(os.getenv("UPSTASH_REDIS_REST_URL"), decode_responses=True) if os.getenv("UPSTASH_REDIS_REST_URL") else "redis://localhost:6379/0"
+    
+    #redis_url = os.getenv("UPSTASH_REDIS_REST_URL") or ""
+    #redis_client = redis.from_url(redis_url, decode_responses=True) if redis_url and redis_url.startswith("redis") else None
 
     # ensure runtime dirs exist
     for d in ('logs', 'user_projects', 'instance', 'backups', 'temp'):
