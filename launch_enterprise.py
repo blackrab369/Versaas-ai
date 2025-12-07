@@ -43,7 +43,7 @@ def get_database_url():
         return url
     if check_postgresql():
         logger.info("No DATABASE_URL; using local PostgreSQL")
-        return "postgresql://zto_user:zto_password@localhost:6543/zto_enterprise"
+        return "postgresql://zto_user:zto_password@localhost:5432/zto_enterprise"
     logger.info("PostgreSQL not found; using SQLite fallback")
     return "sqlite:///zto_enterprise.db"
 
