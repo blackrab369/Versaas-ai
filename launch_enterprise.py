@@ -57,7 +57,9 @@ def setup_environment():
     env = os.environ.copy()
     
     global redis_client
-    redis_client = redis.from_url(os.getenv("UPSTASH_REDIS_REST_URL"), decode_responses=True) if os.getenv("UPSTASH_REDIS_REST_URL") else "redis://localhost:6379/0"
+    REDIS_URL = os.environ.get("UPSTASH_REDIS_REST_URL")
+    res = redis.from_url(REDIS_URL, decode_responses=True) if REDIS_URL else "redis://localhost:6379/0"
+    redis_client = res if REDIS_URL else "redis://localhost:6379/0"
     
     #redis_url = os.getenv("UPSTASH_REDIS_REST_URL") or ""
     #redis_client = redis.from_url(redis_url, decode_responses=True) if redis_url and redis_url.startswith("redis") else None
@@ -70,6 +72,7 @@ def setup_environment():
     env['FLASK_ENV'] = os.getenv('FLASK_ENV', 'production')
     env['FLASK_DEBUG'] = os.getenv('FLASK_DEBUG', '0')
     env['ZTO_LOG_LEVEL'] = os.getenv('ZTO_LOG_LEVEL', 'INFO')
+    #env['ZTO_REDIS_URL'] = str(redis_client)  # redis client URL
 
     # database
     env['DATABASE_URL'] = get_database_url()
