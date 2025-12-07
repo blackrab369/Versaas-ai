@@ -41,9 +41,28 @@ from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import synonym
 from werkzeug.security import check_password_hash, generate_password_hash
 
+# Add project path for ZTOOrchestrator
+sys.path.append(str(Path(__file__).parent / 'ZTO_Projects' / 'ZTO_Demo'))
+try:
+    from zto_kernel import ZTOOrchestrator
+except ImportError:
+    # Fallback/Mock if submodule is missing
+    logger.warning("ZTO_kernel not found. Using mock Orchestrator.")
+    class ZTOOrchestrator:
+        def __init__(self, project_slug):
+            self.company_state = {"revenue": 0, "cash_burn": 0, "days_elapsed": 0, "phase": "Phase 0"}
+            self.agents = {}
+        def process_owner_request(self, req): pass
+        def run_simulation_step(self): pass
+
+
 # ---------- ENV SHORTCUTS ----------
 load_dotenv() if (Path(".env").exists()) else None        # handy for local dev
 FERNET_KEY            = os.getenv("FERNET_KEY")           # 32 url-safe b64
+if not FERNET_KEY:
+    logger.warning("FERNET_KEY missing. Generating temporary key.")
+    FERNET_KEY = Fernet.generate_key().decode()
+
 STRIPE_SECRET_KEY     = os.getenv("STRIPE_SECRET_KEY")
 STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET")
 STRIPE_PRICE_METERED  = os.getenv("STRIPE_PRICE_METERED")  # price_xxx
@@ -1363,8 +1382,8 @@ def crypto_capture():
     tx_sig = request.json.get("tx_signature")
     amount = float(request.json.get("amount_usd", 0))
     try:
-        import solana.rpc.api as solana
-        conn = solana.Client(SOLANA_RPC)
+        from solana.rpc.api import Client
+        conn = Client(SOLANA_RPC)
         tx = conn.get_transaction(tx_sig, commitment="confirmed")
         if tx is None:
             return jsonify({"error": "Tx not found"}), 400
