@@ -91,7 +91,34 @@ socket.on("agent_event", (data) => {
   if (data.type === "sprite") {
     renderAgentSprite(data.agent_id, data.payload);
   }
+  if (data.type === "office_pos") {
+    drawAgentPixel(data.agent_id, data.payload);
+  }
 });
+
+function drawAgentPixel(agentId, pos) {
+  const canvas = document.getElementById("office-canvas");
+  const ctx = canvas.getContext("2d");
+  // convert simulation coords (0-800) to canvas (0-256)
+  const x = (pos.x / 800) * 256;
+  const y = (pos.y / 600) * 256;
+  ctx.fillStyle = pos.mood === "work" ? "#00f5d4" : "#ff6b6b";
+  ctx.fillRect(x - 4, y - 4, 8, 8); // 8×8 pixel agent
+}
+document.addEventListener("DOMContentLoaded", function () {
+  const officeContainer = document.getElementById("office-container");
+  const images = [
+    "/path/to/office/frame1.png",
+    "/path/to/office/frame2.png",
+    // Add more frames as needed
+  ];
+  let currentFrame = 0;
+});
+
+function updateFrame() {
+  officeContainer.src = images[currentFrame];
+  currentFrame = (currentFrame + 1) % images.length;
+}
 
 function renderAgentSprite(agentId, payload) {
   const url = payload.url;

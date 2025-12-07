@@ -306,6 +306,56 @@ Software Inc.{% endblock %} {% block content %}
     </div>
   </div>
 </div>
+<!-- PayPal + Google Pay -->
+<div id="paypal-button-container" style="margin-top: 1rem"></div>
+<script src="https://www.paypal.com/sdk/js?client-id={{ paypal_client_id }}&currency=USD&enable-funding=googlepay"></script>
+<script>
+  paypal
+    .Buttons({
+      style: { color: "gold", shape: "rect", label: "pay" },
+      createOrder: function (data, actions) {
+        return fetch("/paypal/create-order", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ plan: "premium" }),
+        })
+          .then((res) => res.json())
+          .then((data) => data.order_id);
+      },
+      onApprove: function (data, actions) {
+        return fetch("/paypal/capture-order", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ order_id: data.orderID }),
+        })
+          .then((res) => res.json())
+          .then((details) => {
+            if (details.success) window.location = "/dashboard?success=1";
+            else alert(details.error);
+          });
+      },
+    })
+    .render("#paypal-button-container");
+</script>
+
+<!-- Stripe hidden if disabled -->
+{% if stripe_enabled %}
+<div id="stripe-container">
+  <button id="stripe-pay" class="btn-primary">Pay with Stripe</button>
+</div>
+{% else %}
+<p>Stripe temporarily disabled by admin.</p>
+{% endif %}
+
+<!-- Crypto (Phantom) -->
+<div id="crypto-container" style="margin-top: 1rem">
+  <button id="phantom-pay" class="btn-secondary">
+    Pay with Phantom (SOL/USDC)
+  </button>
+</div>
+<script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+<script src="{{ url_for('static', filename='js/phantom_pay.js') }}"></script>
+
 {% endblock %} {% block scripts %}
 <script>
   // Trial countdown timer

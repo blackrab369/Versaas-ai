@@ -75,3 +75,5 @@ pydub==0.25.1
 #misisng definintions from recent edits
 cryptography==41.0.7
 openai==0.28.1
+solana==0.29.3              # Phantom wallet
+base58==2.1.1               # Solana addressing
