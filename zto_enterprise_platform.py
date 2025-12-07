@@ -21,6 +21,7 @@ import logging
 import asyncio
 from typing import Dict, List, Optional, Any
 # ---------- new imports ----------
+from flask import g   # add this line with your other flask imports
 import putergenai as puter
 import whisper, tempfile
 from cryptography.fernet import Fernet          # pip install cryptography
@@ -49,24 +50,9 @@ from zto_kernel import get_orchestrator, ZTOOrchestrator
 #stripe payment system integration
 import stripe
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
-import jwt
 API_JWT_SECRET = os.getenv("API_JWT_SECRET") or os.urandom(32).hex()
 
-import redis
 r = redis.Redis.from_url(os.environ.get('REDIS_URL'))
-
-import { createClient } from 'redis';
-import { NextResponse } from 'next/server';
-
-const redis = await createClient().connect();
-
-export const POST = async () => {
-  // Fetch data from Redis
-  const result = await redis.get("item");
-  
-  // Return the result in the response
-  return new NextResponse(JSON.stringify({ result }), { status: 200 });
-};
 
 redis_client = None
 
@@ -162,30 +148,6 @@ def ceo_voice():
     return jsonify({"text": result["text"].strip()})
 
 # ---------- KIMI DEV TEAM ----------
-KIMI_DEV_MODEL = "kimi-latest"
-
-def kimi_generate_code(prompt: str, user_key: str) -> str:
-    """Call Kimi AI for code generation."""
-    try:
-        resp = httpx.post(
-            "https://api.kimi-ai.com/v1/chat/completions",
-            headers={"Authorization": f"Bearer {user_key}"},
-            json={
-                "model": KIMI_DEV_MODEL,
-                "messages": [
-                    {"role": "system", "content": "You are a senior full-stack developer. Return only code. Add comments for clarity."},
-                    {"role": "user", "content": prompt}
-                ],
-                "temperature": 0.2
-            },
-            timeout=30
-        )
-        resp.raise_for_status()
-        return resp.json()["choices"][0]["message"]["content"]
-    except Exception as e:
-        logger.exception("Kimi code gen failed")
-        return f"# Error generating code\n# {e}"
-
 def kimi_test_code(code: str, user_key: str) -> str:
     """Ask Kimi to write unit tests."""
     prompt = f"Write Jest unit tests for this code:\n\n{code}"
@@ -447,9 +409,12 @@ class EnterpriseSimulationManager:
         self.simulation_threads = {}  # project_id -> thread
         self.lock = threading.Lock()
         self.db_lock = threading.Lock()
+        self.agency_colour = None   # will be set per request
         
     def start_simulation(self, project_id, user_id, initial_idea=""):
         """Start a new enterprise-grade simulation"""
+        self.agency_colour = g.agency.primary_color if g.agency else "#00f5d4"
+        
         with self.lock:
             if project_id in self.active_simulations:
                 return self.active_simulations[project_id]
@@ -501,8 +466,15 @@ class EnterpriseSimulationManager:
             return orchestrator
     
     def run_simulation_step(self, project_id: str):
-        ...
         seconds = 60 #timeout between generations
+        # ---------- inside run_simulation_step() ----------
+        # sprite animation every 30 s
+        if int(time.time()) % seconds == 0:
+            action = "work" if agent.status == "busy" else "idle"
+            colour = g.agency.primary_color if g.agency else "#00f5d4"
+            strip_url = self.puter_sprite_strip(agent.agent_id, action, colour)
+            agent_event(agent.agent_id, project_id, "sprite", {"url": strip_url, "action": action, "frames": seconds})
+            
         for agent in self.agents.values():
             # 1. THOUGHT
             thought = agent.current_task or "Idle"
@@ -532,7 +504,8 @@ class EnterpriseSimulationManager:
             # inside run_simulation_step() – every 30 s
             if int(time.time()) % seconds == 0:
                 action = "work" if agent.status == "busy" else "idle"
-                strip_url = puter_sprite_strip(agent.agent_id, action, g.agency.primary_color if g.agency else "#00f5d4")
+                colour = self.agency_colour or "#00f5d4"
+                strip_url = puter_sprite_strip(agent.agent_id, action, colour)
                 agent_event(agent.agent_id, project_id, "sprite", {"url": strip_url, "action": action, "frames": seconds})
             
     def generate_code_patch(self, agent, project_id: str) -> Optional[dict]:
@@ -1343,25 +1316,15 @@ def create_stripe_customer():
     if current_user.stripe_customer:
         return jsonify({"error": "Customer already exists"}), 400
 
+    # ---------- CREATE CUSTOMER ----------
     customer = stripe.Customer.create(
         email=current_user.email,
         name=current_user.username,
-        metadata={"user_id": current_user.id}
-            # ----- add this -----
-        # retrieve the subscription item id for later usage reporting
-        sub = stripe.Subscription.retrieve(checkout.subscription)
-        item_id = sub['items']['data'][0]['id']
-        stripe_customer.subscription_item_id = item_id
-        # --------------------
+        metadata={"user_id": current_user.id},
+        payment_method=request.json.get("payment_method_id")
     )
     
-    stripe_customer = StripeCustomer(
-        user_id=current_user.id,
-        customer_id=customer.id
-    )
-    db.session.add(stripe_customer)
-    db.session.commit()
-
+    # ---------- CREATE CHECKOUT SESSION ----------
     checkout = stripe.checkout.Session.create(
         customer=customer.id,
         payment_method_types=['card'],
@@ -1371,6 +1334,15 @@ def create_stripe_customer():
         cancel_url=url_for('dashboard', _external=True) + "?canceled=1",
         metadata={"user_id": current_user.id}
     )
+    
+    # ---------- STORE CUSTOMER & SUBSCRIPTION ITEM ----------
+    stripe_customer = StripeCustomer(
+        user_id=current_user.id,
+        customer_id=customer.id,
+        subscription_id=checkout.subscription
+    )
+    db.session.add(stripe_customer)
+    db.session.commit()
     return jsonify({"checkout_url": checkout.url})
 
 @app.route('/stripe/webhook', methods=['POST'])
@@ -1503,6 +1475,8 @@ def agency_create():
     )
     db.session.add(agency)
     db.session.flush()
+    AgencyUser(agency_id=agency.id, user_id=current_user.id, role='owner')
+    db.session.commit()  # ← this line was missing
 
 @app.route('/api/pixel/icon')
 def pixel_icon():
@@ -2343,7 +2317,6 @@ def ceo_chat():
     openai_key = os.getenv("OPENAI_API_KEY")
     if openai_key:
         try:
-            import openai
             openai.api_key = openai_key
             response = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
@@ -2679,56 +2652,6 @@ def puter_pixel_selfie(agent_id: str, role: str, mood: str, primary_color: str) 
     # fallback → static sprite (already in repo)
     return url_for('static', filename=f'/static/img/agents/{agent_id}_{mood}.png')
 
-# ---------- PUTER 32-BIT SPRITE FACTORY ----------
-def puter_sprite_strip(agent_id: str, action: str, primary_color: str) -> str:
-    """
-    Returns **single PNG URL** containing 30 frames (256×256 each) laid out horizontally.
-    action: 'walk' | 'work' | 'idle' | 'debug'
-    """
-    
-    cache_key = f"sprite:{agent_id}:{action}:{primary_color}"
-    if redis_client:
-        cached = redis_client.get(cache_key)
-        if cached:
-            return cached
-    url = _fetch_from_puter(agent_id, action, primary_color)
-    if redis_client and url:
-        redis_client.setex(cache_key, 3600, url)  # 1 h
-    return url
-    
-    width  = 256 * 30   # 30 frames side-by-side
-    height = 256
-    prompt = (
-        f"32-bit Lego pixel art sprite sheet, horizontal strip, "
-        f"{action} animation, 30 frames, mini-figure, neon {primary_color} background, "
-        f"no text, {width}x{height}, high contrast, seamless loop"
-    )
-
-    try:
-        resp = httpx.post(
-            PUTER_API,
-            json={"prompt": prompt, "width": width, "height": height},
-            timeout=30
-        )
-        resp.raise_for_status()
-        url = resp.json().get("url")
-        if url:
-            return url  # free Puter CDN URL
-    except Exception as e:
-        logger.warning("Puter sprite strip failed: %s", e)
-
-    # fallback → static strip (already in repo)
-    return url_for('static', filename=f'img/strips/{agent_id}_{action}.png')
-
-# ---------- MISSING HELPERS (ADDED HERE) ----------
-def save_doc(project: Project, filename: str, content: str, binary=False):
-    path = Path(f"user_projects/{project.project_id}/docs") / filename
-    path.parent.mkdir(parents=True, exist_ok=True)
-    if binary:
-        path.write_bytes(content)
-    else:
-        path.write_text(content, encoding='utf-8')
-
 def kimi_generate_code(prompt: str, user_key: str) -> str:
     """Call Kimi AI for code generation."""
     try:
@@ -2759,18 +2682,6 @@ def kimi_debug_code(code: str, error: str, user_key: str) -> str:
     prompt = f"Fix this error:\n\n{error}\n\nCode:\n\n{code}"
     return kimi_generate_code(prompt, user_key)
 
-def openai_generate_docs(prompt: str) -> str:
-    openai.api_key = os.getenv("OPENAI_API_KEY")
-    resp = openai.ChatCompletion.create(
-        model="gpt-4",
-        messages=[
-            {"role": "system", "content": "You are a senior product manager / legal advisor. Return professional markdown."},
-            {"role": "user", "content": prompt}
-        ],
-        temperature=0.3
-    )
-    return resp.choices[0].message.content
-
 def openai_generate_contract(project_name: str, client_name: str) -> str:
     prompt = f"Generate a SaaS development contract between Virsaas AI (developer) and {client_name} (client) for project '{project_name}'. Include scope, payment, IP, confidentiality, termination."
     return openai_generate_docs(prompt)
@@ -2783,6 +2694,61 @@ def openai_generate_budget(days: int, team_size: int) -> dict:
 @app.route('/office')
 def office_view():
     return render_template('office_view.html')
+
+# ---------- WEBSOCKET REAL-TIME WAR-ROOM ----------
+from flask_socketio import SocketIO, emit, join_room, leave_room
+import eventlet
+eventlet.monkey_patch()
+
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode="eventlet", logger=True, engineio_logger=True)
+
+def agent_event(agent_id: str, project_id: str, event_type: str, payload: dict):
+    """
+    Every agent calls this to push live updates.
+    event_type: 'thought' | 'code' | 'terminal' | 'deploy' | 'sprite'
+    """
+    room = f"room_{project_id}"
+    packet = {
+        "agent_id": agent_id,
+        "type": event_type,
+        "payload": payload,
+        "ts": datetime.utcnow().isoformat()
+    }
+    socketio.emit('agent_event', packet, room=room)
+    logger.debug("WS broadcast %s", packet)
+
+# ---------- PUTER 32-BIT SPRITE FACTORY ----------
+PUTER_API = "https://api.puter.com/image/generate"
+
+def puter_sprite_strip(agent_id: str, action: str, primary_color: str) -> str:
+    """
+    Returns single PNG URL containing 30 frames (256×256 each) laid out horizontally.
+    action: 'walk' | 'work' | 'idle' | 'debug'
+    """
+    width  = 256 * 30   # 30 frames side-by-side
+    height = 256
+    prompt = (
+        f"32-bit Lego pixel art sprite sheet, horizontal strip, "
+        f"{action} animation, 30 frames, mini-figure, neon {primary_color} background, "
+        f"no text, {width}x{height}, high contrast, seamless loop"
+    )
+
+    try:
+        resp = httpx.post(
+            PUTER_API,
+            json={"prompt": prompt, "width": width, "height": height},
+            timeout=30
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        url = data.get("url")
+        if url:
+            return url  # free Puter CDN URL
+    except Exception as e:
+        logger.warning("Puter sprite strip failed: %s", e)
+
+    # fallback → static strip (create this file once)
+    return url_for('static', filename=f'img/strips/{agent_id}_{action}.png')
 
 # ---------- run app ----------
 if __name__ == '__main__':

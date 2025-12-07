@@ -3,7 +3,7 @@
 Virsaas Virtual Software Inc. – Enterprise Platform Launcher
 Vercel / Supabase compatible edition
 """
-
+import redis
 import argparse
 import logging
 import os
@@ -55,6 +55,9 @@ def get_database_url():
 def setup_environment():
     """Prepare env dict for sub-processes."""
     env = os.environ.copy()
+    
+    global redis_client
+    redis_client = redis.from_url(os.getenv("UPSTASH_REDIS_REST_URL"), decode_responses=True) if os.getenv("UPSTASH_REDIS_REST_URL") else None
 
     # ensure runtime dirs exist
     for d in ('logs', 'user_projects', 'instance', 'backups', 'temp'):

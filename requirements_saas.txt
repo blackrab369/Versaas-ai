@@ -72,5 +72,6 @@ eventlet==0.33.3  # async mode
 openai-whisper==20231117
 pydub==0.25.1
 
-#enhance war room frontend
-httpx==0.25.2
+#misisng definintions from recent edits
+cryptography==41.0.7
+openai==0.28.1
