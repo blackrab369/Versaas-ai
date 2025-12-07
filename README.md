@@ -1,4 +1,5 @@
 # Virsaas-ai: Virsaas Virtual Software Inc.
+by Bertrand B. Brown
 
 ## 🚀 Enterprise Platform & Virtual Software Company Simulator
 
