@@ -32,6 +32,13 @@
 
     <!-- MIDDLE: TERMINAL -->
     <section class="war-terminal">
+      <!-- 2.5D OFFICE CANVAS (center column, behind agents) above terminal -->
+      <section class="war-office">
+        <h3>Live Office</h3>
+        <canvas id="office-canvas" class="office-canvas"></canvas>
+        <script src="{{ url_for('static', filename='js/office_animation.js') }}"></script>
+      </section>
+      <!-- TERMINAL PANEL -->
       <h3>Terminal</h3>
       <div id="terminal-panel" class="panel">
         <div id="terminal-lines"></div>

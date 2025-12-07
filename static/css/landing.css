@@ -310,10 +310,23 @@ a:hover {
 }
 
 .sprite-canvas {
-  image-rendering: pixelated;      /* crisp pixels */
+  image-rendering: pixelated; /* crisp pixels */
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
   border: 2px solid var(--primary);
   border-radius: 8px;
   background: #000;
+}
+
+.office-canvas {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  border: 2px solid var(--primary);
+  border-radius: 12px;
+  background: #000;
+  width: 100%;
+  max-width: 256px;
+  height: auto;
+  aspect-ratio: 1 / 1;
 }

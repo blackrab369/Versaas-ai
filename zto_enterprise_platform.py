@@ -731,6 +731,12 @@ def email_client(self, project: Project, live_url: str, zip_bytes: bytes):
                         db_agent.thought_process = f"Working on: {agent.current_task}"
                     
                     db.session.commit()
+                    # broadcast agent pixel position inside office
+                agent_event(agent.agent_id, project_id, "office_pos", {
+                    "x": agent.location_x,
+                    "y": agent.location_y,
+                    "mood": "work" if agent.status == "busy" else "idle"
+                })
     
     def log_activity(self, user_id, activity_type, metadata=None):
         """Log user activity for analytics"""
