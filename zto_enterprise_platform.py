@@ -2794,8 +2794,8 @@ def admin_toggle_stripe():
     return jsonify({"success": True, "stripe_enabled": new_val})
 
 # ---------- PAYPAL SMART BUTTONS ----------
-import base64
-
+PAYPAL_CLIENT_ID = os.getenv("PAYPAL_CLIENT_ID")
+PAYPAL_CLIENT_SECRET = os.getenv("PAYPAL_CLIENT_SECRET")
 @app.route('/paypal/create-order', methods=['POST'])
 @login_required
 def paypal_create_order():
@@ -2806,7 +2806,7 @@ def paypal_create_order():
     url = "https://api-m.sandbox.paypal.com/v2/checkout/orders"  # sandbox
     headers = {
         "Content-Type": "application/json",
-        "Authorization": f"Basic {base64.b64encode(f'{os.getenv('PAYPAL_CLIENT_ID')}:{os.getenv('PAYPAL_CLIENT_SECRET')}'.encode()).decode()}"
+        "Authorization": f'Basic {base64.b64encode(f"{PAYPAL_CLIENT_ID}:{PAYPAL_CLIENT_SECRET}".encode()).decode()}'
     }
     body = {
         "intent": "CAPTURE",
@@ -2829,7 +2829,7 @@ def paypal_capture_order():
     url = f"https://api-m.sandbox.paypal.com/v2/checkout/orders/{order_id}/capture"
     headers = {
         "Content-Type": "application/json",
-        "Authorization": f"Basic {base64.b64encode(f'{os.getenv('PAYPAL_CLIENT_ID')}:{os.getenv('PAYPAL_CLIENT_SECRET')}'.encode()).decode()}"
+        "Authorization": f"Basic {base64.b64encode(f'{PAYPAL_CLIENT_ID}:{PAYPAL_CLIENT_SECRET}'.encode()).decode()}"
     }
     resp = httpx.post(url, headers=headers)
     if resp.status_code != 201:
