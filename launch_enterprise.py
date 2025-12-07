@@ -52,82 +52,105 @@ def get_database_url():
     return "sqlite:///zto_enterprise.db"
 
 
+def setup_redis():
+    """
+    Initialize Redis connection safely with fallback.
+    Returns the Redis URL to be passed to sub-processes.
+    """
+    redis_url = os.environ.get("UPSTASH_REDIS_REST_URL", "redis://localhost:6379/0")
+    redis_client = None
+    
+    try:
+        if redis_url and redis_url.startswith("redis"):
+            redis_client = redis.from_url(redis_url, decode_responses=True)
+            redis_client.ping()  # Verify connection
+            logger.info("Redis connection verified successfully")
+        else:
+            logger.warning("Invalid Redis URL format: %s", redis_url)
+    except Exception as e:
+        logger.warning("Redis unavailable (using in-memory fallback): %s", e)
+        redis_client = None
+    
+    return redis_url, redis_client
+
+
 def setup_environment():
     """Prepare env dict for sub-processes."""
     env = os.environ.copy()
     
-    global redis_client
-    REDIS_URL = os.environ.get("UPSTASH_REDIS_REST_URL")
-    res = redis.from_url(REDIS_URL, decode_responses=True) if REDIS_URL else "redis://localhost:6379/0"
-    redis_client = res if REDIS_URL else "redis://localhost:6379/0"
+    # Setup Redis
+    redis_url, redis_client = setup_redis()
+    env['ZTO_REDIS_URL'] = redis_url
     
-    #redis_url = os.getenv("UPSTASH_REDIS_REST_URL") or ""
-    #redis_client = redis.from_url(redis_url, decode_responses=True) if redis_url and redis_url.startswith("redis") else None
-
-    # ensure runtime dirs exist
+    # Ensure runtime directories exist
     for d in ('logs', 'user_projects', 'instance', 'backups', 'temp'):
         Path(d).mkdir(exist_ok=True)
 
-    # Flask / ZTO flags
+    # Flask / ZTO configuration flags
     env['FLASK_ENV'] = os.getenv('FLASK_ENV', 'production')
     env['FLASK_DEBUG'] = os.getenv('FLASK_DEBUG', '0')
     env['ZTO_LOG_LEVEL'] = os.getenv('ZTO_LOG_LEVEL', 'INFO')
-    #env['ZTO_REDIS_URL'] = str(redis_client)  # redis client URL
 
-    # database
+    # Database configuration
     env['DATABASE_URL'] = get_database_url()
+    
     return env
 
 
 def install_deps():
-    """pip install -r requirements_enterprise.txt"""
-    logger.info("Installing dependencies …")
+    """Install Python dependencies from requirements file."""
+    logger.info("Installing dependencies…")
     try:
         subprocess.run(
             [sys.executable, '-m', 'pip', 'install', '-r', 'requirements_enterprise.txt'],
-            check=True, capture_output=True
+            check=True,
+            capture_output=True
         )
-        logger.info("Dependencies installed")
+        logger.info("Dependencies installed successfully")
         return True
     except subprocess.CalledProcessError as e:
-        logger.error("Dependency install failed: %s", e)
+        logger.error("Dependency install failed: %s", e.stderr.decode() if e.stderr else str(e))
+        return False
+    except Exception as e:
+        logger.error("Unexpected error during dependency install: %s", e)
         return False
 
 
 # ------------------------------------------------------------------
-# DB initialisation (works locally OR against remote Supabase)
+# Database Initialization (works locally OR against remote Supabase)
 # ------------------------------------------------------------------
 def init_db():
-    """Create tables via SQLAlchemy."""
-    logger.info("Initialising database …")
+    """Create database tables via SQLAlchemy."""
+    logger.info("Initializing database…")
     try:
         sys.path.insert(0, str(Path(__file__).parent))
         from zto_enterprise_platform import app, db
 
         with app.app_context():
             db.create_all()
-        logger.info("Database initialised")
+        logger.info("Database initialized successfully")
         return True
     except Exception as e:
-        import traceback
-        logger.error("DB init failed: %s", e)
-        logger.error("Full traceback:\n%s", traceback.format_exc())  # ← print full stack
+        logger.error("Database initialization failed: %s", e)
         return False
 
 
 def create_demo_user():
-    """Insert demo / seed user."""
-    logger.info("Creating demo user …")
+    """Insert demo/seed user into database."""
+    logger.info("Creating demo user…")
     try:
+        sys.path.insert(0, str(Path(__file__).parent))
         from zto_enterprise_platform import app, db, User
         from werkzeug.security import generate_password_hash
         from datetime import datetime, timedelta
 
         with app.app_context():
+            # Check if demo user already exists
             if User.query.filter_by(username='demo').first():
                 logger.info("Demo user already exists")
                 return True
 
+            # Create new demo user
             demo = User(
                 username='demo',
                 email='demo@zto-inc.com',
@@ -138,7 +161,7 @@ def create_demo_user():
             )
             db.session.add(demo)
             db.session.commit()
-            logger.info("Demo user created")
+            logger.info("Demo user created successfully (username: demo, password: demo123)")
             return True
     except Exception as e:
         logger.error("Demo user creation failed: %s", e)
@@ -146,10 +169,10 @@ def create_demo_user():
 
 
 # ------------------------------------------------------------------
-# Server launch (local only – Vercel ignores this path)
+# Server Launch (local only – Vercel ignores this path)
 # ------------------------------------------------------------------
 def launch_gunicorn(env, port=5000):
-    """Production: gunicorn gevent workers."""
+    """Launch production server with gunicorn and gevent workers."""
     cmd = [
         'gunicorn',
         '--bind', f'0.0.0.0:{port}',
@@ -165,81 +188,137 @@ def launch_gunicorn(env, port=5000):
         '--error-logfile', 'logs/error.log',
         'zto_enterprise_platform:app'
     ]
-    subprocess.run(cmd, env=env, check=True)
+    logger.info("Starting gunicorn server on port %d", port)
+    try:
+        subprocess.run(cmd, env=env, check=True)
+    except Exception as e:
+        logger.error("Gunicorn launch failed: %s", e)
+        raise
 
 
 def launch_dev(env, port=5000):
-    """Development: Flask built-in server."""
+    """Launch development server with Flask built-in server."""
     env['FLASK_ENV'] = 'development'
     env['FLASK_DEBUG'] = '1'
-    subprocess.run([sys.executable, 'zto_enterprise_platform.py'], env=env, check=True)
+    logger.info("Starting Flask development server on port %d", port)
+    try:
+        subprocess.run([sys.executable, 'zto_enterprise_platform.py'], env=env, check=True)
+    except Exception as e:
+        logger.error("Flask launch failed: %s", e)
+        raise
 
 
 def launch_browser(port):
+    """Open browser to localhost after a delay."""
     time.sleep(3)
     url = f'http://localhost:{port}'
     logger.info("Opening browser → %s", url)
-    webbrowser.open(url)
+    try:
+        webbrowser.open(url)
+    except Exception as e:
+        logger.warning("Failed to open browser automatically: %s", e)
 
 
 # ------------------------------------------------------------------
-# CLI
+# CLI Argument Parser
 # ------------------------------------------------------------------
 def parse_args():
-    p = argparse.ArgumentParser(description='Launch ZTO Enterprise Platform')
-    p.add_argument('--port', type=int, default=5000)
-    p.add_argument('--debug', action='store_true')
-    p.add_argument('--no-browser', action='store_true')
-    p.add_argument('--setup-only', action='store_true',
-                   help='Local setup + exit')
-    p.add_argument('--setup-remote', action='store_true',
-                   help='Initialise remote DB (Supabase) then exit – use this from your laptop after Vercel deploy')
-    p.add_argument('--demo-data', action='store_true')
-    return p.parse_args()
+    """Parse command-line arguments."""
+    parser = argparse.ArgumentParser(
+        description='Virsaas Virtual Software Inc. – Enterprise Platform Launcher'
+    )
+    parser.add_argument(
+        '--port',
+        type=int,
+        default=5000,
+        help='Port to run the server on (default: 5000)'
+    )
+    parser.add_argument(
+        '--debug',
+        action='store_true',
+        help='Run in development/debug mode with Flask built-in server'
+    )
+    parser.add_argument(
+        '--no-browser',
+        action='store_true',
+        help='Do not automatically open browser'
+    )
+    parser.add_argument(
+        '--setup-only',
+        action='store_true',
+        help='Run local setup (install deps, init DB) and exit'
+    )
+    parser.add_argument(
+        '--setup-remote',
+        action='store_true',
+        help='Initialize remote DB (Supabase) then exit – use this from your laptop after Vercel deploy'
+    )
+    parser.add_argument(
+        '--demo-data',
+        action='store_true',
+        help='Create demo user with credentials demo/demo123'
+    )
+    return parser.parse_args()
 
 
 def main():
+    """Main entry point for the launcher."""
     args = parse_args()
 
-    # banner
+    # Print banner
     print('\n' + '=' * 80)
     print('Virsaas Virtual Software Inc. – Enterprise Platform')
     print(f'Python {platform.python_version()}  |  DB: {get_database_url().split(":", 1)[0]}')
     print('=' * 80 + '\n')
 
+    # Setup environment
     env = setup_environment()
 
+    # Install dependencies
     if not install_deps():
+        logger.error("Dependency installation failed. Exiting.")
         return 1
+
+    # Initialize database
     if not init_db():
+        logger.error("Database initialization failed. Exiting.")
         return 1
+
+    # Create demo user if requested
     if args.demo_data:
         if not create_demo_user():
-            return 1
+            logger.error("Demo user creation failed. Continuing anyway.")
+            # Don't return 1 here – allow server to start even if demo user creation fails
 
-    # remote-setup mode (run locally but against Supabase)
-    if args.setup-remote:
+    # Remote setup mode (initialize remote DB and exit)
+    if args.setup_remote:
         logger.info("Remote database setup complete – exiting")
         return 0
 
-    # local setup-only mode
-    if args.setup-only:
+    # Local setup-only mode (no server launch)
+    if args.setup_only:
         logger.info("Local setup complete – exiting")
         return 0
 
-    # launch browser thread
+    # Launch browser in background thread (unless --no-browser)
     if not args.no_browser:
-        t = threading.Thread(target=launch_browser, args=(args.port,), daemon=True)
-        t.start()
+        browser_thread = threading.Thread(
+            target=launch_browser,
+            args=(args.port,),
+            daemon=True
+        )
+        browser_thread.start()
 
-    # run server
+    # Launch server
     try:
         if args.debug:
+            # Development mode with Flask built-in server
             launch_dev(env, args.port)
         else:
+            # Production mode with gunicorn
             launch_gunicorn(env, args.port)
     except KeyboardInterrupt:
-        logger.info("Shutdown requested – bye!")
+        logger.info("Shutdown requested by user – goodbye!")
         return 0
     except Exception as e:
         logger.error("Server error: %s", e)

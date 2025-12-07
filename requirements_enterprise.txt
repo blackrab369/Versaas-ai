@@ -83,3 +83,4 @@ httpx==0.25.2
 openai
 solana              # Phantom wallet
 base58==2.1.1               # Solana addressing
+pywebpush

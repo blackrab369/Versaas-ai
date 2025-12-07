@@ -1,0 +1,20 @@
+version: "3.9"
+
+services:
+  app:
+    build: .
+    ports: ["5000:5000"]
+    environment:
+      - DATABASE_URL=sqlite:///virsaas.db
+      - FERNET_KEY=your-32-url-safe-base64-key
+      - OPENAI_API_KEY=sk-xxx
+      - STRIPE_SECRET_KEY=sk_test_xxx
+      - STRIPE_WEBHOOK_SECRET=whsec_xxx
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - ./user_projects:/app/user_projects
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7-alpine
