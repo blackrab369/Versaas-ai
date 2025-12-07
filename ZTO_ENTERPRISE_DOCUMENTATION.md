@@ -134,7 +134,6 @@ This document provides comprehensive information about the Virsaas Virtual Softw
 - **Debugger Chat**: Dedicated API endpoint (`/api/debugger/chat`) for real-time code debugging assistance.
 - **Privacy First**: API keys are decrypted only in memory during requests and never logged.
 
-
 ## Installation
 
 ### Prerequisites
@@ -499,11 +498,12 @@ FROM pg_stat_user_indexes
 ORDER BY idx_scan DESC;
 ```
 
-
 ## API Reference
 
 ### Authentication
+
 - **POST /register**
+
   - Body: `{ "username": "...", "email": "...", "password": "..." }`
   - Returns: `{ "success": true, "redirect": "..." }`
 
@@ -512,11 +512,14 @@ ORDER BY idx_scan DESC;
   - Returns: `{ "success": true, "redirect": "..." }`
 
 ### Project Operations
+
 - **POST /create_project**
+
   - Body: `{ "name": "...", "description": "...", "industry": "..." }`
   - Returns: `{ "success": true, "project_id": "...", "redirect": "..." }`
 
 - **GET /api/project/<uuid:project_id>/status**
+
   - Returns: Real-time JSON data of company state, agents, and metrics.
 
 - **POST /api/project/<uuid:project_id>/message**
@@ -524,7 +527,9 @@ ORDER BY idx_scan DESC;
   - Action: Sends a message to the Virtual CEO (Agent CEO-001).
 
 ### AI Services
+
 - **POST /api/debugger/chat**
+
   - Body: `{ "message": "...", "model": "kimi|openai" }`
   - Returns: AI-generated debugging assistance or code snippets.
   - Note: Requires API key configuration in Dashboard.

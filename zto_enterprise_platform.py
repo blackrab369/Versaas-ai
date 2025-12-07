@@ -5,6 +5,7 @@ Professional SaaS platform with PostgreSQL, 2.5D office, 25 AI agents,
 Stripe / PayPal / Crypto, white-label agencies, push, WebSocket war-room.
 """
 
+import re
 import asyncio
 import base64
 import difflib
@@ -67,10 +68,11 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = secrets.token_hex(32)
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["MAX_CONTENT_LENGTH"] = 32 * 1024 * 1024  # 32 MB uploads
-if os.getenv("DATABASE_URL"):
-    app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
+if os.environ.get('DATABASE_URL'):
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 else:
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///virsaas.db"
+    # Fallback to SQLite for development
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///zto_enterprise.db'
 
 # ---------- EXTENSIONS ----------
 db = SQLAlchemy(app)
@@ -582,7 +584,7 @@ class EnterpriseSimulationManager:
 
             self.log_activity(user_id, "simulation_started", {"project_id": project_uuid})
             if project:
-                send_push_notification(project.user, "🚀 SaaS Ready!", f"{project.name} is live at {project.live_url or 'demo'}")
+                send_push_notification(project.user, "🚀 SaaS Ready!", f"{{project.name}} is live at {project.live_url or 'demo'}")
             return orchestrator
 
     def stop_simulation(self, project_uuid: str):
@@ -1148,13 +1150,13 @@ def send_message(project_id):
 # ---------- DOCUMENT GENERATION ----------
 def generate_business_plan(project: Project) -> str:
     # returns long markdown string (omitted for brevity – same as your template)
-    return f"# Business Plan: {project.name}\n... (generated markdown) ..."
+    return f"# Business Plan: {{project.name}}\n... (generated markdown) ..."
 
 def generate_legal_documents(project: Project) -> dict:
     # returns dict of markdown strings (ToS, Privacy, etc.)
     return {
-        "terms_of_service.md": f"# Terms of Service for {project.name}\n...",
-        "privacy_policy.md": f"# Privacy Policy for {project.name}\n..."
+        "terms_of_service.md": f"# Terms of Service for {{project.name}}\n...",
+        "privacy_policy.md": f"# Privacy Policy for {{project.name}}\n..."
     }
 
 @app.route("/api/project/<uuid:project_id>/generate_documents", methods=["POST"])
