@@ -9,10 +9,21 @@
 
 ## Table of Contents
 
-### 1. Enterprise-Grade Infrastructure
-- **PostgreSQL Persistence**: Robust data management for users, projects, and agents.
-- **Scalable Architecture**: Designed for high availability with connection pooling and caching.
-- **Secure Authentication**: User management with support for API keys (Kimi AI, OpenAI).
+1. [Overview](#overview)
+2. [Architecture](#architecture)
+3. [Features](#features)
+4. [Tech Stack](#tech-stack)
+5. [Project Structure](#project-structure)
+6. [Installation](#installation)
+7. [Configuration](#configuration)
+8. [Running the Application](#running-the-application)
+9. [API Reference](#api-reference)
+10. [Database Schema](#database-schema)
+11. [AI Agents](#ai-agents)
+12. [Payment Integration](#payment-integration)
+13. [White-Label Agency System](#white-label-agency-system)
+14. [Deployment](#deployment)
+15. [Troubleshooting](#troubleshooting)
 
 ---
 
