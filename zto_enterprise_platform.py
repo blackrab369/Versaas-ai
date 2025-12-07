@@ -2803,7 +2803,6 @@ def paypal_create_order():
     if os.getenv("STRIPE_ENABLED", "false").lower() == "false":
         return jsonify({"error": "PayPal disabled by admin"}), 400
 
-    import httpx
     url = "https://api-m.sandbox.paypal.com/v2/checkout/orders"  # sandbox
     headers = {
         "Content-Type": "application/json",
@@ -2826,7 +2825,7 @@ def paypal_create_order():
 def paypal_capture_order():
     """Step 2: capture funds & upgrade user"""
     order_id = request.json.get("order_id")
-    import httpx
+    
     url = f"https://api-m.sandbox.paypal.com/v2/checkout/orders/{order_id}/capture"
     headers = {
         "Content-Type": "application/json",
