@@ -11,12 +11,18 @@
   ],
   "functions": {
     "zto_enterprise_platform.py": {
-      "runtime": "vercel-python-v3",
+      "runtime": "python3.12",
       "maxDuration": 30
     }
   },
   "routes": [
-    { "src": "/socket.io/(.*)", "dest": "zto_enterprise_platform.py" },
-    { "src": "/(.*)", "dest": "zto_enterprise_platform.py" }
+    {
+      "src": "/socket.io/(.*)",
+      "dest": "zto_enterprise_platform.py"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "zto_enterprise_platform.py"
+    }
   ]
 }
