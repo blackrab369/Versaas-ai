@@ -16,15 +16,13 @@
     }
   },
   "routes": [
-    { "src": "/socket.io/(.*)", "dest": "zto_enterprise_platform.py" },
-    { "src": "/(.*)", "dest": "zto_enterprise_platform.py" },
+    {
+      "src": "/socket.io/(.*)",
+      "dest": "zto_enterprise_platform.py"
+    },
     {
       "src": "/(.*)",
       "dest": "zto_enterprise_platform.py"
     }
-  ],
-  "crons": [
-    { "path": "/cron/usage-sync", "schedule": "0 4 * * *" },
-    { "path": "/cron/agency-mrr", "schedule": "0 6 * * *" }
   ]
 }
