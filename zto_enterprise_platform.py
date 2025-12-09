@@ -74,15 +74,6 @@ else:
     # Fallback to SQLite for development
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///zto_enterprise.db'
 
-
-app.config['TEMPLATES_AUTO_RELOAD'] = True
-@app.after_request
-def no_cache(response):
-    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-    response.headers["Pragma"] = "no-cache"
-    response.headers["Expires"] = "0"
-    return response
-
 # ---------- EXTENSIONS ----------
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
