@@ -1,0 +1,30 @@
+{% extends "base_dashboard.html" %} {% block content %}
+<h2>Source Code – {{ project.name }}</h2>
+
+<div class="source-actions">
+  <a
+    href="{{ url_for('download_project', project_id=project.project_id) }}"
+    class="btn-primary"
+    >Download ZIP</a
+  >
+  {% if project.live_url %}
+  <a href="{{ project.live_url }}" target="_blank" class="btn-secondary"
+    >Live Demo</a
+  >
+  {% endif %}
+</div>
+
+<div class="file-tree">
+  <ul>
+    {% for file in files %}
+    <li>
+      <a
+        href="{{ url_for('view_source_file', project_id=project.project_id, path=file.path) }}"
+      >
+        {{ file.path }}
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}

@@ -1,0 +1,22 @@
+{
+  "crons": [
+    {
+      "path": "/cron/usage-sync",
+      "schedule": "0 4 * * *"
+    },
+    {
+      "path": "/cron/agency-mrr",
+      "schedule": "0 6 * * *"
+    }
+  ],
+  "functions": {
+    "zto_enterprise_platform.py": {
+      "runtime": "vercel-python-v3",
+      "maxDuration": 30
+    }
+  },
+  "routes": [
+    { "src": "/socket.io/(.*)", "dest": "zto_enterprise_platform.py" },
+    { "src": "/(.*)", "dest": "zto_enterprise_platform.py" }
+  ]
+}

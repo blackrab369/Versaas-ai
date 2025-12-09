@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Zero-to-One Virtual Software Inc. - CEO Chat Interface
+Virsaas Virtual Software Inc. - CEO Chat Interface
 Human owner communication interface with the virtual CEO
 """
 
@@ -36,7 +36,7 @@ class CEOChatInterface:
         self.start_update_thread()
         
         # Welcome message
-        self.display_message("System", "Welcome to Zero-to-One Virtual Software Inc. CEO Chat Interface", "system")
+        self.display_message("System", "Welcome to Virsaas Virtual Software Inc. CEO Chat Interface", "system")
         self.display_message("CEO-001", "Hello! I'm the CEO of ZTO Inc. Please share your software product idea, and I'll coordinate our virtual team to bring it to life.", "agent")
     
     def setup_ui(self):
@@ -281,7 +281,7 @@ class CEOChatInterface:
     
     def show_about(self):
         """Show about dialog"""
-        about_text = """Zero-to-One Virtual Software Inc.
+        about_text = """Virsaas Virtual Software Inc.
         
 A fully autonomous virtual software company with 25 AI employees working to build a profitable product in 180 days with $0 outside capital.
 

@@ -1,0 +1,104 @@
+<div id="debugger-pane" class="pane">
+  <h3>AI Debugger (bring your own key)</h3>
+  <div class="key-status">
+    <label>
+      <input type="radio" name="dbg_model" value="kimi" checked /> Kimi AI
+    </label>
+    <label>
+      <input type="radio" name="dbg_model" value="openai" /> OpenAI
+    </label>
+    <a href="/dashboard/keys" target="_blank" class="small-link">Manage keys</a>
+  </div>
+
+  <div id="dbg-messages" class="dbg-chat"></div>
+  <form id="dbg-form" class="dbg-footer">
+    <input
+      id="dbg-input"
+      type="text"
+      placeholder="Ask Kimi to debug/trace/refactor..."
+      required
+    />
+    <button type="submit" class="btn-icon">➤</button>
+  </form>
+</div>
+
+<script>
+  const dbgForm = document.getElementById("dbg-form");
+  const dbgInput = document.getElementById("dbg-input");
+  const dbgMsgs = document.getElementById("dbg-messages");
+  const modelSel = document.querySelector(
+    'input[name="dbg_model"]:checked'
+  ).value;
+
+  function addDbg(sender, txt) {
+    const div = document.createElement("div");
+    div.className = sender;
+    div.textContent = txt;
+    dbgMsgs.appendChild(div);
+    dbgMsgs.scrollTop = dbgMsgs.scrollHeight;
+  }
+
+  dbgForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const msg = dbgInput.value.trim();
+    if (!msg) return;
+    addDbg("user", msg);
+    dbgInput.value = "";
+    const model = document.querySelector(
+      'input[name="dbg_model"]:checked'
+    ).value;
+    const res = await fetch("/api/debugger/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: msg, model }),
+    });
+    const data = await res.json();
+    if (data.reply) addDbg("ai", data.reply);
+    else addDbg("error", data.error);
+  });
+</script>
+
+<style>
+  .dbg-chat {
+    height: 300px;
+    overflow-y: auto;
+    background: #0d0f18;
+    border: 1px solid #2a2f4a;
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1rem 0;
+  }
+  .dbg-chat .user {
+    text-align: right;
+    color: #00f5d4;
+    margin-bottom: 0.5rem;
+  }
+  .dbg-chat .ai {
+    color: #e0e6f1;
+    margin-bottom: 0.5rem;
+  }
+  .dbg-chat .error {
+    color: #ff6b6b;
+  }
+  .dbg-footer {
+    display: flex;
+    gap: 0.5rem;
+  }
+  #dbg-input {
+    flex: 1;
+    background: #151829;
+    border: 1px solid #2a2f4a;
+    color: #e0e6f1;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+  }
+  .small-link {
+    font-size: 0.85rem;
+    margin-left: 1rem;
+  }
+</style>
+<style>
+  :root { --primary: {{ custom_colour }} !important; }
+</style>
+{% if agency %}<img src="{{ custom_logo }}" height="32" />{% else %}Virsaas{%
+endif %}

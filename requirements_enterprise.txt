@@ -1,4 +1,4 @@
-# Zero-to-One Virtual Software Inc. - Enterprise Platform Requirements
+# Virsaas Virtual Software Inc. - Enterprise Platform Requirements
 # Professional SaaS platform with PostgreSQL, enhanced 2.5D graphics, and deep simulation insights
 
 # Web Framework
@@ -53,3 +53,34 @@ gunicorn==21.2.0
 gevent==23.9.1
 python-dotenv==1.0.0
 # (any other deps you import)
+
+#changed pages and feautures:
+cryptography==41.0.7
+PyJWT==2.8.0
+redis==5.0.1
+
+#payment gateway setup
+stripe==7.9.0
+python-dateutil==2.8.2
+
+#enhanced coding project features
+flask-mail==0.9.1
+PyGithub==2.1.1
+
+#websocket support
+flask-socketio==5.3.6
+python-socketio==5.10.0
+eventlet==0.33.3  # async mode
+
+#improve whisper with ceo ai
+openai-whisper==20231117
+pydub==0.25.1
+
+#enhance war room frontend
+httpx==0.25.2
+
+#misisng definintions from recent edits
+openai
+solana              # Phantom wallet
+base58==2.1.1               # Solana addressing
+pywebpush

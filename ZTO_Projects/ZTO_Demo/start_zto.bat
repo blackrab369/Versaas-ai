@@ -1,5 +1,5 @@
 @echo off
-echo Starting Zero-to-One Virtual Software Inc...
+echo Starting Virsaas Virtual Software Inc...
 echo.
 echo ========================================
 echo ZTO Inc. - Virtual Company Launcher

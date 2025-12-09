@@ -1,0 +1,35 @@
+<link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}" />
+<meta name="theme-color" content="#00f5d4" />
+<select id="lang-switch">
+  <option value="en">English</option>
+  <option value="es">Español</option>
+  <option value="hi">हिन्दी</option>
+  <option value="fr">Français</option>
+  <option value="zh">中文</option>
+</select>
+
+<script>
+  document.getElementById('lang-switch').onchange = e => {
+    fetch('/api/lang', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({lang: e.target.value})
+    }).then(() => location.reload());
+</script>
+
+<link
+  rel="apple-touch-icon"
+  href="{{ url_for('static', filename='icons/icon-192x192.png') }}"
+/>
+<link
+  rel="icon"
+  type="image/png"
+  sizes="32x32"
+  href="{{ url_for('static', filename='icons/icon-32x32.png') }}"
+/>
+<link
+  rel="icon"
+  type="image/png"
+  sizes="16x16"
+  href="{{ url_for('static', filename='icons/icon-16x16.png') }}"
+/>

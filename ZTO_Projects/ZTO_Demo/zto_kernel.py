@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Zero-to-One Virtual Software Inc. - Orchestrator Kernel
+Virsaas Virtual Software Inc. - Orchestrator Kernel
 Mission: Ship a profitable, million-dollar software product in under 180 days with $0 outside capital.
 """
 
@@ -485,7 +485,7 @@ class ZTOOrchestrator:
         self._log_event("SIMULATION_START", "Started real-time simulation")
         
         # Send startup message
-        self.send_message("CEO-001", "#internal", "Zero-to-One Virtual Software Inc. is now operational. Mission: Ship a profitable product in 180 days.")
+        self.send_message("CEO-001", "#internal", "Virsaas Virtual Software Inc. is now operational. Mission: Ship a profitable product in 180 days.")
         
         logger.info("Simulation started")
     

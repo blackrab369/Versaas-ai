@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Zero-to-One Virtual Software Inc. - Quick Demo
+Virsaas Virtual Software Inc. - Quick Demo
 Demonstrates the core functionality of the virtual company system
 """
 
@@ -16,7 +16,7 @@ from zto_kernel import get_orchestrator
 
 def run_demo():
     """Run a quick demonstration of ZTO Inc."""
-    print("🚀 Zero-to-One Virtual Software Inc. - Demo")
+    print("🚀 Virsaas Virtual Software Inc. - Demo")
     print("=" * 60)
     print()
     

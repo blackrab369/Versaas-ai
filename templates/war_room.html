@@ -1,0 +1,65 @@
+{% extends "base_dashboard.html" %} {% block content %}
+<div class="war-room">
+  <!-- HEADER -->
+  <header class="war-header">
+    <h1>🔥 AI War-Room – {{ project.name }}</h1>
+    <div class="controls">
+      <label>
+        <input type="checkbox" id="voice-toggle" checked /> Voice narration
+      </label>
+      <button id="fullscreen" class="btn-icon">⛶</button>
+    </div>
+    <!-- Added Figma URL input inside war room controls -->
+    <div class="figma-input">
+      <input
+        id="figma-url"
+        type="url"
+        placeholder="https://www.figma.com/file/XXX/YYY"
+      />
+      <button id="figma-import" class="btn-secondary">Import & Code</button>
+    </div>
+  </header>
+
+  <!-- 3-COLUMN GRID -->
+  <div class="war-grid">
+    <!-- LEFT: CODE DIFF -->
+    <section class="war-code">
+      <h3>Code Diff</h3>
+      <div id="code-panel" class="panel">
+        <pre><code id="diff-content">// waiting for agents...</code></pre>
+      </div>
+    </section>
+
+    <!-- MIDDLE: TERMINAL -->
+    <section class="war-terminal">
+      <!-- 2.5D OFFICE CANVAS (center column, behind agents) above terminal -->
+      <section class="war-office">
+        <h3>Live Office</h3>
+        <canvas id="office-canvas" class="office-canvas"></canvas>
+        <script src="{{ url_for('static', filename='js/office_animation.js') }}"></script>
+      </section>
+      <!-- TERMINAL PANEL -->
+      <h3>Terminal</h3>
+      <div id="terminal-panel" class="panel">
+        <div id="terminal-lines"></div>
+      </div>
+    </section>
+
+    <!-- RIGHT: AGENT THOUGHTS -->
+    <section class="war-thoughts">
+      <h3>Agent Thoughts</h3>
+      <div id="thoughts-panel" class="panel">
+        <div id="thoughts-list"></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- DEPLOY BAR -->
+  <div id="deploy-bar" class="deploy-bar hidden">
+    🚀 Live at <a id="deploy-url" href="#" target="_blank"></a>
+  </div>
+</div>
+
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<script src="{{ url_for('static', filename='js/war_room.js') }}"></script>
+{% endblock %}

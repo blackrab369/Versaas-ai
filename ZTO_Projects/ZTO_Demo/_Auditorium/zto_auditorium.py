@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Zero-to-One Virtual Software Inc. - 2.5D Auditorium Simulation
+Virsaas Virtual Software Inc. - 2.5D Auditorium Simulation
 Visual representation of the virtual office with real-time agent activities
 """
 
@@ -115,7 +115,7 @@ class ZTOAuditorium:
     
     def __init__(self):
         pygame.init()
-        pygame.display.set_caption("Zero-to-One Virtual Software Inc. - Live Floor Plan")
+        pygame.display.set_caption("Virsaas Virtual Software Inc. - Live Floor Plan")
         
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.RESIZABLE)
         self.clock = pygame.time.Clock()
@@ -150,7 +150,7 @@ class ZTOAuditorium:
         }
         
         # LED ticker
-        self.ticker_text = "Zero-to-One Virtual Software Inc. - Revenue: $0 - Runway: 180 days"
+        self.ticker_text = "Virsaas Virtual Software Inc. - Revenue: $0 - Runway: 180 days"
         self.ticker_offset = 0
         
         logger.info("Auditorium initialized")

@@ -1,8 +1,8 @@
-# Zero-to-One Virtual Software Inc. - Enterprise Platform Documentation
+# Virsaas Virtual Software Inc. - Enterprise Platform Documentation
 
 ## Overview
 
-This document provides comprehensive information about the Zero-to-One Virtual Software Inc. Enterprise platform - a professional-grade SaaS solution with PostgreSQL persistence, enhanced 32-bit 2.5D graphics, deep simulation insights, and enterprise-level features.
+This document provides comprehensive information about the Virsaas Virtual Software Inc. Enterprise platform - a professional-grade SaaS solution with PostgreSQL persistence, enhanced 32-bit 2.5D graphics, deep simulation insights, and enterprise-level features.
 
 ## Table of Contents
 
@@ -24,29 +24,34 @@ This document provides comprehensive information about the Zero-to-One Virtual S
 ### Technology Stack
 
 **Backend Framework:**
+
 - Flask 2.3+ - Web framework with enterprise enhancements
 - Flask-SQLAlchemy 3.0+ - Database ORM with PostgreSQL support
 - Flask-Login 0.6+ - User authentication with session management
 - Werkzeug 2.3+ - Security utilities and development server
 
 **Database:**
+
 - PostgreSQL 14+ - Primary database for enterprise persistence
 - SQLAlchemy 2.0+ - Database toolkit with PostgreSQL dialects
 - Psycopg2-binary 2.9+ - PostgreSQL adapter for Python
 
 **Frontend:**
+
 - HTML5/CSS3 with Tailwind CSS
 - JavaScript (ES6+) with async/await patterns
 - Plotly.js - Interactive financial charts
 - Font Awesome 6.0+ - Professional icon library
 
 **Core Components:**
+
 - Pygame-ce 2.3+ - 32-bit 2.5D graphics engine
 - Plotly 5.15+ - Enhanced financial dashboard
 - Pandas 2.0+ - Advanced data processing
 - NumPy 1.24+ - High-performance numerical computing
 
 **Production Tools:**
+
 - Gunicorn 21.0+ - Production WSGI server
 - Gevent 23.0+ - Async networking library
 - Psycopg2-binary 2.9+ - PostgreSQL production adapter
@@ -87,6 +92,7 @@ This document provides comprehensive information about the Zero-to-One Virtual S
 ## Enhanced Features
 
 ### 1. PostgreSQL Integration
+
 - **ACID Compliance**: Full transactional support with rollback capabilities
 - **Concurrent Access**: Handle multiple simultaneous users and simulations
 - **Advanced Indexing**: Optimized queries with composite and partial indexes
@@ -95,6 +101,7 @@ This document provides comprehensive information about the Zero-to-One Virtual S
 - **Backup & Recovery**: Automated backup strategies with point-in-time recovery
 
 ### 2. 32-bit 2.5D Graphics Engine
+
 - **Enhanced Visual Quality**: 32-bit color depth for smooth gradients and lighting
 - **Hardware Acceleration**: GPU utilization for smooth 60 FPS animations
 - **Advanced Lighting**: Dynamic shadows and ambient occlusion
@@ -103,6 +110,7 @@ This document provides comprehensive information about the Zero-to-One Virtual S
 - **Smooth Animations**: Bezier curves for natural agent movement
 
 ### 3. Character Interaction System
+
 - **Thought Process Visualization**: Real-time display of agent reasoning and decisions
 - **Communication History**: Complete log of inter-agent communications
 - **Task Progression**: Visual representation of current tasks and completion status
@@ -111,6 +119,7 @@ This document provides comprehensive information about the Zero-to-One Virtual S
 - **Social Dynamics**: Relationship mapping between agents
 
 ### 4. Computer System Views
+
 - **Live Code Development**: Real-time display of code being written by agents
 - **System Monitoring**: CPU, memory, and network usage for each agent's workstation
 - **Development Environment**: IDE state, open files, and debugging sessions
@@ -118,11 +127,19 @@ This document provides comprehensive information about the Zero-to-One Virtual S
 - **Build Pipeline**: Continuous integration status and deployment progress
 - **Security Audits**: Real-time security scanning and vulnerability assessment
 
+### 5. AI Services Integration
+
+- **Model Agnostic**: Support for both Kimi AI and OpenAI GPT models.
+- **Secure Key Management**: Encrypted storage of user API keys (AES-256 encryption).
+- **Debugger Chat**: Dedicated API endpoint (`/api/debugger/chat`) for real-time code debugging assistance.
+- **Privacy First**: API keys are decrypted only in memory during requests and never logged.
+
 ## Installation
 
 ### Prerequisites
 
 **System Requirements:**
+
 - Python 3.9 or higher
 - PostgreSQL 14 or higher
 - 8GB RAM minimum (16GB recommended)
@@ -131,6 +148,7 @@ This document provides comprehensive information about the Zero-to-One Virtual S
 - Graphics card supporting OpenGL 4.0+
 
 **Database Requirements:**
+
 - PostgreSQL 14+ with JSONB support
 - Redis 6.0+ for caching (optional)
 - Connection pooling (PgBouncer recommended)
@@ -138,17 +156,19 @@ This document provides comprehensive information about the Zero-to-One Virtual S
 ### Step-by-Step Installation
 
 1. **Install PostgreSQL**
+
    ```bash
    # Ubuntu/Debian
    sudo apt update
    sudo apt install postgresql postgresql-contrib
-   
+
    # macOS with Homebrew
    brew install postgresql
    brew services start postgresql
    ```
 
 2. **Create Database and User**
+
    ```bash
    sudo -u postgres psql
    CREATE DATABASE zto_enterprise;
@@ -158,6 +178,7 @@ This document provides comprehensive information about the Zero-to-One Virtual S
    ```
 
 3. **Clone and Setup Project**
+
    ```bash
    git clone <repository-url>
    cd zto-enterprise-platform
@@ -167,22 +188,26 @@ This document provides comprehensive information about the Zero-to-One Virtual S
    ```
 
 4. **Install Dependencies**
+
    ```bash
    pip install -r requirements_enterprise.txt
    ```
 
 5. **Configure Environment**
+
    ```bash
    cp .env.example .env
    # Edit .env file with your configuration
    ```
 
 6. **Initialize Database**
+
    ```bash
    python -c "from zto_enterprise_platform import app, db; app.app_context().push(); db.create_all()"
    ```
 
 7. **Create Required Directories**
+
    ```bash
    mkdir -p logs user_projects instance backups temp
    ```
@@ -195,15 +220,16 @@ This document provides comprehensive information about the Zero-to-One Virtual S
 ### Production Installation
 
 **Using Docker Compose:**
+
 ```yaml
-version: '3.8'
+version: "3.8"
 services:
   web:
     build: .
     ports:
       - "5000:5000"
     environment:
-      - DATABASE_URL=postgresql://zto_user:zto_password@db:5432/zto_enterprise
+      - DATABASE_URL=postgresql://zto_user:zto_password@db:6543/zto_enterprise
       - REDIS_URL=redis://redis:6379/0
     depends_on:
       - db
@@ -221,7 +247,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "6543:6543"
 
   redis:
     image: redis:7-alpine
@@ -239,8 +265,25 @@ services:
     depends_on:
       - web
 
-volumes:
-  postgres_data:
+
+### Cloud Deployment (Vercel & Supabase)
+
+The platform is optimized for modern cloud deployment workflows.
+
+1.  **Database (Supabase)**
+    -   Create a new project on Supabase.
+    -   Get the Connection String (URI) (Transaction pooler recommended).
+    -   Set `DATABASE_URL` environment variable.
+
+2.  **Application (Vercel)**
+    -   Import the repository to Vercel.
+    -   Set `FLASK_ENV=production`.
+    -   Set `DATABASE_URL` from Supabase.
+    -   Set `STRIPE_...` and other keys as needed.
+
+3.  **Initialization**
+    -   Run `python launch_enterprise.py --setup-remote` locally (with `DATABASE_URL` set to the remote DB) to initialize the schema.
+
 ```
 
 ## Configuration
@@ -254,7 +297,7 @@ FLASK_ENV=production
 FLASK_DEBUG=0
 
 # Database Configuration
-DATABASE_URL=postgresql://zto_user:zto_password@localhost:5432/zto_enterprise
+DATABASE_URL=postgresql://zto_user:zto_password@localhost:6543/zto_enterprise
 DATABASE_POOL_SIZE=20
 DATABASE_MAX_OVERFLOW=30
 DATABASE_POOL_TIMEOUT=30
@@ -317,7 +360,7 @@ HEALTH_CHECK_ENDPOINT=/health
 ```sql
 # Connection Settings
 listen_addresses = 'localhost'
-port = 5432
+port = 6543
 max_connections = 200
 superuser_reserved_connections = 3
 
@@ -356,16 +399,19 @@ log_lock_waits = on
 ### Getting Started
 
 1. **Access the Web Interface**
+
    - Open your browser and navigate to `http://localhost:5000`
    - You'll see the enhanced landing page with 32-bit graphics
 
 2. **Create an Account**
+
    - Click "Register" or use the demo account:
      - Username: `demo`
      - Password: `demo123`
    - Demo accounts get premium access for 30 days
 
 3. **Create Your First Project**
+
    - After registration, you'll be redirected to the dashboard
    - Click "Create New Project" with enhanced UI
    - Fill in detailed project information including:
@@ -383,6 +429,7 @@ log_lock_waits = on
 ### Enhanced User Interface
 
 **Main Pages:**
+
 - **Index Page** (`/`) - Professional landing with 32-bit graphics preview
 - **Register** (`/register`) - Enhanced registration with industry selection
 - **Login** (`/login`) - Secure authentication with 2FA support
@@ -391,6 +438,7 @@ log_lock_waits = on
 - **Subscription** (`/subscribe`) - Enterprise-grade pricing and billing
 
 **New Interactive Features:**
+
 - **Agent Detail Modal**: Click any agent to see comprehensive profile
 - **Computer System Views**: View live code development and system metrics
 - **Thought Process Display**: Real-time agent reasoning and decision making
@@ -400,11 +448,12 @@ log_lock_waits = on
 ### PostgreSQL Database Features
 
 **Advanced Querying:**
+
 ```sql
 -- Find agents with specific skills
 SELECT a.name, a.role, a.technical_skills->'React' as react_skill
-FROM agents a 
-WHERE a.project_id = 1 
+FROM agents a
+WHERE a.project_id = 1
   AND (a.technical_skills->'React')::int > 80;
 
 -- Get project communication history
@@ -423,9 +472,10 @@ GROUP BY t.task_type;
 ```
 
 **Performance Monitoring:**
+
 ```sql
 -- Database performance metrics
-SELECT 
+SELECT
     schemaname,
     tablename,
     n_tup_ins as inserts,
@@ -437,7 +487,7 @@ FROM pg_stat_user_tables
 ORDER BY n_live_tup DESC;
 
 -- Index usage statistics
-SELECT 
+SELECT
     schemaname,
     tablename,
     indexname,
@@ -448,9 +498,50 @@ FROM pg_stat_user_indexes
 ORDER BY idx_scan DESC;
 ```
 
+## API Reference
+
+### Authentication
+
+- **POST /register**
+
+  - Body: `{ "username": "...", "email": "...", "password": "..." }`
+  - Returns: `{ "success": true, "redirect": "..." }`
+
+- **POST /login**
+  - Body: `{ "username": "...", "password": "..." }`
+  - Returns: `{ "success": true, "redirect": "..." }`
+
+### Project Operations
+
+- **POST /create_project**
+
+  - Body: `{ "name": "...", "description": "...", "industry": "..." }`
+  - Returns: `{ "success": true, "project_id": "...", "redirect": "..." }`
+
+- **GET /api/project/<uuid:project_id>/status**
+
+  - Returns: Real-time JSON data of company state, agents, and metrics.
+
+- **POST /api/project/<uuid:project_id>/message**
+  - Body: `{ "message": "..." }`
+  - Action: Sends a message to the Virtual CEO (Agent CEO-001).
+
+### AI Services
+
+- **POST /api/debugger/chat**
+
+  - Body: `{ "message": "...", "model": "kimi|openai" }`
+  - Returns: AI-generated debugging assistance or code snippets.
+  - Note: Requires API key configuration in Dashboard.
+
+- **POST /dashboard/keys**
+  - Body: `{ "openai_key": "...", "kimi_key": "..." }`
+  - Action: Encrypts and stores keys in the user profile.
+
 ## Database Schema
 
 ### Enhanced User Table
+
 ```sql
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
@@ -466,7 +557,7 @@ CREATE TABLE users (
     profile_data JSONB DEFAULT '{}',
     preferences JSONB DEFAULT '{}',
     metrics JSONB DEFAULT '{}',
-    
+
     -- Indexes
     CONSTRAINT users_username_key UNIQUE (username),
     CONSTRAINT users_email_key UNIQUE (email),
@@ -478,6 +569,7 @@ CREATE TABLE users (
 ```
 
 ### Enhanced Project Table
+
 ```sql
 CREATE TABLE projects (
     id SERIAL PRIMARY KEY,
@@ -498,7 +590,7 @@ CREATE TABLE projects (
     current_phase VARCHAR(50) DEFAULT 'Phase 0 - Idea Intake',
     metadata JSONB DEFAULT '{}',
     settings JSONB DEFAULT '{}',
-    
+
     -- Indexes
     CONSTRAINT projects_project_id_key UNIQUE (project_id),
     INDEX projects_user_id_idx (user_id),
@@ -511,6 +603,7 @@ CREATE TABLE projects (
 ```
 
 ### Agent Table with Enhanced Attributes
+
 ```sql
 CREATE TABLE agents (
     id SERIAL PRIMARY KEY,
@@ -538,7 +631,7 @@ CREATE TABLE agents (
     experience JSONB DEFAULT '{}',
     achievements JSONB DEFAULT '[]',
     relationships JSONB DEFAULT '{}',
-    
+
     -- Indexes
     CONSTRAINT agents_project_id_agent_id_key UNIQUE (project_id, agent_id),
     INDEX agents_project_id_idx (project_id),
@@ -549,6 +642,7 @@ CREATE TABLE agents (
 ```
 
 ### Communication Table
+
 ```sql
 CREATE TABLE communications (
     id SERIAL PRIMARY KEY,
@@ -563,7 +657,7 @@ CREATE TABLE communications (
     context JSONB DEFAULT '{}',
     sentiment VARCHAR(20),
     urgency INTEGER DEFAULT 5,
-    
+
     -- Indexes
     INDEX communications_project_id_idx (project_id),
     INDEX communications_from_agent_idx (from_agent),
@@ -584,43 +678,43 @@ class EnhancedGraphicsEngine:
         self.display_surface = None
         self.clock = pygame.time.Clock()
         self.fps = 60
-        
+
         # 32-bit color support
         self.color_depth = 32
         self.alpha_blending = True
         self.hardware_acceleration = True
-        
+
         # Lighting system
         self.ambient_light = 0.3
         self.dynamic_lights = []
         self.shadows_enabled = True
-        
+
         # Animation system
         self.animation_manager = AnimationManager()
         self.particle_system = ParticleSystem()
-        
+
     def initialize_display(self, width, height):
         """Initialize 32-bit display with hardware acceleration"""
         flags = pygame.HWSURFACE | pygame.DOUBLEBUF
         if self.hardware_acceleration:
             flags |= pygame.OPENGL
-            
+
         self.display_surface = pygame.display.set_mode(
-            (width, height), 
-            flags, 
+            (width, height),
+            flags,
             self.color_depth
         )
-        
+
     def render_office_environment(self):
         """Render enhanced 2.5D office environment"""
         # Dynamic lighting
         self.apply_ambient_lighting()
         self.render_dynamic_shadows()
-        
+
         # 32-bit textures
         self.render_high_resolution_textures()
         self.apply_post_processing_effects()
-        
+
         # Particle effects
         self.particle_system.update()
         self.particle_system.render()
@@ -629,35 +723,37 @@ class EnhancedGraphicsEngine:
 ### Advanced Visual Effects
 
 **Dynamic Lighting:**
+
 ```python
 def calculate_lighting(self, position, normal):
     """Calculate dynamic lighting for 3D positions"""
     total_light = self.ambient_light
-    
+
     for light in self.dynamic_lights:
         direction = light.position - position
         distance = direction.length()
         attenuation = 1.0 / (1.0 + light.falloff * distance)
-        
+
         # Diffuse lighting
         diffuse = max(0, normal.dot(direction.normalize()))
         total_light += light.color * diffuse * attenuation
-        
+
     return total_light
 ```
 
 **Particle Systems:**
+
 ```python
 class ParticleSystem:
     def __init__(self):
         self.particles = []
         self.emitters = []
-        
+
     def create_steam_effect(self, position):
         """Create steam effect from coffee machines"""
         emitter = SteamEmitter(position)
         self.emitters.append(emitter)
-        
+
     def create_server_heat_effect(self, server_rack):
         """Create heat distortion effect from servers"""
         emitter = HeatEmitter(server_rack.position)
@@ -691,18 +787,18 @@ class ThoughtProcessManager:
                 "Experimenting with {tool} capabilities..."
             ]
         }
-        
+
     def generate_thought(self, agent, context):
         """Generate realistic thought process for agent"""
         thought_category = self.determine_thought_category(agent, context)
         templates = self.thought_templates[thought_category]
-        
+
         # Personalize based on agent personality
         template = self.personalize_template(agent, templates)
-        
+
         # Fill in context-specific details
         thought = self.fill_template(template, context)
-        
+
         return thought
 ```
 
@@ -714,7 +810,7 @@ class CommunicationAnalyzer:
         self.sentiment_analyzer = SentimentAnalyzer()
         self.topic_classifier = TopicClassifier()
         self.urgency_detector = UrgencyDetector()
-        
+
     def analyze_communication(self, message):
         """Comprehensive analysis of agent communications"""
         analysis = {
@@ -724,13 +820,13 @@ class CommunicationAnalyzer:
             'keywords': self.extract_keywords(message),
             'entities': self.extract_entities(message)
         }
-        
+
         return analysis
-        
+
     def generate_communication_summary(self, project_id, time_range):
         """Generate summary of project communications"""
         communications = self.get_communications(project_id, time_range)
-        
+
         summary = {
             'total_messages': len(communications),
             'sentiment_trends': self.analyze_sentiment_trends(communications),
@@ -738,7 +834,7 @@ class CommunicationAnalyzer:
             'most_active_agents': self.find_most_active_agents(communications),
             'communication_patterns': self.analyze_patterns(communications)
         }
-        
+
         return summary
 ```
 
@@ -752,32 +848,32 @@ class CodeDevelopmentTracker:
         self.file_watchers = {}
         self.git_repositories = {}
         self.code_analyzers = {}
-        
+
     def track_agent_development(self, agent_id, project_id):
         """Track real-time code development by agents"""
         workspace = self.get_agent_workspace(agent_id, project_id)
-        
+
         # Set up file system watcher
         watcher = FileSystemWatcher(workspace)
         watcher.on_file_change = self.handle_file_change
-        
+
         self.file_watchers[agent_id] = watcher
-        
+
         # Initialize Git repository tracker
         git_tracker = GitRepositoryTracker(workspace)
         self.git_repositories[agent_id] = git_tracker
-        
+
         # Set up code analyzer
         analyzer = CodeAnalyzer(workspace)
         self.code_analyzers[agent_id] = analyzer
-        
+
     def get_live_code_view(self, agent_id, file_path=None):
         """Get current code being developed by agent"""
         if file_path:
             return self.get_file_content(agent_id, file_path)
         else:
             return self.get_active_files(agent_id)
-            
+
     def get_system_metrics(self, agent_id):
         """Get system metrics for agent's development environment"""
         metrics = {
@@ -788,7 +884,7 @@ class CodeDevelopmentTracker:
             'processes': self.get_active_processes(agent_id),
             'open_files': self.get_open_files(agent_id)
         }
-        
+
         return metrics
 ```
 
@@ -804,18 +900,18 @@ class SystemMonitor:
             'disk_usage': 90,
             'network_errors': 5
         }
-        
+
     def monitor_agent_system(self, agent_id):
         """Monitor system resources for agent's development environment"""
         collector = MetricsCollector(agent_id)
         self.metrics_collectors[agent_id] = collector
-        
+
         # Start monitoring
         collector.start_collection(interval=5)  # Collect every 5 seconds
-        
+
         # Set up alerts
         collector.set_alert_callback(self.handle_alert)
-        
+
     def handle_alert(self, agent_id, metric, value, threshold):
         """Handle system alerts"""
         alert = {
@@ -826,13 +922,13 @@ class SystemMonitor:
             'timestamp': datetime.utcnow(),
             'severity': self.calculate_severity(metric, value, threshold)
         }
-        
+
         # Log alert
         self.log_alert(alert)
-        
+
         # Notify relevant agents
         self.notify_agents(alert)
-        
+
         # Take automated action if necessary
         if alert['severity'] == 'critical':
             self.take_automated_action(alert)
@@ -843,6 +939,7 @@ class SystemMonitor:
 ### Database Optimization
 
 **Connection Pooling:**
+
 ```python
 from sqlalchemy import create_engine
 from sqlalchemy.pool import QueuePool
@@ -860,6 +957,7 @@ engine = create_engine(
 ```
 
 **Query Optimization:**
+
 ```python
 # Optimized query with proper indexes
 projects = db.session.query(Project).filter(
@@ -875,6 +973,7 @@ projects = db.session.query(Project).filter(
 ### Caching Strategy
 
 **Redis Caching:**
+
 ```python
 from redis import Redis
 from functools import wraps
@@ -887,10 +986,10 @@ def cache_result(expiration=3600):
         def wrapper(*args, **kwargs):
             cache_key = f"{f.__name__}:{str(args)}:{str(kwargs)}"
             result = redis_client.get(cache_key)
-            
+
             if result is not None:
                 return json.loads(result)
-            
+
             result = f(*args, **kwargs)
             redis_client.setex(cache_key, expiration, json.dumps(result))
             return result
@@ -901,6 +1000,7 @@ def cache_result(expiration=3600):
 ### Frontend Optimization
 
 **Asset Optimization:**
+
 ```python
 # Flask-Assets for CSS/JS optimization
 from flask_assets import Environment, Bundle
@@ -933,6 +1033,7 @@ assets.register('js_all', js_bundle)
 ### Production Deployment with Gunicorn
 
 **Gunicorn Configuration (gunicorn.conf.py):**
+
 ```python
 import multiprocessing
 import os
@@ -972,9 +1073,10 @@ certfile = None
 ```
 
 **Systemd Service Configuration:**
+
 ```ini
 [Unit]
-Description=Zero-to-One Virtual Software Inc. Enterprise Platform
+Description=Virsaas Virtual Software Inc. Enterprise Platform
 After=network.target postgresql.service redis.service
 
 [Service]
@@ -996,6 +1098,7 @@ WantedBy=multi-user.target
 ### Monitoring and Analytics
 
 **Prometheus Metrics:**
+
 ```python
 from prometheus_client import Counter, Histogram, Gauge
 import time
@@ -1010,7 +1113,7 @@ def track_request(f):
     def wrapper(*args, **kwargs):
         start_time = time.time()
         request_count.labels(method=request.method, endpoint=request.endpoint).inc()
-        
+
         try:
             result = f(*args, **kwargs)
             return result
@@ -1021,6 +1124,7 @@ def track_request(f):
 ```
 
 **Health Check Endpoint:**
+
 ```python
 @app.route('/health')
 def health_check():
@@ -1036,11 +1140,11 @@ def health_check():
             'memory_usage': check_memory_usage()
         }
     }
-    
+
     # Overall health
-    all_healthy = all(check['status'] == 'healthy' 
+    all_healthy = all(check['status'] == 'healthy'
                      for check in health_status['checks'].values())
-    
+
     status_code = 200 if all_healthy else 503
     return jsonify(health_status), status_code
 ```
@@ -1050,6 +1154,7 @@ def health_check():
 ### Application Performance Monitoring
 
 **Custom Metrics:**
+
 ```python
 class PerformanceMonitor:
     def __init__(self):
@@ -1060,17 +1165,17 @@ class PerformanceMonitor:
             'user_engagement': Counter('zto_user_engagement_total', 'User engagement events'),
             'revenue_generated': Counter('zto_revenue_generated_total', 'Revenue generated by simulations')
         }
-        
+
     def record_simulation_metrics(self, simulation):
         """Record comprehensive simulation metrics"""
         self.metrics['simulation_uptime'].set(simulation.get_uptime())
-        
+
         for agent in simulation.agents:
             self.metrics['agent_productivity'].observe(agent.productivity)
-            
+
         completion_rate = simulation.get_completion_rate()
         self.metrics['project_completion_rate'].set(completion_rate)
-        
+
         revenue = simulation.get_revenue()
         self.metrics['revenue_generated'].inc(revenue)
 ```
@@ -1078,9 +1183,10 @@ class PerformanceMonitor:
 ### Business Intelligence Dashboard
 
 **Analytics Queries:**
+
 ```sql
 -- User engagement metrics
-SELECT 
+SELECT
     DATE(u.created_at) as signup_date,
     COUNT(*) as new_users,
     COUNT(CASE WHEN u.subscription_type = 'premium' THEN 1 END) as premium_users,
@@ -1092,7 +1198,7 @@ GROUP BY DATE(u.created_at)
 ORDER BY signup_date DESC;
 
 -- Agent performance analysis
-SELECT 
+SELECT
     a.role,
     AVG(a.productivity) as avg_productivity,
     AVG(a.morale) as avg_morale,
@@ -1105,7 +1211,7 @@ GROUP BY a.role
 ORDER BY avg_productivity DESC;
 
 -- Project success metrics
-SELECT 
+SELECT
     p.industry,
     p.business_model,
     COUNT(*) as project_count,
@@ -1120,9 +1226,10 @@ ORDER BY avg_revenue DESC;
 
 ## Conclusion
 
-The Zero-to-One Virtual Software Inc. Enterprise platform represents a significant evolution from the original simulation concept. With PostgreSQL persistence, 32-bit graphics, advanced character interactions, and comprehensive monitoring, it provides a professional-grade solution for AI-powered software development.
+The Virsaas Virtual Software Inc. Enterprise platform represents a significant evolution from the original simulation concept. With PostgreSQL persistence, 32-bit graphics, advanced character interactions, and comprehensive monitoring, it provides a professional-grade solution for AI-powered software development.
 
 Key enhancements include:
+
 - **Enterprise Database**: PostgreSQL with full ACID compliance and advanced features
 - **Enhanced Graphics**: 32-bit color depth with hardware acceleration
 - **Deep Insights**: Real-time thought processes and communication analysis

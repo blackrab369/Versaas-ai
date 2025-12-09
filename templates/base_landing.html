@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <title>{% block title %}Virsaas – Virsaas AI Company{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Space+Mono&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/landing.css') }}"
+    />
+    {% block extra_head %}{% endblock %}
+  </head>
+  <body>
+    <header class="landing-header">
+      <div class="container header-inner">
+        <a class="logo" href="{{ url_for('index') }}">Virsaas</a>
+        <nav class="nav-links">
+          <a href="{{ url_for('about_virsaas') }}">About Virsaas Inc.</a>
+          <a href="{{ url_for('login') }}">Login</a>
+          <a class="btn-primary" href="{{ url_for('register') }}"
+            >Start Building</a
+          >
+        </nav>
+      </div>
+    </header>
+
+    <main>{% block content %}{% endblock %}</main>
+
+    <footer class="landing-footer">
+      <div class="container footer-inner">
+        <p>&copy; {{ year }} Virsaas AI, Inc.</p>
+        <div class="footer-links">
+          <a href="{{ url_for('about_virsaas') }}">About</a>
+          <a href="#">Pricing</a>
+          <a href="#">Privacy</a>
+          <a href="#">Terms</a>
+        </div>
+      </div>
+    </footer>
+
+    {% block extra_js %}{% endblock %}
+  </body>
+</html>
+<style>
+  :root { --primary: {{ custom_colour }} !important; }
+</style>
+{% if agency %}<img src="{{ custom_logo }}" height="32" />{% else %}Virsaas{%
+endif %}

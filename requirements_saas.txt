@@ -1,4 +1,4 @@
-# Zero-to-One Virtual Software Inc. - SaaS Platform Requirements
+# Virsaas Virtual Software Inc. - SaaS Platform Requirements
 # Complete business platform with user accounts, subscriptions, and persistent simulations
 
 # Web Framework
@@ -48,3 +48,32 @@ gunicorn==21.2.0
 gevent==23.9.1
 python-dotenv==1.0.0
 # (any other deps you import)
+
+#changed pages and features
+cryptography==41.0.7
+PyJWT==2.8.0
+redis==5.0.1
+httpx==0.25.2
+
+#payment gateway setup
+stripe==7.9.0
+python-dateutil==2.8.2
+
+#enhanced coding project features
+flask-mail==0.9.1
+PyGithub==2.1.1
+
+#websocket support
+flask-socketio==5.3.6
+python-socketio==5.10.0
+eventlet==0.33.3  # async mode
+
+#improve whisper with ceo ai
+openai-whisper==20231117
+pydub==0.25.1
+
+#misisng definintions from recent edits
+cryptography==41.0.7
+openai==0.28.1
+solana==0.29.3              # Phantom wallet
+base58==2.1.1               # Solana addressing

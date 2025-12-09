@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Zero-to-One Virtual Software Inc. - Financial Dashboard Generator
+Virsaas Virtual Software Inc. - Financial Dashboard Generator
 Creates real-time financial dashboard with company metrics and progress tracking
 """
 

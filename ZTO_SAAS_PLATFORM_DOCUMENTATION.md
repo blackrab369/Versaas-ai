@@ -1,8 +1,8 @@
-# Zero-to-One Virtual Software Inc. - SaaS Platform Documentation
+# Virsaas Virtual Software Inc. - SaaS Platform Documentation
 
 ## Overview
 
-This document provides comprehensive information about the Zero-to-One Virtual Software Inc. SaaS platform - a complete business solution that transforms the original virtual company simulation into a production-ready SaaS application with user accounts, subscriptions, persistent simulations, and real document outputs.
+This document provides comprehensive information about the Virsaas Virtual Software Inc. SaaS platform - a complete business solution that transforms the original virtual company simulation into a production-ready SaaS application with user accounts, subscriptions, persistent simulations, and real document outputs.
 
 ## Table of Contents
 
@@ -22,21 +22,25 @@ This document provides comprehensive information about the Zero-to-One Virtual S
 ### Technology Stack
 
 **Backend Framework:**
+
 - Flask 2.3+ - Web framework
 - Flask-SQLAlchemy 3.0+ - Database ORM
 - Flask-Login 0.6+ - User authentication
 
 **Database:**
+
 - SQLite (development) / PostgreSQL (production)
 - SQLAlchemy 2.0+ - Database toolkit
 
 **Frontend:**
+
 - HTML5/CSS3 with Tailwind CSS
 - JavaScript (ES6+)
 - Plotly.js - Interactive charts
 - Font Awesome - Icons
 
 **Core Components:**
+
 - Pygame-ce 2.3+ - 2.5D simulation engine
 - Plotly 5.15+ - Financial dashboard
 - Pandas 2.0+ - Data processing
@@ -65,42 +69,49 @@ This document provides comprehensive information about the Zero-to-One Virtual S
 ### Core Features
 
 1. **User Account System**
+
    - Registration and login
    - Password hashing and security
    - Session management
    - User roles and permissions
 
 2. **Subscription Management**
+
    - Free 1-hour trial
    - Monthly premium subscription ($49/month)
    - Enterprise custom plans
    - Subscription status tracking
 
 3. **Project Management**
+
    - Multiple projects per user
    - Project creation and deletion
    - Project status tracking
    - Persistent simulation state
 
 4. **Virtual Company Simulation**
+
    - 25 autonomous AI employees
    - 2.5D isometric office visualization
    - Real-time agent movement and interaction
    - Persistent simulation (24/7 operation)
 
 5. **CEO Chat Interface**
+
    - Natural language communication
    - Real-time message handling
    - AI-powered responses
    - Message history
 
 6. **Financial Dashboard**
+
    - Real-time financial metrics
    - Interactive charts and graphs
    - Revenue tracking
    - Progress indicators
 
 7. **Document Generation**
+
    - Business plan generation
    - Legal document templates
    - Financial projections
@@ -115,18 +126,21 @@ This document provides comprehensive information about the Zero-to-One Virtual S
 ### Advanced Features
 
 1. **Persistent Simulation**
+
    - Continues running when user closes browser
    - Independent project simulations
    - State saving and restoration
    - Automatic progress tracking
 
 2. **Multi-Tenant Architecture**
+
    - User isolation
    - Resource management
    - Scalable design
    - Performance optimization
 
 3. **Security Features**
+
    - SHA-256 audit trails
    - Encrypted passwords
    - Session security
@@ -150,12 +164,14 @@ This document provides comprehensive information about the Zero-to-One Virtual S
 ### Step-by-Step Installation
 
 1. **Clone the Repository**
+
    ```bash
    git clone <repository-url>
    cd zto-saas-platform
    ```
 
 2. **Create Virtual Environment**
+
    ```bash
    python -m venv venv
    source venv/bin/activate  # Linux/Mac
@@ -163,16 +179,19 @@ This document provides comprehensive information about the Zero-to-One Virtual S
    ```
 
 3. **Install Dependencies**
+
    ```bash
    pip install -r requirements_saas.txt
    ```
 
 4. **Initialize Database**
+
    ```bash
    python -c "from zto_saas_platform import app, db; app.app_context().push(); db.create_all()"
    ```
 
 5. **Create Required Directories**
+
    ```bash
    mkdir -p user_projects
    mkdir -p instance
@@ -228,6 +247,7 @@ SIMULATION_SAVE_INTERVAL=3600  # Save every hour
 ### Configuration Files
 
 **config.py**
+
 ```python
 import os
 from datetime import timedelta
@@ -237,18 +257,18 @@ class Config:
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///zto_saas.db'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     MAX_CONTENT_LENGTH = int(os.environ.get('MAX_CONTENT_LENGTH', 16777216))
-    
+
     # Security
     SECURITY_PASSWORD_SALT = os.environ.get('SECURITY_PASSWORD_SALT') or 'dev-salt'
-    
+
     # Session configuration
     PERMANENT_SESSION_LIFETIME = timedelta(days=30)
-    
+
     # Stripe configuration
     STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLISHABLE_KEY')
     STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY')
     STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET')
-    
+
     # Application configuration
     UPLOAD_FOLDER = os.environ.get('UPLOAD_FOLDER') or 'user_projects'
     SIMULATION_SPEED = float(os.environ.get('SIMULATION_SPEED', 1.0))
@@ -280,15 +300,18 @@ config = {
 ### Getting Started
 
 1. **Access the Web Interface**
+
    - Open your browser and navigate to `http://localhost:5000`
    - You'll see the main landing page with feature descriptions
 
 2. **Create an Account**
+
    - Click "Register" or go to `/register`
    - Fill in the registration form
    - You'll receive a 1-hour free trial
 
 3. **Create Your First Project**
+
    - After registration, you'll be redirected to the dashboard
    - Click "Create New Project"
    - Fill in project details and submit
@@ -302,6 +325,7 @@ config = {
 ### User Interface
 
 **Main Pages:**
+
 - **Index Page** (`/`) - Landing page with features and pricing
 - **Register** (`/register`) - User registration form
 - **Login** (`/login`) - User authentication
@@ -310,6 +334,7 @@ config = {
 - **Subscription** (`/subscribe`) - Plan selection and payment
 
 **Project Interface:**
+
 - **Virtual Office** - 2.5D simulation with agent movement
 - **CEO Chat** - Real-time communication interface
 - **Financial Dashboard** - Interactive charts and metrics
@@ -319,11 +344,13 @@ config = {
 ### Creating Projects
 
 1. **From Dashboard**
+
    - Click "Create New Project" button
    - Fill in project name and description
    - Submit to start simulation
 
 2. **Project Details**
+
    - Name: Your project/product name
    - Description: Detailed idea description
    - Business goals and target market
@@ -336,18 +363,21 @@ config = {
 ### Interacting with Your Virtual Company
 
 **CEO Chat:**
+
 - Type messages in the chat input
 - Ask about project status
 - Provide business direction
 - Request specific features
 
 **Monitoring Progress:**
+
 - Watch agent movements in virtual office
 - Check financial dashboard for metrics
 - Review team status for current activities
 - Monitor recent activity feed
 
 **Document Generation:**
+
 - Click "Generate Documents" button
 - System creates business plan, legal docs
 - Documents saved to project output folder
@@ -356,17 +386,20 @@ config = {
 ### Subscription Management
 
 **Free Trial:**
+
 - 1-hour full access to all features
 - Limited to 1 project
 - No credit card required
 
 **Premium Subscription:**
+
 - $49/month unlimited access
 - Unlimited projects
 - Priority support
 - Advanced features
 
 **Enterprise:**
+
 - Custom pricing
 - White-label solutions
 - Private deployment
@@ -377,15 +410,17 @@ config = {
 ### Authentication Endpoints
 
 **POST /register**
+
 ```json
 {
   "username": "string",
-  "email": "string", 
+  "email": "string",
   "password": "string"
 }
 ```
 
 **POST /login**
+
 ```json
 {
   "username": "string",
@@ -396,6 +431,7 @@ config = {
 ### Project Endpoints
 
 **POST /create_project**
+
 ```json
 {
   "name": "string",
@@ -407,6 +443,7 @@ config = {
 Returns current project status and simulation data.
 
 **POST /api/project/<project_id>/message**
+
 ```json
 {
   "message": "string"
@@ -427,6 +464,7 @@ Creates Stripe checkout session for subscription.
 ## Database Schema
 
 ### User Table
+
 ```sql
 CREATE TABLE user (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -443,6 +481,7 @@ CREATE TABLE user (
 ```
 
 ### Project Table
+
 ```sql
 CREATE TABLE project (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -463,6 +502,7 @@ CREATE TABLE project (
 ```
 
 ### Document Table
+
 ```sql
 CREATE TABLE document (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -478,6 +518,7 @@ CREATE TABLE document (
 ```
 
 ### Payment Table
+
 ```sql
 CREATE TABLE payment (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -495,24 +536,28 @@ CREATE TABLE payment (
 ## Security
 
 ### Authentication
+
 - Password hashing using Werkzeug's security utilities
 - Session-based authentication with Flask-Login
 - CSRF protection on all forms
 - Secure session cookies
 
 ### Authorization
+
 - User role-based access control
 - Project ownership verification
 - Subscription-based feature access
 - API endpoint protection
 
 ### Data Protection
+
 - Password hashing with salt
 - Encrypted sensitive data
 - Secure file uploads
 - Input validation and sanitization
 
 ### Audit Trail
+
 - SHA-256 hashing of all actions
 - Complete activity logging
 - User action tracking
@@ -534,18 +579,21 @@ python zto_saas_platform.py
 ### Production Deployment
 
 **Using Gunicorn:**
+
 ```bash
 pip install gunicorn
 gunicorn -w 4 -b 0.0.0.0:5000 zto_saas_platform:app
 ```
 
 **Using uWSGI:**
+
 ```bash
 pip install uwsgi
 uwsgi --http :5000 --wsgi-file zto_saas_platform.py --callable app
 ```
 
 **Using Docker:**
+
 ```dockerfile
 FROM python:3.9-slim
 
@@ -564,6 +612,7 @@ CMD ["python", "zto_saas_platform.py"]
 ### Environment-Specific Deployment
 
 **Development:**
+
 ```bash
 export FLASK_ENV=development
 export DEBUG=True
@@ -571,6 +620,7 @@ python zto_saas_platform.py
 ```
 
 **Staging:**
+
 ```bash
 export FLASK_ENV=production
 export DEBUG=False
@@ -579,6 +629,7 @@ python zto_saas_platform.py
 ```
 
 **Production:**
+
 ```bash
 export FLASK_ENV=production
 export DEBUG=False
@@ -592,58 +643,65 @@ python zto_saas_platform.py
 ### Common Issues
 
 1. **Database Connection Error**
+
    ```bash
    # Check database file permissions
    ls -la zto_saas.db
-   
+
    # Recreate database
    rm zto_saas.db
    python -c "from zto_saas_platform import app, db; app.app_context().push(); db.create_all()"
    ```
 
 2. **Import Error**
+
    ```bash
    # Check Python path
    echo $PYTHONPATH
-   
+
    # Install missing dependencies
    pip install -r requirements_saas.txt
    ```
 
 3. **Port Already in Use**
+
    ```bash
    # Find process using port 5000
    lsof -i :5000
-   
+
    # Kill the process
    kill -9 <pid>
    ```
 
 4. **Simulation Not Starting**
+
    ```bash
    # Check project directory permissions
    ls -la user_projects/
-   
+
    # Create missing directories
    mkdir -p user_projects
    ```
 
 5. **Template Not Found**
+
    ```bash
    # Check templates directory
    ls -la templates/
-   
+
    # Verify template files exist
    ```
 
 ### Performance Optimization
 
 1. **Database Optimization**
+
    - Use connection pooling
    - Add database indexes
    - Optimize queries
 
 2. **Memory Management**
+
    - Monitor simulation memory usage
    - Implement resource limits
    - Use efficient data structures
@@ -656,11 +714,13 @@ python zto_saas_platform.py
 ### Monitoring and Logging
 
 1. **Application Logs**
+
    ```bash
    tail -f logs/zto_saas.log
    ```
 
 2. **Database Logs**
+
    ```bash
    tail -f logs/database.log
    ```
@@ -673,15 +733,17 @@ python zto_saas_platform.py
 ### Support and Maintenance
 
 1. **Regular Backups**
+
    ```bash
    # Database backup
    sqlite3 zto_saas.db ".backup backup.db"
-   
+
    # Project files backup
    tar -czf backup.tar.gz user_projects/
    ```
 
 2. **Security Updates**
+
    - Keep dependencies updated
    - Monitor security advisories
    - Regular security audits
@@ -693,7 +755,7 @@ python zto_saas_platform.py
 
 ## Conclusion
 
-The Zero-to-One Virtual Software Inc. SaaS platform represents a complete transformation of the original virtual company simulation into a production-ready business application. With comprehensive user management, persistent simulations, real document generation, and subscription-based access, it provides a complete solution for entrepreneurs looking to leverage AI-powered development teams.
+The Virsaas Virtual Software Inc. SaaS platform represents a complete transformation of the original virtual company simulation into a production-ready business application. With comprehensive user management, persistent simulations, real document generation, and subscription-based access, it provides a complete solution for entrepreneurs looking to leverage AI-powered development teams.
 
 The platform's architecture supports scalability, security, and maintainability while delivering an engaging user experience through the 2.5D virtual office simulation and real-time interaction capabilities.
 
