@@ -26,15 +26,22 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import stripe
 
 # Add project path
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger('ZTO-SaaS')
+
+from config import config
+
+# Add project path for ZTO Kernel
+# We use the config BASE_DIR to ensure reliability
 sys.path.append(str(Path(__file__).parent / 'ZTO_Projects' / 'ZTO_Demo'))
 from zto_kernel import get_orchestrator, ZTOOrchestrator
 
 # Initialize Flask app
 app = Flask(__name__)
-app.config['SECRET_KEY'] = secrets.token_hex(32)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///zto_saas.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file upload
+# Load config based on environment
+env_name = os.getenv('FLASK_ENV', 'default')
+app.config.from_object(config[env_name])
 
 # Initialize extensions
 db = SQLAlchemy(app)
@@ -61,6 +68,7 @@ class User(UserMixin, db.Model):
     
     # Relationships
     projects = db.relationship('Project', backref='user', lazy=True)
+    campaigns = db.relationship('AdCampaign', backref='user', lazy=True)
 
 class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -100,8 +108,35 @@ class Payment(db.Model):
     amount = db.Column(db.Float, nullable=False)
     currency = db.Column(db.String(3), default='usd')
     status = db.Column(db.String(20), default='pending')
-    payment_type = db.Column(db.String(20), nullable=False)  # subscription, project_premium
+    payment_type = db.Column(db.String(20), nullable=False)  # subscription, project_premium, ads
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class AdSpace(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    slug = db.Column(db.String(100), unique=True, nullable=False)
+    ad_type = db.Column(db.String(20), default='banner')  # banner, keyword
+    price_per_day = db.Column(db.Float, default=10.0)
+    description = db.Column(db.String(200))
+
+class AdCampaign(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    ad_space_id = db.Column(db.Integer, db.ForeignKey('ad_space.id'), nullable=False)
+    keyword = db.Column(db.String(100), nullable=True)  # Only for keyword ads
+    content_url = db.Column(db.String(500), nullable=False)  # Image URL or Text content
+    target_url = db.Column(db.String(500), nullable=False)   # Where ad clicks go
+    
+    start_date = db.Column(db.DateTime, default=datetime.utcnow)
+    end_date = db.Column(db.DateTime, nullable=False)
+    status = db.Column(db.String(20), default='active')  # active, paused, completed
+    
+    # Analytics
+    impressions = db.Column(db.Integer, default=0)
+    clicks = db.Column(db.Integer, default=0)
+    
+    ad_space = db.relationship('AdSpace', backref='campaigns')
+
 
 # User loader
 @login_manager.user_loader
@@ -218,278 +253,18 @@ def create_project_directory(project_id):
     
     return base_path
 
-def generate_business_plan(project):
-    """Generate comprehensive business plan"""
-    orchestrator = sim_manager.get_simulation(project.project_id)
-    if not orchestrator:
-        return None
-    
-    business_plan = f"""# Business Plan: {project.name}
-
-## Executive Summary
-**Company Name**: Virsaas Virtual Software Inc.
-**Project**: {project.name}
-**Date**: {datetime.now().strftime('%B %d, %Y')}
-**Status**: {project.current_phase}
-
-### Mission Statement
-{project.description}
-
-### Financial Projections
-- **Current Revenue**: ${project.revenue:,.2f}
-- **Cash Burn Rate**: ${2500:.2f}/day
-- **Days Elapsed**: {project.days_elapsed}
-- **Runway Remaining**: {max(0, (180 - project.days_elapsed))} days
-- **Target**: $1,000,000 revenue by day 180
-
-## Market Analysis
-### Target Market
-- Primary: [User-defined target market]
-- Secondary: [Market segments]
-
-### Competitive Landscape
-- Direct competitors analysis
-- Indirect competitors analysis
-- Competitive advantages
-
-## Product Strategy
-### Core Features
-- Feature 1: [Detailed description]
-- Feature 2: [Detailed description]
-- Feature 3: [Detailed description]
-
-### Technology Stack
-- Frontend: React/Next.js
-- Backend: Node.js/Python
-- Database: PostgreSQL
-- Infrastructure: Azure/AWS
-
-## Business Model
-### Revenue Streams
-1. **Primary Revenue**: [Description]
-2. **Secondary Revenue**: [Description]
-3. **Subscription Model**: [Description]
-
-### Pricing Strategy
-- Tier 1: $X/month
-- Tier 2: $Y/month  
-- Tier 3: $Z/month
-
-## Financial Plan
-### Startup Costs
-- Development: $50,000
-- Infrastructure: $5,000
-- Legal & Compliance: $10,000
-- Marketing: $20,000
-- **Total**: $85,000
-
-### Revenue Projections
-- Month 1-3: $0 (Development)
-- Month 4-6: $10,000 (Beta testing)
-- Month 7-12: $50,000/month
-- Year 2: $100,000/month
-- **Year 1 Total**: $300,000
-- **Year 2 Total**: $1,200,000
-
-## Team Structure
-### Core Team (Virtual AI Agents)
-- **Development Team**: 10 specialized engineers
-- **Design Team**: 2 UX/UI experts
-- **Management Team**: 4 project/business managers
-- **Administration**: 4 legal/finance/support staff
-
-### Advisory Board
-- Industry experts
-- Technical advisors
-- Legal counsel
-- Financial advisors
-
-## Risk Assessment
-### Technical Risks
-- **Risk**: Technology stack complexity
-- **Mitigation**: Proven technologies, experienced team
-
-### Market Risks  
-- **Risk**: Competitive pressure
-- **Mitigation**: Unique value proposition, rapid iteration
-
-### Financial Risks
-- **Risk**: Cash flow management
-- **Mitigation**: Lean operations, milestone-based funding
-
-## Implementation Timeline
-### Phase 1: Discovery (Days 1-5)
-- Market research
-- User interviews
-- Technical architecture
-
-### Phase 2: MVP Development (Days 6-20)
-- Core feature development
-- Testing and validation
-- Infrastructure setup
-
-### Phase 3: Beta Launch (Days 21-30)
-- Private beta testing
-- User feedback integration
-- Performance optimization
-
-### Phase 4: Public Launch (Days 31-44)
-- Marketing campaign
-- Public release
-- Customer acquisition
-
-### Phase 5: Scale (Days 45-180)
-- Feature expansion
-- Market growth
-- Revenue optimization
-
-## Success Metrics
-### Key Performance Indicators
-- Monthly Recurring Revenue (MRR)
-- Customer Acquisition Cost (CAC)
-- Lifetime Value (LTV)
-- Churn Rate
-- Net Promoter Score (NPS)
-
-### Milestones
-- Day 30: MVP launch
-- Day 60: $10,000 MRR
-- Day 90: $50,000 MRR  
-- Day 180: $1,000,000 ARR
-
----
-*This business plan was generated by Virsaas Virtual Software Inc. AI agents*
-*Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*
-"""
-    
-    return business_plan
-
-def generate_legal_documents(project):
-    """Generate legal document templates"""
-    legal_docs = {}
-    
-    # Terms of Service
-    legal_docs['terms_of_service.md'] = f"""# Terms of Service
-    
-**Effective Date**: {datetime.now().strftime('%B %d, %Y')}
-**Company**: Virsaas Virtual Software Inc.
-**Product**: {project.name}
-
-## 1. Acceptance of Terms
-By accessing and using {project.name}, you agree to be bound by these Terms of Service.
-
-## 2. Description of Service
-{project.name} provides [describe service functionality].
-
-## 3. User Obligations
-- Users must provide accurate information
-- Users are responsible for maintaining account security
-- Users must comply with all applicable laws
-
-## 4. Intellectual Property
-All content, features, and functionality are owned by Virsaas Virtual Software Inc.
-
-## 5. Limitation of Liability
-The service is provided "as is" without warranties of any kind.
-
-## 6. Termination
-We reserve the right to terminate accounts for violation of these terms.
-
-## 7. Changes to Terms
-We may modify these terms at any time. Continued use constitutes acceptance.
-
-## 8. Contact Information
-For questions about these terms, contact: legal@zto-inc.com
-"""
-    
-    # Privacy Policy
-    legal_docs['privacy_policy.md'] = f"""# Privacy Policy
-
-**Effective Date**: {datetime.now().strftime('%B %d, %Y')}
-
-## 1. Information We Collect
-- **Personal Information**: Name, email, payment information
-- **Usage Data**: How you interact with our service
-- **Technical Data**: Device information, log data
-
-## 2. How We Use Information
-- To provide and maintain our service
-- To process payments and subscriptions
-- To improve user experience
-- To communicate with users
-
-## 3. Data Protection
-- Industry-standard encryption
-- Regular security audits
-- Limited access to personal data
-
-## 4. Third-Party Services
-We may use third-party services for payment processing and analytics.
-
-## 5. User Rights
-- Access your personal data
-- Correct inaccurate data
-- Request deletion of data
-- Opt-out of marketing communications
-
-## 6. Data Retention
-We retain data only as long as necessary to provide our services.
-
-## 7. Contact Information
-For privacy questions, contact: privacy@zto-inc.com
-"""
-    
-    # Customer Agreement
-    legal_docs['customer_agreement.md'] = f"""# Customer Agreement
-
-**Agreement Date**: {datetime.now().strftime('%B %d, %Y')}
-
-This Customer Agreement ("Agreement") is entered into by and between:
-
-**Virsaas Virtual Software Inc.** ("Company")
-and
-**Customer** ("You" or "Customer")
-
-## 1. Service Description
-Company agrees to provide {project.name} services as described in the product documentation.
-
-## 2. Payment Terms
-- Subscription fees are billed monthly in advance
-- All payments are non-refundable
-- Late payments may result in service suspension
-
-## 3. Service Level Agreement
-- 99.9% uptime guarantee
-- 24-hour response time for support issues
-- Regular security updates and maintenance
-
-## 4. Intellectual Property
-- Customer retains ownership of their data
-- Company retains ownership of the platform and software
-- Customer grants Company right to use data for service provision
-
-## 5. Confidentiality
-Both parties agree to maintain confidentiality of proprietary information.
-
-## 6. Limitation of Liability
-Company's total liability shall not exceed the amount paid by Customer in the 12 months prior.
-
-## 7. Termination
-Either party may terminate with 30 days written notice.
-
-## 8. Governing Law
-This agreement shall be governed by the laws of Delaware.
-
----
-*This legal document template was generated by ZTO Inc. AI agents*
-"""
-    
-    return legal_docs
+# Dummy generators removed. Using Orchestrator methods.
 
 # Routes
 @app.route('/')
+@app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/about-virsaas')
+def about_virsaas():
+    return render_template('about_virsaas.html')
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -644,14 +419,22 @@ def generate_documents(project_id):
         return jsonify({'error': 'Project not found'}), 404
     
     try:
-        # Generate business plan
-        business_plan = generate_business_plan(project)
+        # Get active orchestrator
+        orchestrator = sim_manager.get_simulation(project_id)
+        if not orchestrator:
+            return jsonify({'error': 'Simulation not active - cannot generate documents'}), 400
+
+        # Generate business plan via AI Service
+        business_plan = orchestrator.generate_business_plan(project.name, project.description)
         business_plan_path = Path(f"user_projects/{project_id}/output/business_plan.md")
+        # Ensure output dir exists
+        business_plan_path.parent.mkdir(parents=True, exist_ok=True)
+        
         with open(business_plan_path, 'w') as f:
             f.write(business_plan)
         
-        # Generate legal documents
-        legal_docs = generate_legal_documents(project)
+        # Generate legal documents via AI Service
+        legal_docs = orchestrator.generate_legal_documents(project.name)
         for filename, content in legal_docs.items():
             legal_path = Path(f"user_projects/{project_id}/output/{filename}")
             with open(legal_path, 'w') as f:
@@ -733,6 +516,82 @@ def create_checkout_session():
         return jsonify({'success': True})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+# --- Ads Service Routes ---
+
+@app.route('/ads')
+@login_required
+def ads_dashboard():
+    campaigns = AdCampaign.query.filter_by(user_id=current_user.id).all()
+    available_spaces = AdSpace.query.all()
+    
+    # Ensure default spaces exist if empty
+    if not available_spaces:
+        defaults = [
+            AdSpace(name="Home Top Banner", slug="home-top", ad_type="banner", price_per_day=50.0, description="Prime visibility on homepage"),
+            AdSpace(name="Sidebar Feature", slug="sidebar-feat", ad_type="banner", price_per_day=25.0, description="Sticky sidebar on dashboard"),
+            AdSpace(name="Keyword Sponsor", slug="keyword", ad_type="keyword", price_per_day=5.0, description="Target specific search keywords")
+        ]
+        for d in defaults:
+            db.session.add(d)
+        db.session.commit()
+        available_spaces = AdSpace.query.all()
+        
+    return render_template('ads_dashboard.html', campaigns=campaigns, spaces=available_spaces)
+
+@app.route('/ads/purchase', methods=['GET', 'POST'])
+@login_required
+def ads_purchase():
+    if request.method == 'POST':
+        space_id = request.form.get('space_id')
+        days = int(request.form.get('days', 7))
+        content_url = request.form.get('content_url')
+        target_url = request.form.get('target_url')
+        keyword = request.form.get('keyword')
+        
+        space = AdSpace.query.get(space_id)
+        if not space:
+            return jsonify({'error': 'Invalid ad space'}), 400
+            
+        amount = space.price_per_day * days
+        
+        # Simulate Stripe Payment
+        payment = Payment(
+            project_id=0, # System payment
+            stripe_payment_id=f"ad_pay_{uuid.uuid4()}",
+            amount=amount,
+            payment_type='ads',
+            status='succeeded'
+        )
+        # Hack: Payment model requires project_id but this is user-level. 
+        # Ideally we refactor Payment to make project_id nullable or use a user_payment table.
+        # For now we use the first project of user or dummy.
+        first_project = Project.query.filter_by(user_id=current_user.id).first()
+        payment.project_id = first_project.id if first_project else 0
+        
+        db.session.add(payment)
+        
+        # Create Campaign
+        campaign = AdCampaign(
+            user_id=current_user.id,
+            ad_space_id=space.id,
+            keyword=keyword if space.ad_type == 'keyword' else None,
+            content_url=content_url,
+            target_url=target_url,
+            start_date=datetime.utcnow(),
+            end_date=datetime.utcnow() + timedelta(days=days),
+            status='active'
+        )
+        db.session.add(campaign)
+        db.session.commit()
+        
+        return jsonify({'success': True, 'redirect': url_for('ads_dashboard')})
+        
+    space_id = request.args.get('space_id')
+    selected_space = AdSpace.query.get(space_id) if space_id else None
+    spaces = AdSpace.query.all()
+    return render_template('ads_purchase.html', spaces=spaces, selected_space=selected_space)
+
 
 # Template filters
 @app.template_filter('format_currency')

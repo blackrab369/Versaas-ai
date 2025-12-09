@@ -1,0 +1,108 @@
+{% extends "base_dashboard.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Create New Ad Campaign</h3>
+                </div>
+                <div class="card-body">
+                    <form id="purchaseForm" method="POST">
+                        <!-- Step 1: Select Space -->
+                        <div class="mb-4">
+                            <label class="form-label h5">1. Select Ad Space</label>
+                            <select name="space_id" id="space_id" class="form-select form-select-lg" required onchange="updateTotal()">
+                                <option value="">-- Choose Ad Placement --</option>
+                                {% for space in spaces %}
+                                <option value="{{ space.id }}" data-price="{{ space.price_per_day }}" data-type="{{ space.ad_type }}" {% if selected_space and selected_space.id == space.id %}selected{% endif %}>
+                                    {{ space.name }} - ${{ space.price_per_day }}/day
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text" id="spaceDescription"></div>
+                        </div>
+
+                        <!-- Step 2: Campaign Details -->
+                        <div class="mb-4">
+                            <label class="form-label h5">2. Campaign Settings</label>
+                            
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Duration (Days)</label>
+                                    <input type="number" name="days" id="days" class="form-control" value="7" min="1" max="90" onchange="updateTotal()">
+                                </div>
+                                
+                                <div class="col-md-6" id="keywordField" style="display: none;">
+                                    <label class="form-label">Target Keyword</label>
+                                    <input type="text" name="keyword" class="form-control" placeholder="e.g. 'saas', 'crm'">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 3: Ad Content -->
+                        <div class="mb-4">
+                            <label class="form-label h5">3. Ad Content</label>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Target URL (Where clicks go)</label>
+                                <input type="url" name="target_url" class="form-control" placeholder="https://your-site.com" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Ad Image URL / Text Copy</label>
+                                <input type="text" name="content_url" class="form-control" placeholder="https://your-site.com/banner.jpg" required>
+                                <div class="form-text">For banners, provide image URL. For text ads, provide the copy.</div>
+                            </div>
+                        </div>
+
+                        <!-- Step 4: Payment Summary -->
+                        <div class="card bg-light mb-4 border-0">
+                            <div class="card-body">
+                                <h5>Total Cost</h5>
+                                <h1 class="display-4 text-primary" id="totalCost">$0.00</h1>
+                                <p class="text-muted mb-0">Secure payment via simulated Stripe gateway</p>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg">Complete Purchase</button>
+                            <a href="{{ url_for('ads_dashboard') }}" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function updateTotal() {
+    const spaceSelect = document.getElementById('space_id');
+    const daysInput = document.getElementById('days');
+    const option = spaceSelect.options[spaceSelect.selectedIndex];
+    
+    if (option.value) {
+        const price = parseFloat(option.dataset.price);
+        const days = parseInt(daysInput.value) || 0;
+        const total = price * days;
+        document.getElementById('totalCost').innerText = '$' + total.toFixed(2);
+        
+        // Show/Hide Keyword field
+        const type = option.dataset.type;
+        document.getElementById('keywordField').style.display = (type === 'keyword') ? 'block' : 'none';
+        if (type === 'keyword') {
+            document.querySelector('[name="keyword"]').required = true;
+        } else {
+            document.querySelector('[name="keyword"]').required = false;
+        }
+    } else {
+        document.getElementById('totalCost').innerText = '$0.00';
+    }
+}
+
+// Init
+document.addEventListener('DOMContentLoaded', updateTotal);
+</script>
+{% endblock %}
