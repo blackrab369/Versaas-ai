@@ -19,10 +19,12 @@ from functools import wraps
 import logging
 
 # Flask imports
-from flask import Flask, render_template, request, jsonify, session, redirect, url_for, send_file
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for, send_file, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user, UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_socketio import SocketIO, emit, join_room
+from authlib.integrations.flask_client import OAuth
 import stripe
 
 # Add project path
@@ -48,6 +50,35 @@ db = SQLAlchemy(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
+
+# OAuth Setup
+oauth = OAuth(app)
+
+# Google OAuth
+google = oauth.register(
+    name='google',
+    client_id=app.config.get('GOOGLE_CLIENT_ID'),
+    client_secret=app.config.get('GOOGLE_CLIENT_SECRET'),
+    access_token_url='https://accounts.google.com/o/oauth2/token',
+    access_token_params=None,
+    authorize_url='https://accounts.google.com/o/oauth2/auth',
+    authorize_params=None,
+    api_base_url='https://www.googleapis.com/oauth2/v1/',
+    client_kwargs={'scope': 'openid email profile'},
+)
+
+# GitHub OAuth
+github = oauth.register(
+    name='github',
+    client_id=app.config.get('GITHUB_CLIENT_ID'),
+    client_secret=app.config.get('GITHUB_CLIENT_SECRET'),
+    access_token_url='https://github.com/login/oauth/access_token',
+    access_token_params=None,
+    authorize_url='https://github.com/login/oauth/authorize',
+    authorize_params=None,
+    api_base_url='https://api.github.com/',
+    client_kwargs={'scope': 'user:email'},
+)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -265,6 +296,32 @@ def index():
 def about_virsaas():
     return render_template('about_virsaas.html')
 
+@app.route('/api/ceo/chat', methods=['POST'])
+def ceo_chat():
+    try:
+        data = request.get_json()
+        message = data.get('message')
+        # session_id = data.get('session_id') # Can use for history
+
+        # Use generic orchestrator for "Landing Page CEO"
+        # We can reuse the AIService directly or create a temporary orchestrator
+        # Ideally, we should have a 'demo' orchestrator for public chat
+        
+        # Simple AIService call for now
+        from zto_kernel import AIService
+        ai = AIService(os.environ.get('OPENAI_API_KEY'))
+        
+        response = ai.generate_content(
+            system_prompt="You are Alex, the AI CEO of Virsaas. You are confident, visionary, and concise. Explain how Virsaas can build the user's SaaS idea in 4 days. Keep it under 2 sentences.",
+            user_prompt=message
+        )
+        
+        return jsonify({'reply': response})
+    except Exception as e:
+        logger.error(f"CEO Chat error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -309,9 +366,101 @@ def login():
             db.session.commit()
             return jsonify({'success': True, 'redirect': url_for('dashboard')})
         
-        return jsonify({'error': 'Invalid credentials'}), 400
+        return jsonify({'error': 'Invalid username or password'}), 401
     
     return render_template('login.html')
+
+# --- Social Login Routes ---
+
+@app.route('/login/google')
+def login_google():
+    redirect_uri = url_for('authorize_google', _external=True)
+    return google.authorize_redirect(redirect_uri)
+
+@app.route('/auth/google/callback')
+def authorize_google():
+    try:
+        token = google.authorize_access_token()
+        resp = google.get('userinfo')
+        user_info = resp.json()
+        email = user_info['email']
+        username = user_info.get('name', email.split('@')[0])
+        
+        # Link or Create User
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            user = User(
+                username=username,
+                email=email,
+                password_hash=generate_password_hash(secrets.token_hex(16)), # Random password
+                subscription_type='free',
+                trial_end_date=datetime.utcnow() + timedelta(hours=1)
+            )
+            db.session.add(user)
+            db.session.commit()
+        
+        login_user(user)
+        user.last_login = datetime.utcnow()
+        db.session.commit()
+        return redirect(url_for('dashboard'))
+    except Exception as e:
+        logger.error(f"Google Login Error: {e}")
+        flash("Google Login failed", "error")
+        return redirect(url_for('login'))
+
+@app.route('/login/github')
+def login_github():
+    redirect_uri = url_for('authorize_github', _external=True)
+    return github.authorize_redirect(redirect_uri)
+
+@app.route('/auth/github/callback')
+def authorize_github():
+    try:
+        token = github.authorize_access_token()
+        resp = github.get('user')
+        user_info = resp.json()
+        
+        # GitHub emails are sometimes private, need separate call
+        email = user_info.get('email')
+        if not email:
+            emails_resp = github.get('user/emails')
+            for e in emails_resp.json():
+                if e['primary'] and e['verified']:
+                    email = e['email']
+                    break
+                    
+        username = user_info.get('login', f"github_user_{secrets.token_hex(4)}")
+        
+        if not email:
+             flash("Could not get email from GitHub", "error")
+             return redirect(url_for('login'))
+
+        # Link or Create User
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            # Check username collision
+            if User.query.filter_by(username=username).first():
+                username = f"{username}_{secrets.token_hex(4)}"
+
+            user = User(
+                username=username,
+                email=email,
+                password_hash=generate_password_hash(secrets.token_hex(16)),
+                subscription_type='free',
+                trial_end_date=datetime.utcnow() + timedelta(hours=1)
+            )
+            db.session.add(user)
+            db.session.commit()
+        
+        login_user(user)
+        user.last_login = datetime.utcnow()
+        db.session.commit()
+        return redirect(url_for('dashboard'))
+    except Exception as e:
+         logger.error(f"GitHub Login Error: {e}")
+         flash("GitHub Login failed", "error")
+         return redirect(url_for('login'))
+
 
 @app.route('/logout')
 @login_required
