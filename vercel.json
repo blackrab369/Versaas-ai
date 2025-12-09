@@ -9,20 +9,10 @@
       "schedule": "0 6 * * *"
     }
   ],
-  "functions": {
-    "zto_enterprise_platform.py": {
-      "runtime": "@vercel/python@4.0.0",
-      "maxDuration": 30
-    }
-  },
-  "routes": [
+  "rewrites": [
     {
-      "src": "/socket.io/(.*)",
-      "dest": "zto_enterprise_platform.py"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "zto_enterprise_platform.py"
+      "source": "/(.*)",
+      "destination": "/api/index.py"
     }
   ]
 }
