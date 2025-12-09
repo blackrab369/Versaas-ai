@@ -11,7 +11,7 @@
   ],
   "functions": {
     "zto_enterprise_platform.py": {
-      "runtime": "python3.12",
+      "runtime": "@vercel/python@4.0.0",
       "maxDuration": 30
     }
   },
